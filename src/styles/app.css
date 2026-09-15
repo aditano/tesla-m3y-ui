@@ -591,6 +591,7 @@ button {
 
 .route-head {
   padding: 12px 14px 8px;
+  flex-shrink: 0;
 }
 
 .route-head h3 {
@@ -608,6 +609,16 @@ button {
 .turn-list {
   overflow: auto;
   flex: 1;
+  min-height: 0;
+}
+
+.route-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #262626;
+  flex-shrink: 0;
+  background: #141414;
 }
 
 .turn {
@@ -623,13 +634,6 @@ button {
 .turn.on {
   background: #1b2744;
   color: #fff;
-}
-
-.route-actions {
-  display: flex;
-  gap: 8px;
-  padding: 10px;
-  border-top: 1px solid #262626;
 }
 
 .btn {

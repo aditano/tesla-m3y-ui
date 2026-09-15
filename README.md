@@ -14,7 +14,7 @@ Live demo (GitHub Pages): **https://aditano.github.io/tesla-m3y-ui/**
 4. Watch the car drive along the real road network while a 3D-ish visualization updates.
 5. Click the chrome: map pan / zoom / rotate / heading-up, drag the viz divider to expand, Controls overlay, climate / media dock, PRND strip, status bar, cancel / end FSD.
 
-Default origin is **downtown Pittsburgh**. Home / Work / Villanova shortcuts are on the Navigate sheet. Click the map (when idle) to set a new origin if GPS is denied.
+Default origin is **downtown Pittsburgh** so the demo is consistent on GitHub Pages. Home / Work / Villanova shortcuts are on the Navigate sheet. Click the map (when idle) or the locate control to set a new origin; the site does not auto-jump to browser geolocation.
 
 ## How it works
 

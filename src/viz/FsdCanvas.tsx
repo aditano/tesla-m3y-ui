@@ -21,7 +21,7 @@ function ParkedStudio() {
         <circleGeometry args={[28, 64]} />
         <meshStandardMaterial color="#0c0e14" roughness={0.92} />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.55, 0]} position={[0, 0, 0]}>
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.85, 0]} position={[0, 0, 0]}>
         <Model3 scale={1.2} />
       </group>
       <ContactShadows opacity={0.55} scale={22} blur={2.4} far={10} />
@@ -31,9 +31,9 @@ function ParkedStudio() {
         maxDistance={13}
         autoRotate
         autoRotateSpeed={0.45}
-        minPolarAngle={0.7}
-        maxPolarAngle={1.35}
-        target={[0, 0.45, 0]}
+        minPolarAngle={0.85}
+        maxPolarAngle={1.28}
+        target={[0, 0.5, 0]}
       />
     </>
   );
@@ -140,7 +140,7 @@ export function FsdCanvas() {
       <Canvas
         shadows
         dpr={[1, 1.6]}
-        camera={{ fov: 40, position: [4.6, 2.1, 6.4], near: 0.1, far: 500 }}
+        camera={{ fov: 38, position: [5.8, 1.85, 5.2], near: 0.1, far: 500 }}
       >
         {driving ? <DrivingWorld /> : <ParkedStudio />}
       </Canvas>

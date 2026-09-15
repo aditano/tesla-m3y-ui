@@ -102,6 +102,7 @@ export function TeslaMap() {
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const route = useVehicle((s) => s.route);
   const dest = useVehicle((s) => s.destination);
+  const origin = useVehicle((s) => s.origin);
   const orientation = useVehicle((s) => s.ui.mapOrientation);
   const patchUi = useVehicle((s) => s.patchUi);
   const setOriginFromMap = useVehicle((s) => s.setOriginFromMap);
@@ -150,6 +151,12 @@ export function TeslaMap() {
   }, [dest, route]);
 
   useEffect(() => {
+    const map = mapRef.current;
+    if (!map || useVehicle.getState().phase === "fsd") return;
+    map.easeTo({ center: [origin.lng, origin.lat], duration: 700 });
+  }, [origin.lat, origin.lng]);
+
+  useEffect(() => {
     return useVehicle.subscribe((state) => {
       const map = mapRef.current;
       const marker = markerRef.current;
@@ -189,6 +196,25 @@ export function TeslaMap() {
         </button>
         <button title="Recenter on car" onClick={() => patchUi({ tracking: true })}>
           ⌖
+        </button>
+        <button
+          title="Use my location"
+          onClick={() => {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(
+              (pos) =>
+                useVehicle.getState().setOrigin({
+                  name: "Current location",
+                  label: "Current location",
+                  lng: pos.coords.longitude,
+                  lat: pos.coords.latitude,
+                }),
+              () => undefined,
+              { maximumAge: 30_000, timeout: 6000 },
+            );
+          }}
+        >
+          ◎
         </button>
       </div>
       {dest ? null : (

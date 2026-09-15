@@ -32,19 +32,6 @@ function DriveLoop() {
   return null;
 }
 
-function GpsSeed() {
-  const setPoseFromGps = useVehicle((s) => s.setPoseFromGps);
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setPoseFromGps(pos.coords.longitude, pos.coords.latitude),
-      () => undefined,
-      { maximumAge: 60_000, timeout: 4000 },
-    );
-  }, [setPoseFromGps]);
-  return null;
-}
-
 function VizDivider() {
   const setVizRatio = useVehicle((s) => s.setVizRatio);
   const dragging = useRef(false);
@@ -136,7 +123,6 @@ export default function App() {
         </div>
         <BottomDock />
         <DriveLoop />
-        <GpsSeed />
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ export function Model3({ scale = 1 }: { scale?: number }) {
   return (
     <group scale={scale}>
       <group position={[0, 0, 0]}>
-        <RoundedBox args={[1.86, 0.36, 4.55]} radius={0.08} smoothness={4} position={[0, 0.48, 0.05]} castShadow receiveShadow>
+        <RoundedBox args={[1.86, 0.32, 4.55]} radius={0.08} smoothness={4} position={[0, 0.58, 0.05]} castShadow receiveShadow>
           <meshStandardMaterial color={paint} metalness={0.82} roughness={0.22} />
         </RoundedBox>
         <mesh position={[0, 0.62, 1.35]} rotation={[-0.18, 0, 0]} castShadow>
@@ -82,10 +82,10 @@ export function Model3({ scale = 1 }: { scale?: number }) {
           <meshStandardMaterial color={paint} metalness={0.7} roughness={0.3} />
         </mesh>
       </group>
-      <Wheel x={-0.78} z={1.38} />
-      <Wheel x={0.78} z={1.38} />
-      <Wheel x={-0.78} z={-1.42} />
-      <Wheel x={0.78} z={-1.42} />
+      <Wheel x={-0.88} z={1.38} />
+      <Wheel x={0.88} z={1.38} />
+      <Wheel x={-0.88} z={-1.42} />
+      <Wheel x={0.88} z={-1.42} />
     </group>
   );
 }
