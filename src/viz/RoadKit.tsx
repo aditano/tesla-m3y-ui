@@ -18,6 +18,38 @@ export function headingQuat(headingDeg: number): Euler {
   return new Euler(0, -((headingDeg * Math.PI) / 180), 0);
 }
 
+function offsets(pts: Vector3[], half: number): { left: Vector3[]; right: Vector3[] } {
+  const left: Vector3[] = [];
+  const right: Vector3[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const prev = pts[Math.max(0, i - 1)];
+    const next = pts[Math.min(pts.length - 1, i + 1)];
+    const dir = next.clone().sub(prev);
+    dir.y = 0;
+    if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
+    dir.normalize();
+    const side = new Vector3(-dir.z, 0, dir.x).multiplyScalar(half);
+    left.push(pts[i].clone().add(side));
+    right.push(pts[i].clone().sub(side));
+  }
+  return { left, right };
+}
+
+function ribbonGeometry(left: Vector3[], right: Vector3[], y: number, color: Color) {
+  const positions: number[] = [];
+  const colors: number[] = [];
+  for (let i = 0; i < left.length - 1; i++) {
+    const a = left[i];
+    const b = right[i];
+    const c = left[i + 1];
+    const d = right[i + 1];
+    positions.push(a.x, y, a.z, b.x, y, b.z, c.x, y, c.z);
+    positions.push(b.x, y, b.z, d.x, y, d.z, c.x, y, c.z);
+    for (let k = 0; k < 6; k++) colors.push(color.r, color.g, color.b);
+  }
+  return { positions: new Float32Array(positions), colors: new Float32Array(colors) };
+}
+
 export function RoadRibbon({
   route,
   origin,
@@ -27,91 +59,85 @@ export function RoadRibbon({
 }) {
   const geom = useMemo(() => {
     const pts = route.coords.map((c) => toWorld(c, origin));
-    const half = LANE_WIDTH_M * 1.55;
-    const left: Vector3[] = [];
-    const right: Vector3[] = [];
-    for (let i = 0; i < pts.length; i++) {
-      const prev = pts[Math.max(0, i - 1)];
-      const next = pts[Math.min(pts.length - 1, i + 1)];
-      const dir = next.clone().sub(prev);
-      dir.y = 0;
-      if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
-      dir.normalize();
-      const side = new Vector3(-dir.z, 0, dir.x).multiplyScalar(half);
-      left.push(pts[i].clone().add(side));
-      right.push(pts[i].clone().sub(side));
-    }
-    const positions: number[] = [];
-    const colors: number[] = [];
-    const asphalt = new Color("#1a1d24");
-    for (let i = 0; i < pts.length - 1; i++) {
-      const a = left[i];
-      const b = right[i];
-      const c = left[i + 1];
-      const d = right[i + 1];
-      positions.push(a.x, 0.02, a.z, b.x, 0.02, b.z, c.x, 0.02, c.z);
-      positions.push(b.x, 0.02, b.z, d.x, 0.02, d.z, c.x, 0.02, c.z);
-      for (let k = 0; k < 6; k++) colors.push(asphalt.r, asphalt.g, asphalt.b);
-    }
-    return { positions: new Float32Array(positions), colors: new Float32Array(colors) };
+    const { left, right } = offsets(pts, LANE_WIDTH_M * 1.85);
+    return ribbonGeometry(left, right, 0.015, new Color("#2c313c"));
+  }, [origin.lat, origin.lng, route]);
+
+  const path = useMemo(() => {
+    const pts = route.coords.map((c) => toWorld(c, origin));
+    const { left, right } = offsets(pts, 1.15);
+    return ribbonGeometry(left, right, 0.04, new Color("#2f6fe4"));
   }, [origin.lat, origin.lng, route]);
 
   return (
-    <mesh receiveShadow>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[geom.positions, 3]} />
-        <bufferAttribute attach="attributes-color" args={[geom.colors, 3]} />
-      </bufferGeometry>
-      <meshStandardMaterial vertexColors side={DoubleSide} roughness={0.92} metalness={0.04} />
-    </mesh>
+    <group>
+      <mesh receiveShadow>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[geom.positions, 3]} />
+          <bufferAttribute attach="attributes-color" args={[geom.colors, 3]} />
+        </bufferGeometry>
+        <meshStandardMaterial vertexColors side={DoubleSide} roughness={0.9} metalness={0.05} />
+      </mesh>
+      <mesh>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[path.positions, 3]} />
+          <bufferAttribute attach="attributes-color" args={[path.colors, 3]} />
+        </bufferGeometry>
+        <meshStandardMaterial
+          vertexColors
+          side={DoubleSide}
+          roughness={0.35}
+          metalness={0.1}
+          emissive={new Color("#1d4cb8")}
+          emissiveIntensity={0.55}
+          transparent
+          opacity={0.85}
+        />
+      </mesh>
+    </group>
   );
 }
 
 export function LaneMarks({
   route,
   origin,
-  fsd,
 }: {
   route: RoutePlan;
   origin: WorldOrigin;
-  fsd: boolean;
 }) {
-  const dashes = useMemo(() => {
+  const marks = useMemo(() => {
     const pts = route.coords.map((c) => toWorld(c, origin));
-    const items: { pos: Vector3; rot: number; color: string }[] = [];
-    let acc = 0;
+    const dashes: { pos: Vector3; rot: number; w: number; l: number; color: string }[] = [];
+    const { left, right } = offsets(pts, LANE_WIDTH_M * 1.7);
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1];
       const b = pts[i];
       const seg = b.clone().sub(a);
       const len = seg.length();
       const heading = Math.atan2(seg.x, seg.z);
-      const n = Math.max(1, Math.floor(len / 6));
+      const n = Math.max(1, Math.floor(len / 5.5));
       for (let k = 0; k < n; k++) {
-        acc += 6;
         const t = (k + 0.5) / n;
         const pos = a.clone().lerp(b, t);
-        pos.y = 0.04;
-        items.push({
-          pos,
-          rot: heading,
-          color: fsd ? "#3d8bfd" : "#d8dce3",
-        });
+        pos.y = 0.05;
+        dashes.push({ pos, rot: heading, w: 0.14, l: 2.2, color: "#e8edf4" });
       }
+      const le = left[i - 1].clone().lerp(left[i], 0.5);
+      const re = right[i - 1].clone().lerp(right[i], 0.5);
+      le.y = 0.05;
+      re.y = 0.05;
+      dashes.push({ pos: le, rot: heading, w: 0.12, l: Math.min(len, 8), color: "#f2f4f8" });
+      dashes.push({ pos: re, rot: heading, w: 0.12, l: Math.min(len, 8), color: "#f2f4f8" });
     }
-    return items.slice(0, 420);
-  }, [fsd, origin.lat, origin.lng, route]);
+    return dashes.slice(0, 700);
+  }, [origin.lat, origin.lng, route]);
 
   return (
     <group>
-      {dashes.map((d, i) => (
+      {marks.map((d, i) => (
         <mesh key={i} position={d.pos} rotation={[0, d.rot, 0]}>
-          <boxGeometry args={[0.12, 0.01, 2.4]} />
-          <meshStandardMaterial
-            color={d.color}
-            emissive={fsd ? "#1d4ed8" : "#222"}
-            emissiveIntensity={fsd ? 1.4 : 0.1}
-          />
+          <boxGeometry args={[d.w, 0.012, d.l]} />
+          <meshStandardMaterial color={d.color} emissive={d.color} emissiveIntensity={0.15} />
         </mesh>
       ))}
     </group>
@@ -130,12 +156,12 @@ export function TrafficPack({
   const cars = useMemo(() => {
     const total = route.distanceM;
     const palette = ["#c0392b", "#1f6feb", "#2ecc71", "#f1c40f", "#7f8c8d", "#8e44ad"];
-    return Array.from({ length: 10 }, (_, i) => ({
-      offsetM: ((i * 47) % Math.max(80, total - 40)) + 30,
-      lane: i % 2 === 0 ? LANE_WIDTH_M : -LANE_WIDTH_M,
+    return Array.from({ length: 8 }, (_, i) => ({
+      offsetM: ((i * 63) % Math.max(80, total - 40)) + 40,
+      lane: i % 2 === 0 ? LANE_WIDTH_M : -LANE_WIDTH_M * 0.9,
       color: palette[i % palette.length],
     }));
-  }, [origin.lat, origin.lng, route]);
+  }, [route]);
 
   const pts = useMemo(() => route.coords.map((c) => toWorld(c, origin)), [origin.lat, origin.lng, route]);
 
@@ -144,16 +170,16 @@ export function TrafficPack({
       {cars.map((car, idx) => {
         const along = (traveledM + car.offsetM) % Math.max(1, route.distanceM);
         const pose = sampleWorld(pts, along);
-        const side = new Vector3(Math.cos(pose.rot), 0, -Math.sin(pose.rot)).multiplyScalar(car.lane * 0.55);
+        const side = new Vector3(Math.cos(pose.rot), 0, -Math.sin(pose.rot)).multiplyScalar(car.lane * 0.7);
         return (
           <mesh
             key={idx}
-            position={pose.pos.clone().add(side).setY(0.45)}
+            position={pose.pos.clone().add(side).setY(0.48)}
             rotation={[0, pose.rot, 0]}
             castShadow
           >
-            <boxGeometry args={[1.7, 0.7, 4.2]} />
-            <meshStandardMaterial color={car.color} metalness={0.45} roughness={0.4} />
+            <boxGeometry args={[1.65, 0.62, 4.1]} />
+            <meshStandardMaterial color={car.color} metalness={0.4} roughness={0.42} />
           </mesh>
         );
       })}
@@ -161,10 +187,7 @@ export function TrafficPack({
   );
 }
 
-function sampleWorld(
-  pts: Vector3[],
-  meters: number,
-): { pos: Vector3; rot: number } {
+function sampleWorld(pts: Vector3[], meters: number): { pos: Vector3; rot: number } {
   let acc = 0;
   for (let i = 1; i < pts.length; i++) {
     const len = pts[i].distanceTo(pts[i - 1]);
@@ -192,21 +215,21 @@ export function SignalProps({
   );
   return (
     <group>
-      {lights.slice(0, 12).map((m, i) => {
+      {lights.slice(0, 10).map((m, i) => {
         const p = toWorld(m.location, origin);
         return (
-          <group key={i} position={[p.x + 5.5, 0, p.z + 1.5]}>
-            <mesh position={[0, 1.6, 0]}>
-              <boxGeometry args={[0.12, 3.2, 0.12]} />
+          <group key={i} position={[p.x + 6.2, 0, p.z + 1.2]}>
+            <mesh position={[0, 1.7, 0]}>
+              <boxGeometry args={[0.12, 3.3, 0.12]} />
               <meshStandardMaterial color="#222" />
             </mesh>
-            <mesh position={[0, 3.3, 0]}>
-              <boxGeometry args={[0.28, 0.72, 0.18]} />
+            <mesh position={[0, 3.4, 0]}>
+              <boxGeometry args={[0.3, 0.78, 0.2]} />
               <meshStandardMaterial color="#111" />
             </mesh>
-            <mesh position={[0, 3.48, 0.1]}>
-              <sphereGeometry args={[0.08, 12, 12]} />
-              <meshStandardMaterial color="#2ecc71" emissive="#2ecc71" emissiveIntensity={2} />
+            <mesh position={[0, 3.58, 0.12]}>
+              <sphereGeometry args={[0.09, 12, 12]} />
+              <meshStandardMaterial color="#2ecc71" emissive="#2ecc71" emissiveIntensity={2.4} />
             </mesh>
           </group>
         );

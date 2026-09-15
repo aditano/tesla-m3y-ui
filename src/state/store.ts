@@ -292,7 +292,7 @@ export const useVehicle = create<Store>((set, get) => ({
     const phase: TripPhase = get().phase === "arrived" ? "arrived" : "disengaged";
     set({
       phase,
-      gear: "P",
+      gear: "D",
       pose: { ...get().pose, speedMph: 0, setSpeedMph: 0 },
       ui: { ...get().ui, mapOrientation: "north" },
     });
