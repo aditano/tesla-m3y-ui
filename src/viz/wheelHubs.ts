@@ -9,8 +9,10 @@ export type WheelHub = {
   side: "L" | "R";
 };
 
-const WHEEL_PARENT = /^wheel(?:\.\d+)?$/i;
-const CALIPER_PARENT = /^cal(?:\.\d+)?$/i;
+// GLTFLoader strips the `.` from glTF node names ("wheel.001" -> "wheel001"),
+// so match the sanitized form as well or only the first hub gets an aero wheel.
+const WHEEL_PARENT = /^wheel(?:[._]?\d+)?$/i;
+const CALIPER_PARENT = /^cal(?:[._]?\d+)?$/i;
 const AERO_RADIUS_M = 0.365;
 const AERO_WIDTH_M = 0.238;
 const HUB_OUTBOARD_X = 0.15;
