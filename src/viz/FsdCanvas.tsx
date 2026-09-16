@@ -22,16 +22,16 @@ function ParkedStudio() {
     <>
       <color attach="background" args={["#eef0f3"]} />
       <fog attach="fog" args={["#eef0f3", 16, 34]} />
-      <PerspectiveCamera makeDefault fov={30} position={[-4.35, 5.35, -6.55]} near={0.1} far={80} />
-      <ambientLight intensity={0.92} />
-      <hemisphereLight args={["#ffffff", "#d4d7de", 1.05]} />
-      <directionalLight position={[-5.4, 8.6, -2.2]} intensity={1.15} color="#ffffff" />
-      <directionalLight position={[4.8, 3.4, 3.2]} intensity={0.32} color="#dfe4ec" />
+      <PerspectiveCamera makeDefault fov={28} position={[-5.05, 3.62, -5.85]} near={0.1} far={80} />
+      <ambientLight intensity={0.88} />
+      <hemisphereLight args={["#ffffff", "#d4d7de", 0.98]} />
+      <directionalLight position={[-5.8, 7.4, -1.6]} intensity={1.28} color="#ffffff" />
+      <directionalLight position={[5.2, 2.8, 2.4]} intensity={0.38} color="#dfe4ec" />
       <spotLight
-        position={[-1.2, 9.4, -4.2]}
-        angle={0.72}
+        position={[-2.2, 8.2, -3.4]}
+        angle={0.68}
         penumbra={1}
-        intensity={22}
+        intensity={18}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0002}
@@ -46,18 +46,18 @@ function ParkedStudio() {
         <planeGeometry args={[48, 48]} />
         <meshStandardMaterial color="#eef0f3" roughness={0.96} metalness={0} />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.18, 0]} position={[0, 0, 0.04]}>
-        <Model3 scale={1.08} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.28, 0]} position={[0.15, 0, 0.12]}>
+        <Model3 scale={1.22} />
       </group>
-      <ContactShadows opacity={0.18} scale={18} blur={3.4} far={9} resolution={1024} color="#8a8588" />
+      <ContactShadows opacity={0.2} scale={18} blur={3.2} far={9} resolution={1024} color="#8a8588" />
       <OrbitControls
         enablePan={false}
-        minDistance={7.4}
-        maxDistance={11.2}
+        minDistance={6.6}
+        maxDistance={10.2}
         autoRotate={false}
-        minPolarAngle={0.88}
-        maxPolarAngle={1.08}
-        target={[0, 0.48, -0.22]}
+        minPolarAngle={1.1}
+        maxPolarAngle={1.28}
+        target={[0, 0.42, -0.45]}
       />
     </>
   );

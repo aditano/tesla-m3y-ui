@@ -57,11 +57,12 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 ## Current verdict (this pass)
 
-Parked viz lane (after CC Model 3 + Highland layout):
+Parked viz polish (red rear-3/4 + Highland chrome):
 
-- Parked home is **full-screen centered vehicle** with a faded map snippet top-right and Navigate + media in the lower third. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — layout matches the intended `parked-home` state; mesh/PBR/hotspot chrome are not Tesla-grade.
-- Type is Inter (OFL), not Plus Jakarta Sans. Still not Tesla Sans. Score: **PARTIAL**.
+- Parked home is a **full-screen rear-3/4 Model 3** with nata-style Open cards, a compact Auto Shift, Park status-bar order, a small map chip TR, and Navigate + media in the lower third. Score: **better PARTIAL** vs `nata-parked-car-vis.jpg`. The David_Holiday CC-BY mesh is the fidelity ceiling (not Tesla viz-grade).
+- Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
+- Park status-bar order and parked PRND moved off FAIL to **PARTIAL**.
 - FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
-- PRND, status-bar order, dock climate cluster, and Controls chrome still FAIL.
+- Dock climate cluster and Controls chrome still FAIL (other lanes).
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

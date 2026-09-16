@@ -229,14 +229,14 @@ button {
 }
 
 .map-pane.mini.parked {
-  top: 10px;
-  right: 10px;
-  width: min(20%, 248px);
-  height: min(20%, 152px);
+  top: 8px;
+  right: 12px;
+  width: min(18%, 220px);
+  height: min(18%, 138px);
   border-radius: 12px;
   border: none;
   box-shadow: none;
-  opacity: 0.62;
+  opacity: 0.8;
 }
 
 .map-pane.mini.parked::after {
@@ -246,8 +246,8 @@ button {
   pointer-events: none;
   z-index: 3;
   background:
-    linear-gradient(to left, transparent 18%, #eef0f3 78%),
-    linear-gradient(to bottom, transparent 22%, #eef0f3 82%);
+    linear-gradient(to left, transparent 28%, #eef0f3 88%),
+    linear-gradient(to bottom, transparent 30%, #eef0f3 90%);
 }
 
 .map-pane.mini.parked .maplibregl-ctrl-attrib {
@@ -1340,18 +1340,24 @@ button {
 }
 
 .parked-callout.trunk {
-  top: 24%;
-  right: 4%;
+  top: 40%;
+  right: 30%;
+  left: auto;
+}
+
+.parked-callout.trunk .parked-callout-line {
+  height: 40px;
 }
 
 .parked-callout.trunk .parked-callout-dot {
   left: 28px;
-  bottom: -6px;
+  bottom: -8px;
 }
 
 .parked-callout.frunk {
-  top: 36%;
-  left: 8%;
+  top: 15%;
+  left: auto;
+  right: 12%;
 }
 
 .parked-callout.frunk .parked-callout-line {
@@ -1364,8 +1370,8 @@ button {
 }
 
 .parked-callout.charge {
-  top: 58%;
-  left: 11%;
+  top: 50%;
+  left: 14%;
 }
 
 .parked-callout.charge .parked-callout-dot {
