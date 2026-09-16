@@ -60,15 +60,16 @@ function addCabinBlocker(car: Object3D): void {
   const cabin = new Mesh(
     new BoxGeometry(
       (worldSize.x * 0.72) / Math.max(scale.x, 1e-4),
-      (worldSize.y * 0.34) / Math.max(scale.y, 1e-4),
-      (worldSize.z * 0.48) / Math.max(scale.z, 1e-4),
+      (worldSize.y * 0.26) / Math.max(scale.y, 1e-4),
+      (worldSize.z * 0.4) / Math.max(scale.z, 1e-4),
     ),
     new MeshPhysicalMaterial({ color: "#121110", roughness: 0.95, metalness: 0 }),
   );
   cabin.name = "orig-cabin-blocker";
   car.worldToLocal(worldCenter);
   cabin.position.copy(worldCenter);
-  cabin.position.y += 0.1;
+  cabin.position.y += 0.02;
+  cabin.position.z -= 0.12;
   car.add(cabin);
 }
 
