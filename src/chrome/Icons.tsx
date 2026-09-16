@@ -106,6 +106,70 @@ export function IconShield(props: IconProps) {
   );
 }
 
+export function IconSentry(props: IconProps) {
+  return (
+    <I {...props}>
+      <path d="m4 11 8-7 8 7" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M7 10.5V19h10v-8.5" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M10 19v-5h4v5" stroke="currentColor" strokeWidth="1.7" />
+    </I>
+  );
+}
+
+export function IconTrunk(props: IconProps) {
+  return (
+    <I {...props}>
+      <path
+        d="M5 14.5V11l2.2-3.2h9.6L19 11v3.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M4.5 14.5h15" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="7.5" cy="17.2" r="1.3" fill="currentColor" />
+      <circle cx="16.5" cy="17.2" r="1.3" fill="currentColor" />
+    </I>
+  );
+}
+
+export function IconFrunk(props: IconProps) {
+  return (
+    <I {...props}>
+      <path
+        d="M4.8 14.2 7 9.5h10l2.2 4.7H4.8Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M7.2 9.5 8.4 6.8h7.2l1.2 2.7" stroke="currentColor" strokeWidth="1.7" />
+    </I>
+  );
+}
+
+export function IconChargePort(props: IconProps) {
+  return (
+    <I {...props}>
+      <rect x="7" y="5" width="10" height="14" rx="2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M12 9v4M10.2 12.2 12 14.2l1.8-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </I>
+  );
+}
+
+export function IconCarOutline(props: IconProps) {
+  return (
+    <I {...props}>
+      <path
+        d="M8 16.5 7 12l2-4h6l2 4-1 4.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.2" cy="16.8" r="1.15" fill="currentColor" />
+      <circle cx="15.8" cy="16.8" r="1.15" fill="currentColor" />
+    </I>
+  );
+}
+
 export function IconApps(props: IconProps) {
   return (
     <I {...props}>

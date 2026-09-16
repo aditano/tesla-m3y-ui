@@ -67,6 +67,8 @@ test.describe("visual QA harness", () => {
   test("captures parked home", async ({ page }) => {
     await capture(page, "parked-home");
     await expect(page.getByRole("button", { name: "P", exact: true })).toHaveClass(/on/);
+    await expect(page.getByText("TRUNK", { exact: true })).toBeVisible();
+    await expect(page.getByTitle("Passenger airbag on")).toBeVisible();
     await expect(page.getByLabel("Controls")).toHaveCount(0);
   });
 

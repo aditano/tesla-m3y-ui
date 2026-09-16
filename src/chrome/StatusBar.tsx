@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useVehicle } from "../state/store";
+import { isParkedFullscreen } from "../viz/layout";
 import {
   IconBattery,
   IconBluetooth,
@@ -7,7 +8,7 @@ import {
   IconGear,
   IconLock,
   IconPerson,
-  IconShield,
+  IconSentry,
   IconUnlock,
   IconWifi,
 } from "./Icons";
@@ -32,20 +33,74 @@ export function StatusBar() {
   const flags = useVehicle((s) => s.flags);
   const patchFlags = useVehicle((s) => s.patchFlags);
   const patchUi = useVehicle((s) => s.patchUi);
+  const gear = useVehicle((s) => s.gear);
+  const phase = useVehicle((s) => s.phase);
+  const parked = isParkedFullscreen(gear, phase);
   const energyAsPercent = flags.energyAsPercent;
   const range = energyAsPercent ? "82%" : "278 mi";
+
+  const openControls = () => patchUi({ controlsOpen: true, appsOpen: false, climateOpen: false });
+
+  if (parked) {
+    return (
+      <header className="status-bar parked">
+        <div className="status-left">
+          <button
+            className="status-icon"
+            title={flags.locked ? "Lock" : "Unlock"}
+            onClick={() => patchFlags({ locked: !flags.locked })}
+          >
+            {flags.locked ? <IconLock /> : <IconUnlock />}
+          </button>
+          <button className="status-profile" title="Driver profile" onClick={openControls}>
+            <IconPerson />
+            <span>Driver</span>
+          </button>
+          <button
+            className={`status-icon ${flags.sentry ? "warn" : ""}`}
+            title="Sentry Mode"
+            onClick={() => patchFlags({ sentry: !flags.sentry })}
+          >
+            <IconSentry />
+          </button>
+          {flags.wifi ? (
+            <span className="status-icon" title="Wi-Fi">
+              <IconWifi />
+            </span>
+          ) : null}
+        </div>
+        <div className="status-center">
+          <span className="status-time">{time}</span>
+          <span className="status-temp">72°</span>
+        </div>
+        <div className="status-right">
+          <span className="airbag-badge" title="Passenger airbag on">
+            <b>PASSENGER</b> AIRBAG ON
+          </span>
+          <button
+            className="battery-chip"
+            title="Toggle energy display"
+            onClick={() => patchFlags({ energyAsPercent: !energyAsPercent })}
+          >
+            <IconBattery />
+            <span className="range-label">{range}</span>
+          </button>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="status-bar">
       <div className="status-left">
-        <button
-          className="status-icon"
-          title="Controls"
-          onClick={() => patchUi({ controlsOpen: true, appsOpen: false, climateOpen: false })}
-        >
+        <button className="status-icon" title="Controls" onClick={openControls}>
           <IconGear />
         </button>
-        <button className="status-icon" title="Driver profile" onClick={() => patchUi({ controlsOpen: true, controlsTab: "quick" })}>
+        <button
+          className="status-icon"
+          title="Driver profile"
+          onClick={() => patchUi({ controlsOpen: true, controlsTab: "quick" })}
+        >
           <IconPerson />
         </button>
         <button
@@ -53,7 +108,7 @@ export function StatusBar() {
           title="Sentry Mode"
           onClick={() => patchFlags({ sentry: !flags.sentry })}
         >
-          <IconShield />
+          <IconSentry />
         </button>
         {flags.bluetooth ? (
           <span className="status-icon" title="Bluetooth">

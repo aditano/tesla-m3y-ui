@@ -13,13 +13,15 @@ export type CarMaterialKind =
   | "rim"
   | "other";
 
-const PAINT = new Color("#2a2d33");
-const CHROME = new Color("#c5ccd6");
-const RUBBER = new Color("#111114");
-const PLASTIC = new Color("#1a1b1e");
-const GLASS = new Color("#8aa0b8");
-const CALIPER = new Color("#b10e1e");
-const INTERIOR = new Color("#16171a");
+/** Ultra Red–like albedo. CC-BY allows material tint; mesh is still David_Holiday. */
+export const PAINT_NATA_RED = "#8c151c";
+const CHROME = new Color("#b8c0c8");
+const RUBBER = new Color("#0c0c0e");
+const PLASTIC = new Color("#141518");
+const GLASS = new Color("#12161c");
+const CALIPER = new Color("#c4121a");
+const INTERIOR = new Color("#121316");
+const RIM = new Color("#1a1c20");
 
 export function classifyCarMaterial(name: string): CarMaterialKind {
   const n = name.toLowerCase().replace(/\s+/g, "_");
@@ -53,85 +55,100 @@ export function classifyCarMaterial(name: string): CarMaterialKind {
   return "other";
 }
 
-function physical(kind: CarMaterialKind, lit: boolean, parked: boolean): MeshPhysicalMaterial {
+function physical(
+  kind: CarMaterialKind,
+  lit: boolean,
+  parked: boolean,
+  paintHex: string,
+): MeshPhysicalMaterial {
   switch (kind) {
     case "paint":
       return new MeshPhysicalMaterial({
-        color: PAINT,
-        metalness: 0.86,
-        roughness: 0.28,
+        color: new Color(paintHex),
+        metalness: 0.62,
+        roughness: 0.22,
         clearcoat: 1,
-        clearcoatRoughness: 0.06,
-        envMapIntensity: 1.35,
-        sheen: 0.35,
-        sheenColor: new Color("#6a7a90"),
+        clearcoatRoughness: 0.035,
+        envMapIntensity: parked ? 1.55 : 1.15,
+        sheen: 0.22,
+        sheenColor: new Color("#4a1518"),
+        sheenRoughness: 0.42,
       });
     case "chrome":
-    case "rim":
       return new MeshPhysicalMaterial({
         color: CHROME,
         metalness: 1,
-        roughness: 0.16,
-        envMapIntensity: 1.35,
+        roughness: 0.12,
+        envMapIntensity: 1.45,
+      });
+    case "rim":
+      return new MeshPhysicalMaterial({
+        color: RIM,
+        metalness: 0.92,
+        roughness: 0.38,
+        envMapIntensity: 0.85,
       });
     case "glass":
       return new MeshPhysicalMaterial({
         color: GLASS,
-        metalness: 0.05,
-        roughness: 0.02,
+        metalness: 0.08,
+        roughness: 0.04,
         transparent: true,
-        opacity: 0.22,
-        transmission: 0.55,
-        thickness: 0.45,
-        envMapIntensity: 1.6,
+        opacity: parked ? 0.78 : 0.55,
+        transmission: parked ? 0.12 : 0.35,
+        thickness: 0.55,
+        envMapIntensity: 1.25,
+        ior: 1.45,
       });
     case "headlight":
       return new MeshPhysicalMaterial({
-        color: lit ? "#f7fbff" : "#d7dee8",
-        emissive: lit ? new Color("#eef6ff") : new Color("#000000"),
-        emissiveIntensity: lit ? 3.4 : 0.05,
-        metalness: 0.2,
-        roughness: 0.12,
+        color: lit && !parked ? "#f7fbff" : "#c5ccd4",
+        emissive: lit && !parked ? new Color("#eef6ff") : new Color("#1a1c20"),
+        emissiveIntensity: lit && !parked ? 3.4 : parked ? 0.12 : 0.05,
+        metalness: 0.18,
+        roughness: 0.1,
         transparent: true,
-        opacity: 0.92,
+        opacity: 0.9,
       });
     case "tail":
       return new MeshPhysicalMaterial({
-        color: "#7a1218",
-        emissive: new Color(parked ? "#ff2a2a" : "#5a0008"),
-        emissiveIntensity: parked ? 2.4 : 0.45,
-        metalness: 0.25,
-        roughness: 0.28,
+        color: "#5a0c10",
+        emissive: new Color(parked ? "#d41822" : "#5a0008"),
+        emissiveIntensity: parked ? 0.55 : 0.45,
+        metalness: 0.3,
+        roughness: 0.32,
       });
     case "rubber":
       return new MeshPhysicalMaterial({
         color: RUBBER,
-        metalness: 0.04,
-        roughness: 0.78,
+        metalness: 0.02,
+        roughness: 0.88,
       });
     case "plastic":
       return new MeshPhysicalMaterial({
         color: PLASTIC,
-        metalness: 0.08,
-        roughness: 0.55,
+        metalness: 0.06,
+        roughness: 0.58,
       });
     case "caliper":
       return new MeshPhysicalMaterial({
         color: CALIPER,
-        metalness: 0.35,
-        roughness: 0.4,
+        metalness: 0.42,
+        roughness: 0.32,
+        clearcoat: 0.55,
+        clearcoatRoughness: 0.2,
       });
     case "interior":
       return new MeshPhysicalMaterial({
         color: INTERIOR,
-        metalness: 0.05,
-        roughness: 0.7,
+        metalness: 0.04,
+        roughness: 0.74,
       });
     case "other":
       return new MeshPhysicalMaterial({
-        color: "#2a2c31",
-        metalness: 0.2,
-        roughness: 0.5,
+        color: paintHex,
+        metalness: 0.45,
+        roughness: 0.4,
       });
     default: {
       const _exhaustive: never = kind;
@@ -140,7 +157,12 @@ function physical(kind: CarMaterialKind, lit: boolean, parked: boolean): MeshPhy
   }
 }
 
-export function applyCarMaterials(root: Object3D, lit: boolean, parked: boolean): void {
+export function applyCarMaterials(
+  root: Object3D,
+  lit: boolean,
+  parked: boolean,
+  paintHex: string = PAINT_NATA_RED,
+): void {
   root.traverse((obj) => {
     if (!(obj instanceof Mesh)) return;
     obj.castShadow = true;
@@ -149,7 +171,7 @@ export function applyCarMaterials(root: Object3D, lit: boolean, parked: boolean)
     const next = mats.map((mat) => {
       const name = (mat as MeshStandardMaterial).name || obj.name || "";
       const kind = classifyCarMaterial(name);
-      const upgraded = physical(kind, lit, parked);
+      const upgraded = physical(kind, lit, parked, paintHex);
       upgraded.name = name;
       return upgraded;
     });

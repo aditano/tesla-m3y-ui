@@ -23,10 +23,13 @@ the same Model 3 glTF used by [wass08/r3f-3d-slideshow](https://github.com/wass0
 (Wawa Sensei), which credits the identical Sketchfab source. Extra slideshow props
 that may exist in that packaging (speakers, tire debris) are **not rendered**.
 
-Runtime: Three.js `GLTFLoader` with the bundled glTF Draco decoder, PBR materials
-retuned for a light parked studio (paint clearcoat, glass, chrome, lights). Hit
-volumes for frunk, trunk, charge port, and doors are original to this project.
-Draco decoder files under `public/draco/` come from Three.js examples (Apache-2.0).
+Runtime: Three.js `GLTFLoader` with the bundled glTF Draco decoder. PBR materials
+are retuned for a light parked studio (nata-like Ultra Red tint, clearcoat paint,
+dark glass, gunmetal wheels, red calipers). CC-BY-4.0 allows this adaptation;
+the mesh is still David_Holiday’s. Hit volumes for frunk, trunk, charge port, and
+doors are original to this project. Draco decoder files under `public/draco/`
+come from Three.js examples (Apache-2.0). The Sketchfab mesh is the fidelity
+ceiling — it is not Tesla’s viz-grade asset.
 
 ## Fonts
 

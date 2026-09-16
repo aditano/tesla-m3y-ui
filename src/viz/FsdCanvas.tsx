@@ -6,7 +6,7 @@ import {
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, type ReactNode } from "react";
 import type { Group } from "three";
 import { ACESFilmicToneMapping, SRGBColorSpace, Vector3 } from "three";
 import { useVehicle } from "../state/store";
@@ -14,49 +14,50 @@ import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
 import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
+import { IconChargePort, IconFrunk, IconTrunk } from "../chrome/Icons";
 
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   return (
     <>
-      <color attach="background" args={["#e7ebf0"]} />
-      <fog attach="fog" args={["#e7ebf0", 12, 28]} />
-      <PerspectiveCamera makeDefault fov={28} position={[-6.15, 1.32, 4.85]} near={0.1} far={80} />
-      <ambientLight intensity={0.62} />
-      <hemisphereLight args={["#f4f7fb", "#c5ccd4", 0.85]} />
+      <color attach="background" args={["#eef0f3"]} />
+      <fog attach="fog" args={["#eef0f3", 16, 34]} />
+      <PerspectiveCamera makeDefault fov={30} position={[-4.35, 5.35, -6.55]} near={0.1} far={80} />
+      <ambientLight intensity={0.92} />
+      <hemisphereLight args={["#ffffff", "#d4d7de", 1.05]} />
+      <directionalLight position={[-5.4, 8.6, -2.2]} intensity={1.15} color="#ffffff" />
+      <directionalLight position={[4.8, 3.4, 3.2]} intensity={0.32} color="#dfe4ec" />
       <spotLight
-        position={[-3.2, 8.2, 5.4]}
-        angle={0.42}
-        penumbra={0.95}
-        intensity={70}
+        position={[-1.2, 9.4, -4.2]}
+        angle={0.72}
+        penumbra={1}
+        intensity={22}
         castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-bias={-0.00015}
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0002}
       />
-      <spotLight position={[6, 4.2, 2]} angle={0.6} penumbra={1} intensity={22} color="#dfe7f4" />
-      <directionalLight position={[2.2, 7, -4]} intensity={0.7} color="#ffffff" />
-      <Environment resolution={256} environmentIntensity={0.55}>
-        <Lightformer intensity={8} position={[0, 7, 1]} scale={[12, 1.4, 1]} form="rect" color="#ffffff" />
-        <Lightformer intensity={3} position={[-6, 2.4, 3]} scale={[5, 6, 1]} color="#cdd6e4" form="rect" />
-        <Lightformer intensity={2.6} position={[7, 1.2, -1]} scale={[3, 8, 1]} form="rect" color="#eef2f7" />
-        <Lightformer intensity={1.8} position={[0, 2, -8]} scale={[14, 6, 1]} color="#f7f9fc" form="rect" />
+      <Environment resolution={512} environmentIntensity={0.72}>
+        <Lightformer intensity={6.5} position={[0, 8, 0]} scale={[16, 2.2, 1]} form="rect" color="#ffffff" />
+        <Lightformer intensity={2.4} position={[-7, 2.8, -2]} scale={[6, 8, 1]} color="#e4e8ee" form="rect" />
+        <Lightformer intensity={2.1} position={[7, 2.2, 1]} scale={[4, 9, 1]} form="rect" color="#f4f6f8" />
+        <Lightformer intensity={1.6} position={[0, 3, 8]} scale={[14, 6, 1]} color="#f7f8fa" form="rect" />
       </Environment>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[48, 48]} />
-        <meshStandardMaterial color="#e7ebf0" roughness={0.92} metalness={0} />
+        <meshStandardMaterial color="#eef0f3" roughness={0.96} metalness={0} />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.22, 0]} position={[0, 0, 0.08]}>
-        <Model3 scale={1.12} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.18, 0]} position={[0, 0, 0.04]}>
+        <Model3 scale={1.08} />
       </group>
-      <ContactShadows opacity={0.28} scale={16} blur={2.6} far={8} resolution={1024} color="#8b919a" />
+      <ContactShadows opacity={0.18} scale={18} blur={3.4} far={9} resolution={1024} color="#8a8588" />
       <OrbitControls
         enablePan={false}
-        minDistance={5.1}
-        maxDistance={9.2}
+        minDistance={7.4}
+        maxDistance={11.2}
         autoRotate={false}
-        minPolarAngle={1.18}
-        maxPolarAngle={1.38}
-        target={[0, 0.52, 0]}
+        minPolarAngle={0.88}
+        maxPolarAngle={1.08}
+        target={[0, 0.48, -0.22]}
       />
     </>
   );
@@ -130,24 +131,53 @@ function ParkedHud() {
   const patchFlags = useVehicle((s) => s.patchFlags);
   return (
     <div className="parked-callouts">
-      <button
-        className={`parked-chip ${flags.frunkOpen ? "on" : ""}`}
-        onClick={() => patchFlags({ frunkOpen: !flags.frunkOpen })}
-      >
-        {flags.frunkOpen ? "Frunk open" : "Open Frunk"}
+      <CalloutCard
+        className="frunk"
+        kicker="FRUNK"
+        open={flags.frunkOpen}
+        icon={<IconFrunk />}
+        onToggle={() => patchFlags({ frunkOpen: !flags.frunkOpen })}
+      />
+      <CalloutCard
+        className="trunk"
+        kicker="TRUNK"
+        open={flags.trunkOpen}
+        icon={<IconTrunk />}
+        onToggle={() => patchFlags({ trunkOpen: !flags.trunkOpen })}
+      />
+      <CalloutCard
+        className="charge"
+        kicker="CHARGE"
+        open={flags.chargePortOpen}
+        icon={<IconChargePort />}
+        onToggle={() => patchFlags({ chargePortOpen: !flags.chargePortOpen })}
+      />
+    </div>
+  );
+}
+
+function CalloutCard({
+  className,
+  kicker,
+  open,
+  icon,
+  onToggle,
+}: {
+  className: string;
+  kicker: string;
+  open: boolean;
+  icon: ReactNode;
+  onToggle: () => void;
+}) {
+  return (
+    <div className={`parked-callout ${className} ${open ? "on" : ""}`}>
+      <span className="parked-callout-kicker">{kicker}</span>
+      <button type="button" className="parked-callout-card" onClick={onToggle}>
+        {icon}
+        <span>{open ? "Close" : "Open"}</span>
       </button>
-      <button
-        className={`parked-chip ${flags.trunkOpen ? "on" : ""}`}
-        onClick={() => patchFlags({ trunkOpen: !flags.trunkOpen })}
-      >
-        {flags.trunkOpen ? "Trunk open" : "Open Trunk"}
-      </button>
-      <button
-        className={`parked-chip ${flags.chargePortOpen ? "on" : ""}`}
-        onClick={() => patchFlags({ chargePortOpen: !flags.chargePortOpen })}
-      >
-        {flags.chargePortOpen ? "Charge port" : "Charge"}
-      </button>
+      <span className="parked-callout-line" aria-hidden="true" />
+      <span className="parked-callout-dot" aria-hidden="true" />
     </div>
   );
 }
@@ -202,7 +232,7 @@ export function FsdCanvas() {
           antialias: true,
           preserveDrawingBuffer: frozen,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1.08,
+          toneMappingExposure: 1.12,
           outputColorSpace: SRGBColorSpace,
         }}
         camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}
