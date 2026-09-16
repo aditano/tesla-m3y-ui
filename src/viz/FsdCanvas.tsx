@@ -1,13 +1,12 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   ContactShadows,
-  Environment,
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import type { Group } from "three";
-import { ACESFilmicToneMapping, CanvasTexture, SRGBColorSpace, Vector3 } from "three";
+import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, SRGBColorSpace, Vector3 } from "three";
 import { useVehicle } from "../state/store";
 import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
@@ -38,10 +37,29 @@ function studioFloorMap(): CanvasTexture {
   return tex;
 }
 
+function ParkedEnvironment() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  useLayoutEffect(() => {
+    const source = createCandyStudioEnv();
+    const pmrem = new PMREMGenerator(gl);
+    pmrem.compileEquirectangularShader();
+    const rt = pmrem.fromEquirectangular(source);
+    scene.environment = rt.texture;
+    scene.environmentIntensity = PARKED_STUDIO.envIntensity;
+    source.dispose();
+    return () => {
+      if (scene.environment === rt.texture) scene.environment = null;
+      rt.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+  return null;
+}
+
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   const floorMap = useMemo(() => studioFloorMap(), []);
-  const envMap = useMemo(() => createCandyStudioEnv(), []);
   const { camera, car, shadow, floor, background } = PARKED_STUDIO;
   return (
     <>
@@ -54,10 +72,11 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.38} />
-      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.26]} />
-      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.42} color="#f6f5f2" />
-      <Environment map={envMap} environmentIntensity={PARKED_STUDIO.envIntensity} />
+      <ambientLight intensity={0.4} />
+      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.28]} />
+      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.4} color="#f6f5f2" />
+      <directionalLight position={[4.2, 4.6, -1.55]} intensity={1.15} color="#ffffff" />
+      <ParkedEnvironment />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
         <meshPhysicalMaterial

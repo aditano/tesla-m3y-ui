@@ -110,6 +110,22 @@ Still: `parked-home.png` after studio-preset Lightformers (8 frames) and rear-ri
 
 **Worst remaining:** C-pillar streak. Next: drop the HDRI wrap and paint a static equirect with a thin overhead strip.
 
+## Iteration 7 — 2026-09-16 (painted equirect, `50010cc`)
+
+Still: `parked-home.png` after swapping the HDRI for a static strip env via `<Environment map={dataTex} />`.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | FAIL | Flat again. The DataTexture never became a working PMREM env, so candy clearcoat had nothing to reflect. |
+| Glass | PARTIAL | Roof stays dark; still no laminate sparkle. |
+| Wheels | PARTIAL | Unchanged. |
+| Proportions | PARTIAL | Same 3/4 as iter 6. |
+| Lighting | PARTIAL | Oval shadow holds. Floor gloss gone with the missing env. |
+| Leaders | PARTIAL | TRUNK still floats with a long vertical. |
+
+**Worst FAIL:** env map not bound. Next: `PMREMGenerator.fromEquirectangular` on the painted studio, keep a fill light so we cannot regress to clay.
+
+
 
 
 
