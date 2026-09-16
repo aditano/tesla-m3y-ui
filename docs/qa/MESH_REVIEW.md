@@ -80,6 +80,21 @@ Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the
 
 **Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
 
+## Iteration 5 — 2026-09-16 (hub-anchored 5-cover aero remesh, working tree)
+
+Still: `parked-home.png` after replacing stock wheel meshes at each `wheel`/`wheel.N` parent with side-aware 5-cover aero groups, dark cavity blockers, and subtler calipers.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Candy coat and studio highlights remain stable vs iter 4; still flatter/darker than nata around the C-pillar streak. |
+| Glass | PARTIAL | Cabin blocker still prevents tunnel-through; side glass remains too open vs nata’s deeper laminate tint. |
+| Wheels | PARTIAL | All four hub parents now carry a stable aero wheel (no empty front-left hole, no red inner cavity). Rear-right reads closer to nata’s 5-cover look, but front-left still favors sidewall silhouette over visible cover at this camera. |
+| Proportions | PARTIAL | Rear-right 3/4 pose remains aligned; wheel-well/fender cutout topology still limits a true nata-like wrap around the front-left arch. |
+| Lighting | PARTIAL | White studio and contact shadow remain close enough for wheel validation; still lighter than nata’s denser rear shadow oval. |
+| Leaders | PARTIAL | TRUNK pin remains on decklid but card still intersects backlight space. |
+
+**Ceiling (wheels):** hub parenting + bbox-centered placement is now stable across parked/route QA captures, but strict 1:1 aero read from this angle is constrained by the low-poly wheel-well/fender geometry. Without a higher-fidelity CC-BY wheel-arch mesh, further material-only tweaks are likely diminishing returns.
+
 
 
 

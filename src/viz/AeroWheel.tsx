@@ -13,15 +13,15 @@ import {
 
 const RUBBER = new Color("#050506");
 const SIDEWALL = new Color("#0a0a0c");
-const RIM = new Color("#14161a");
-const COVER = new Color("#1a1d22");
+const RIM = new Color("#14171b");
+const COVER = new Color("#1d2127");
 const HUB = new Color("#0c0e10");
-const ROTOR = new Color("#7c828a");
-const CALIPER = new Color("#b01018");
+const ROTOR = new Color("#4e555d");
+const CALIPER = new Color("#565b64");
 
 function petalGeometry(inner: number, outer: number, halfAngle: number, depth: number): ExtrudeGeometry {
   const shape = new Shape();
-  const steps = 10;
+  const steps = 16;
   for (let i = 0; i <= steps; i++) {
     const t = -halfAngle + (2 * halfAngle * i) / steps;
     const x = Math.cos(t) * outer;
@@ -54,16 +54,18 @@ function phys(color: Color, extra: ConstructorParameters<typeof MeshPhysicalMate
 }
 
 /** Original 5-cover aero wheel — not a Tesla asset. Sized for a Model 3 18" setup. */
-export function createAeroWheel(radius = 0.338, width = 0.235): Group {
+export function createAeroWheel(radius = 0.338, width = 0.235, side: "L" | "R" = "R"): Group {
   const rimR = radius * 0.56;
+  const sideSign = side === "L" ? -1 : 1;
   const group = new Group();
   group.name = "aero-wheel";
 
   const tire = new Mesh(
-    new TorusGeometry(radius * 0.84, width * 0.42, 24, 64),
+    new TorusGeometry(radius * 0.84, width * 0.42, 30, 88),
     phys(RUBBER, { roughness: 0.96, metalness: 0 }),
   );
   tire.rotation.y = Math.PI / 2;
+  tire.scale.y = 0.95;
   tire.castShadow = true;
   tire.receiveShadow = true;
   group.add(tire);
@@ -78,41 +80,61 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
 
   const rim = new Mesh(
     new CylinderGeometry(rimR * 1.02, rimR * 0.96, width * 0.28, 64),
-    phys(RIM, { metalness: 0.9, roughness: 0.26, clearcoat: 0.28, clearcoatRoughness: 0.22 }),
+    phys(RIM, { metalness: 0.38, roughness: 0.64, clearcoat: 0.08, clearcoatRoughness: 0.62 }),
   );
   rim.rotation.z = Math.PI / 2;
   rim.castShadow = true;
   group.add(rim);
 
-  const petal = petalGeometry(rimR * 0.28, rimR * 0.98, 0.42, width * 0.11);
-  const coverMat = phys(COVER, { metalness: 0.72, roughness: 0.38, clearcoat: 0.18, clearcoatRoughness: 0.4 });
+  const facePlate = new Mesh(
+    new CylinderGeometry(rimR * 0.98, rimR * 0.98, width * 0.042, 64),
+    phys(new Color("#171b20"), { metalness: 0.32, roughness: 0.66 }),
+  );
+  facePlate.rotation.z = Math.PI / 2;
+  facePlate.position.x = sideSign * width * 0.34;
+  group.add(facePlate);
+
+  const petal = petalGeometry(rimR * 0.34, rimR * 0.99, 0.62, width * 0.105);
+  const coverMat = phys(COVER, { metalness: 0.28, roughness: 0.62, clearcoat: 0.05, clearcoatRoughness: 0.72 });
   for (let i = 0; i < 5; i++) {
     const cover = new Mesh(petal, coverMat);
     cover.rotation.x = (i * Math.PI * 2) / 5;
+    cover.position.x = sideSign * width * 0.37;
     cover.castShadow = true;
     group.add(cover);
   }
 
+  const cavityBlocker = new Mesh(
+    new CylinderGeometry(rimR * 0.9, rimR * 0.9, width * 0.12, 48),
+    phys(new Color("#090b0d"), { roughness: 0.9, metalness: 0.04 }),
+  );
+  cavityBlocker.rotation.z = Math.PI / 2;
+  cavityBlocker.position.x = -sideSign * width * 0.2;
+  group.add(cavityBlocker);
+
   const hub = new Mesh(
-    new CylinderGeometry(rimR * 0.24, rimR * 0.24, width * 0.34, 32),
-    phys(HUB, { metalness: 0.78, roughness: 0.32 }),
+    new CylinderGeometry(rimR * 0.22, rimR * 0.22, width * 0.12, 32),
+    phys(HUB, { metalness: 0.4, roughness: 0.54 }),
   );
   hub.rotation.z = Math.PI / 2;
+  hub.position.x = sideSign * width * 0.4;
   hub.castShadow = true;
   group.add(hub);
 
   const rotor = new Mesh(
-    new CylinderGeometry(rimR * 0.48, rimR * 0.48, 0.018, 40),
-    phys(ROTOR, { metalness: 0.88, roughness: 0.38 }),
+    new CylinderGeometry(rimR * 0.52, rimR * 0.52, 0.02, 40),
+    phys(ROTOR, { metalness: 0.62, roughness: 0.58 }),
   );
   rotor.rotation.z = Math.PI / 2;
+  rotor.position.x = -sideSign * width * 0.22;
   group.add(rotor);
 
   const caliper = new Mesh(
-    new BoxGeometry(0.07, 0.11, 0.15),
-    phys(CALIPER, { metalness: 0.22, roughness: 0.4, clearcoat: 0.35 }),
+    new BoxGeometry(0.052, 0.1, 0.145),
+    phys(CALIPER, { metalness: 0.38, roughness: 0.46, clearcoat: 0.14 }),
   );
-  caliper.position.set(rimR * 0.46, 0, 0);
+  caliper.position.set(-sideSign * width * 0.25, rimR * 0.2, -rimR * 0.28);
+  caliper.rotation.x = 0.18;
   caliper.castShadow = true;
   group.add(caliper);
 
@@ -122,10 +144,12 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
 export function AeroWheel({
   radius = 0.338,
   width = 0.235,
+  side = "R",
 }: {
   radius?: number;
   width?: number;
+  side?: "L" | "R";
 }): ReactNode {
-  const wheel = useMemo(() => createAeroWheel(radius, width), [radius, width]);
+  const wheel = useMemo(() => createAeroWheel(radius, width, side), [radius, side, width]);
   return <primitive object={wheel} />;
 }

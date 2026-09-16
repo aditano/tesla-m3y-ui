@@ -11,6 +11,10 @@ export type WheelHub = {
 
 const WHEEL_PARENT = /^wheel(?:\.\d+)?$/i;
 const CALIPER_PARENT = /^cal(?:\.\d+)?$/i;
+const AERO_RADIUS_M = 0.365;
+const AERO_WIDTH_M = 0.238;
+const HUB_OUTBOARD_X = 0.15;
+const HUB_LIFT_Y = 0.012;
 
 export function isStockWheelPart(name: string): boolean {
   return WHEEL_PARENT.test(name) || CALIPER_PARENT.test(name) || /^wheel/i.test(name) || /^cal(?:\.|_|\b)/i.test(name);
@@ -44,14 +48,17 @@ function localWheelBox(parent: Object3D): Box3 {
 
 function localWheelSize(parent: Object3D): { radius: number; width: number; center: Vector3 } {
   const box = localWheelBox(parent);
+  if (box.isEmpty()) {
+    return { radius: 0.34, width: 0.22, center: new Vector3() };
+  }
   const size = box.getSize(new Vector3());
   const center = box.getCenter(new Vector3());
   const radius = Math.min(0.42, Math.max(0.32, Math.max(size.y, size.z) * 0.5));
-  const width = Math.min(0.3, Math.max(0.2, size.x));
+  const width = Math.min(0.3, Math.max(0.12, size.x));
   return { radius, width, center };
 }
 
-/** Hide stock discs/calipers and parent original aero wheels at the GLB hub nodes. */
+/** Hide stock discs/calipers and parent 5-cover aero wheels at GLB hub nodes. */
 export function replaceStockWheels(root: Object3D): WheelHub[] {
   root.updateMatrixWorld(true);
   const parents: Object3D[] = [];
@@ -67,17 +74,26 @@ export function replaceStockWheels(root: Object3D): WheelHub[] {
     const { center } = localWheelSize(parent);
     const world = new Vector3();
     parent.getWorldPosition(world);
-    const wheel = createAeroWheel(0.365, 0.245);
+    const side: "L" | "R" = center.x < 0 || (Math.abs(center.x) < 1e-4 && world.x < 0) ? "L" : "R";
+    const sideSign = side === "L" ? -1 : 1;
+    const wheel = createAeroWheel(AERO_RADIUS_M, AERO_WIDTH_M, side);
     wheel.position.copy(center);
-    wheel.position.x += (world.x < 0 ? -1 : 1) * 0.1;
-    wheel.position.y += 0.02;
+    wheel.position.x = sideSign * HUB_OUTBOARD_X;
+    wheel.position.y += HUB_LIFT_Y;
+    wheel.rotation.x = sideSign * 0.24;
+    wheel.userData.hubAnchor = {
+      from: parent.name,
+      side,
+      bboxCenter: [center.x, center.y, center.z] as const,
+    };
     parent.add(wheel);
+    const wheelWorld = parent.localToWorld(wheel.position.clone());
     hubs.push({
       id: parent.name.toLowerCase(),
-      position: [world.x, world.y, world.z],
-      radius: 0.365,
-      width: 0.245,
-      side: world.x < 0 ? "L" : "R",
+      position: [wheelWorld.x, wheelWorld.y, wheelWorld.z],
+      radius: AERO_RADIUS_M,
+      width: AERO_WIDTH_M,
+      side,
     });
   }
 
