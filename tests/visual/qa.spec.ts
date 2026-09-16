@@ -14,17 +14,46 @@ async function capture(page: import("@playwright/test").Page, scene: QaSceneId):
   const bezel = page.locator(".bezel");
   await expect(bezel).toBeVisible();
   await expect(page.locator(".shell")).toHaveAttribute("data-qa-scene", scene);
-  // Parked WebGL + MapLibre overlays can keep the bezel's box from ever
-  // reporting "stable", so crop a page screenshot instead of element.screenshot.
+  // Parked MapLibre + WebGL overlays can stall Playwright's element-stability
+  // wait, so crop a page screenshot instead of locator.screenshot.
   const box = await bezel.evaluate((el) => {
     const r = el.getBoundingClientRect();
     return { x: r.x, y: r.y, width: r.width, height: r.height };
   });
   const x = Math.max(0, Math.floor(box.x));
   const y = Math.max(0, Math.floor(box.y));
+  // Chromium's compositor hangs on parked WebGL+MapLibre canvases. Blit them to
+  // images first (needs preserveDrawingBuffer on the QA path).
+  await page.evaluate(async () => {
+    const canvases = Array.from(document.querySelectorAll("canvas"));
+    const pending: Promise<void>[] = [];
+    for (const canvas of canvases) {
+      let url = "";
+      try {
+        url = canvas.toDataURL("image/png");
+      } catch {
+        url = "";
+      }
+      if (!url || url === "data:,") continue;
+      const img = document.createElement("img");
+      img.alt = "";
+      const style = getComputedStyle(canvas);
+      img.style.cssText = `position:${style.position};inset:0;width:100%;height:100%;display:block;pointer-events:none;`;
+      pending.push(
+        new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = url;
+        }),
+      );
+      canvas.replaceWith(img);
+    }
+    await Promise.all(pending);
+  });
   await page.screenshot({
     path: path.join(OUT, `${scene}.png`),
-    animations: "disabled",
+    animations: "allow",
+    timeout: 15_000,
     clip: {
       x,
       y,

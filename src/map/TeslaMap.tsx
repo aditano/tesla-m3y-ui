@@ -118,6 +118,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
       zoom: 14.2,
       pitch: 0,
       attributionControl: { compact: true },
+      canvasContextAttributes: start.qa.frozen ? { preserveDrawingBuffer: true } : undefined,
     });
     const el = document.createElement("div");
     el.innerHTML = carSvg();

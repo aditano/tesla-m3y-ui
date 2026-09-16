@@ -189,6 +189,7 @@ export function FsdCanvas() {
   const phase = useVehicle((s) => s.phase);
   const gear = useVehicle((s) => s.gear);
   const route = useVehicle((s) => s.route);
+  const frozen = useVehicle((s) => s.qa.frozen);
   const parked = isParkedFullscreen(gear, phase);
   const driving = !parked && (phase === "fsd" || gear === "D" || gear === "N" || (phase === "disengaged" && Boolean(route)));
 
@@ -199,6 +200,7 @@ export function FsdCanvas() {
         dpr={[1, 1.6]}
         gl={{
           antialias: true,
+          preserveDrawingBuffer: frozen,
           toneMapping: ACESFilmicToneMapping,
           toneMappingExposure: 1.08,
           outputColorSpace: SRGBColorSpace,
