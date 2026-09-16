@@ -338,3 +338,50 @@ Still: `parked-home.png` after deeper Ultra Red, thinner C-pillar key, damped fl
 - **Wheels**: Still the weakest point. The rims are okay, but the geometry is just too simple. Without a new mesh, this is as good as it gets.
 
 **Score**: 8.5/10. The materials and UI are now vastly improved and approach the hyper-real bar. The only thing holding it back is the underlying low-poly geometry of the wheels.
+
+---
+
+# Reconciled result — 2026-09-16 (PRs 6–9 folded into PR 2)
+
+All four sibling lanes were merged into `cursor/parked-car-viz-typography-053e`
+(order 9 → 8 → 6 → 7). Conflicts were resolved for the best combined visual:
+
+- **Topology (PR 9):** the remeshed GLB with dark **wheel-well liner shells**
+  (no red inner-well cavity) and the **`SideGlass` split** (roof keeps
+  `Material.017`; near-vertical panes tint independently).
+- **Wheels (PR 8):** side-aware 5-cover **aero wheels + hub anchoring**
+  (`AeroWheel` + `wheelHubs`), no red caliper brick.
+- **Paint / glass / studio (PR 6):** **candy Ultra Red** (streak clearcoat,
+  no flake "glitter"), the `glassPanes` greenhouse split, and the blit-safe
+  `parkedStudio` PMREM env + RectAreaLight keys + deep contact shadow.
+- **Critic polish (PR 7):** the glassy-pill **leader/callout CSS**. PR 7's
+  `sunset` env and see-through/transmissive glass were intentionally dropped —
+  they fought PR 6's candy studio and PR 9's tinted laminate.
+
+## Regressions found while integrating (and fixed)
+
+1. **Black body.** PR 9's Catmull-Clark remesh ships near-zero UV islands, so
+   `computeTangents` produced NaN/zero tangents that collapsed PR 6's candy
+   clearcoat **normal-map** shading to unlit black on the whole body.
+   Fix: `ensureMeshTangents` now validates tangents and, when they are
+   degenerate, drops the tangent-space paint features (clearcoat normal map +
+   anisotropy) for that mesh only. Body is candy red again.
+2. **One aero wheel instead of four.** `GLTFLoader` sanitizes node names
+   (`wheel.001` → `wheel001`), so the dotted-only hub regex matched only the
+   first hub. Fix: match the sanitized form; all four corners now carry aero
+   wheels.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PASS-ish | Candy Ultra Red with a smooth studio sweep down the shoulder; no glitter, no black panels. On the remeshed body the tangent-space clearcoat *streak*/anisotropy micro-detail is dropped (degenerate UVs), so the sweep is a touch softer than PR 6 on the pre-remesh mesh — colour and gloss match. |
+| Glass | PARTIAL | Side/rear/roof read as dark tinted laminate (no chrome-white blow-out); near-side front pane keeps a nata-like reflection. |
+| Wheels | PARTIAL | Dark 5-cover aero on all four hubs, dark liner wells, no red caliper. Front wheels are largely occluded by the body from this rear-3/4 camera. |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata; creased character lines hold; low-poly side-mirror base + long front overhang remain the 27k-derived mesh ceiling. |
+| Lighting | PARTIAL | Candy studio + deep oval contact shadow, blit-safe (8/8 QA scenes capture). |
+| Leaders | PARTIAL | FRUNK/CHARGE attach cleanly; TRUNK card rides the long stem up toward empty studio but still grazes the roofline at this camera + mesh — the documented lane/mesh ceiling. |
+
+**Honest remaining gaps:** the tangent-space clearcoat streak is disabled on the
+remeshed body, the TRUNK leader can't reach fully-empty studio at this camera,
+and true panel-gap/side-mirror fidelity still needs a higher-poly Highland mesh
+that can't be fetched without a Sketchfab token. QA: `npm test` (30) +
+`npm run typecheck` + `npm run qa:screenshots` (8/8) all green.
