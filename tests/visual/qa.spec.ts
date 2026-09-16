@@ -86,7 +86,8 @@ test.describe("visual QA harness", () => {
   test("captures Controls open", async ({ page }) => {
     await capture(page, "controls");
     await expect(page.getByRole("dialog", { name: "Controls" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Quick Controls" })).toBeVisible();
+    await expect(page.getByPlaceholder("Search Settings")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Fold Mirrors/ })).toBeVisible();
   });
 
   test("captures climate open", async ({ page }) => {

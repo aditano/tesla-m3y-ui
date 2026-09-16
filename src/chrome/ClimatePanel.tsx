@@ -1,71 +1,94 @@
 import { useVehicle } from "../state/store";
+import { IconDefrostFront, IconDefrostRear, IconFan, IconSeat } from "./Icons";
+
+function displayTemp(tempF: number, celsius: boolean): string {
+  if (celsius) return `${Math.round(((tempF - 32) * 5) / 9)}°`;
+  return `${tempF}°`;
+}
 
 export function ClimatePanel() {
   const open = useVehicle((s) => s.ui.climateOpen);
   const climate = useVehicle((s) => s.climate);
+  const flags = useVehicle((s) => s.flags);
   const patchClimate = useVehicle((s) => s.patchClimate);
+  const patchFlags = useVehicle((s) => s.patchFlags);
   const patchUi = useVehicle((s) => s.patchUi);
+  const cycleSeat = useVehicle((s) => s.cycleSeat);
+  const celsius = !flags.temperatureF;
 
   if (!open) return null;
 
+  const setTemp = (next: number) => {
+    const clamped = Math.min(85, Math.max(59, next));
+    if (climate.split) {
+      patchClimate({ driverTempF: clamped, on: true });
+      return;
+    }
+    patchClimate({ driverTempF: clamped, passengerTempF: clamped, on: true, sync: true });
+  };
+
   return (
-    <div className="panel" role="dialog" aria-label="Climate">
-      <h3>Climate</h3>
-      <div className="climate-grid">
-        <div>
-          <button className="btn ghost" onClick={() => patchClimate({ driverTempF: climate.driverTempF - 1 })}>
-            −
+    <>
+      <button className="panel-scrim" aria-label="Close climate" onClick={() => patchUi({ climateOpen: false })} />
+      <div className="climate-sheet" role="dialog" aria-label="Climate">
+        <div className="climate-popup-row">
+          <button
+            type="button"
+            className={`clim-tile ${climate.on ? "on" : ""}`}
+            title="Main climate"
+            onClick={() => patchClimate({ on: !climate.on, auto: !climate.on ? true : climate.auto })}
+          >
+            <IconFan width={22} height={22} />
           </button>
-          <div className="big-temp">{climate.on ? `${climate.driverTempF}°` : "Off"}</div>
-          <button className="btn ghost" onClick={() => patchClimate({ driverTempF: climate.driverTempF + 1 })}>
-            +
+          <button
+            type="button"
+            className={`clim-tile seat ${climate.seats.fl ? "on" : ""}`}
+            title="Front seats"
+            onClick={() => cycleSeat("fl")}
+          >
+            <IconSeat width={22} height={22} />
+            <span>{climate.seats.fl ? "Heat" : "Off"}</span>
+          </button>
+          <button
+            type="button"
+            className={`clim-tile ${climate.defrostFront ? "on" : ""}`}
+            title="Front defrost"
+            onClick={() => patchClimate({ defrostFront: !climate.defrostFront, on: true })}
+          >
+            <IconDefrostFront width={22} height={22} />
+          </button>
+          <button
+            type="button"
+            className={`clim-tile ${climate.defrostRear ? "on" : ""}`}
+            title="Rear defrost"
+            onClick={() => {
+              patchClimate({ defrostRear: !climate.defrostRear });
+              patchFlags({ mirrorHeat: !climate.defrostRear });
+            }}
+          >
+            <IconDefrostRear width={22} height={22} />
           </button>
         </div>
-        <div className="tile-grid">
-          <button className={`tile ${climate.on ? "on" : ""}`} onClick={() => patchClimate({ on: !climate.on })}>
-            <strong>Power</strong>
-            <span>{climate.on ? "On" : "Off"}</span>
-          </button>
-          <button className={`tile ${climate.auto ? "on" : ""}`} onClick={() => patchClimate({ auto: !climate.auto })}>
-            <strong>Auto</strong>
-            <span>Climate</span>
-          </button>
+        <div className="climate-slider-row">
+          <input
+            className="temp-slider"
+            type="range"
+            min={59}
+            max={82}
+            value={climate.driverTempF}
+            onChange={(e) => setTemp(Number(e.target.value))}
+            aria-label="Cabin temperature"
+          />
+          <span className="temp-readout">{climate.on ? displayTemp(climate.driverTempF, celsius) : "Off"}</span>
           <button
-            className={`tile ${climate.defrostFront ? "on" : ""}`}
-            onClick={() => patchClimate({ defrostFront: !climate.defrostFront })}
+            type="button"
+            className={`split-btn ${climate.split ? "on" : ""}`}
+            onClick={() => patchClimate({ split: !climate.split, sync: climate.split })}
           >
-            <strong>Front defrost</strong>
-            <span>Windshield</span>
-          </button>
-          <button
-            className={`tile ${climate.defrostRear ? "on" : ""}`}
-            onClick={() => patchClimate({ defrostRear: !climate.defrostRear })}
-          >
-            <strong>Rear defrost</strong>
-            <span>Glass</span>
-          </button>
-        </div>
-        <div>
-          <button
-            className="btn ghost"
-            onClick={() => patchClimate({ passengerTempF: climate.passengerTempF - 1, split: true })}
-          >
-            −
-          </button>
-          <div className="big-temp">{climate.passengerTempF}°</div>
-          <button
-            className="btn ghost"
-            onClick={() => patchClimate({ passengerTempF: climate.passengerTempF + 1, split: true })}
-          >
-            +
+            Split
           </button>
         </div>
       </div>
-      <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-        <button className="btn ghost" onClick={() => patchUi({ climateOpen: false })}>
-          Close
-        </button>
-      </div>
-    </div>
+    </>
   );
 }

@@ -150,13 +150,20 @@ export default function App() {
   const scene = useVehicle((s) => s.qa.scene);
   const gear = useVehicle((s) => s.gear);
   const phase = useVehicle((s) => s.phase);
+  const flags = useVehicle((s) => s.flags);
+  const controlsOpen = useVehicle((s) => s.ui.controlsOpen);
   const parked = isParkedFullscreen(gear, phase);
   const mini = useMiniMap(parked, vizRatio);
+  const appearance = flags.appearance === "light" ? "theme-light" : "theme-dark";
 
   return (
-    <div className="shell" data-qa-scene={scene ?? undefined}>
+    <div
+      className={`shell ${appearance} ${flags.textSize === "large" ? "text-lg" : ""} ${flags.screenClean ? "screen-clean" : ""} ${flags.reduceBlueLight ? "warm" : ""} ${controlsOpen ? "controls-open" : ""}`}
+      data-qa-scene={scene ?? undefined}
+      style={{ ["--viz-ratio" as string]: String(vizRatio) }}
+    >
       <QaReady />
-      <div className={`bezel ${parked ? "parked" : "driving"}`}>
+      <div className={`bezel ${parked ? "parked" : "driving"}`} style={{ filter: `brightness(${0.72 + flags.brightness / 280})` }}>
         <StatusBar />
         <div className="display-main">
           <DriveStrip />
@@ -188,6 +195,8 @@ export default function App() {
                 <RouteCard />
               </>
             ) : null}
+          </div>
+          <div className="chrome-layer">
             <ControlsOverlay />
             <ClimatePanel />
             <MediaPanel />

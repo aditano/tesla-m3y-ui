@@ -5,7 +5,7 @@ import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
 import { RouteCard } from "../chrome/RouteCard";
-import { IconCompass } from "../chrome/Icons";
+import { IconCompass, IconLocate } from "../chrome/Icons";
 import type { RoutePlan } from "../state/types";
 
 function carSvg(): string {
@@ -236,6 +236,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
       {compact ? null : (
         <div className="map-tools">
         <button
+          type="button"
           className={orientation === "heading" ? "on" : ""}
           title="Heading / North up"
           onClick={() =>
@@ -247,10 +248,11 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
         >
           <IconCompass />
         </button>
-        <button title="Recenter on car" onClick={() => patchUi({ tracking: true })}>
-          ⌖
+        <button type="button" title="Recenter on car" onClick={() => patchUi({ tracking: true })}>
+          <IconLocate />
         </button>
         <button
+          type="button"
           title="Use my location"
           onClick={() => {
             if (!navigator.geolocation) return;

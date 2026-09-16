@@ -1,4 +1,4 @@
-import { etaClock, formatDuration, formatMiles } from "../geo/polyline";
+import { etaClock, formatDistance, formatDuration } from "../geo/polyline";
 import { upcomingManeuverIndex } from "../geo/osrm";
 import { useVehicle } from "../state/store";
 import { IconArrive, IconStraight, IconTurnLeft, IconTurnRight } from "./Icons";
@@ -20,13 +20,13 @@ export function RouteCard() {
   const busy = useVehicle((s) => s.routeBusy);
   const err = useVehicle((s) => s.routeError);
   const frozen = useVehicle((s) => s.qa.frozen);
-  const startFsd = useVehicle((s) => s.startFsd);
+  const miles = useVehicle((s) => s.flags.unitsMph);
   const cancelNav = useVehicle((s) => s.cancelNav);
   const disengageFsd = useVehicle((s) => s.disengageFsd);
 
   if (busy) {
     return (
-      <aside className="route-card">
+      <aside className="route-card compact">
         <div className="route-head">
           <h3>Finding a route…</h3>
           <div className="busy">OpenStreetMap · OSRM</div>
@@ -37,7 +37,7 @@ export function RouteCard() {
 
   if (err && !route) {
     return (
-      <aside className="route-card">
+      <aside className="route-card compact">
         <div className="route-head">
           <h3>Navigation</h3>
           <div className="error-chip">{err}</div>
@@ -49,10 +49,10 @@ export function RouteCard() {
   if (phase === "arrived" && dest) {
     return (
       <aside className="arrival">
-        <h3 style={{ margin: "0 0 6px" }}>You have arrived</h3>
+        <h3>You have arrived</h3>
         <div>{dest.name}</div>
         <div className="route-actions" style={{ padding: "12px 0 0" }}>
-          <button className="btn ghost" onClick={cancelNav}>
+          <button type="button" className="btn ghost" onClick={cancelNav}>
             End
           </button>
         </div>
@@ -68,6 +68,7 @@ export function RouteCard() {
       : route.durationS * (pose.remainingM / Math.max(1, route.distanceM));
   const idx = upcomingManeuverIndex(pose.traveledM, route.maneuvers);
   const etaNow = frozen ? new Date(2026, 8, 16, 16, 20, 0) : new Date();
+  const upcoming = route.maneuvers.slice(idx, idx + 4);
 
   return (
     <aside className="route-card">
@@ -76,34 +77,25 @@ export function RouteCard() {
         <div className="eta-row">
           <span>{etaClock(remainingS, etaNow)}</span>
           <span>{formatDuration(remainingS)}</span>
-          <span>{formatMiles(pose.remainingM || route.distanceM)}</span>
+          <span>{formatDistance(pose.remainingM || route.distanceM, miles)}</span>
         </div>
       </div>
       <div className="turn-list">
-        {route.maneuvers.map((m, i) => (
-          <div key={`${m.instruction}-${i}`} className={`turn ${i === idx ? "on" : ""}`}>
+        {upcoming.map((m, i) => (
+          <div key={`${m.instruction}-${i}`} className={`turn ${i === 0 ? "on" : ""}`}>
             <TurnGlyph m={m} />
             <span>{m.instruction}</span>
-            <span>{formatMiles(m.distanceM)}</span>
+            <span>{formatDistance(m.distanceM, miles)}</span>
           </div>
         ))}
       </div>
-      <div className="route-actions">
-        {phase === "fsd" ? (
-          <button className="btn danger" onClick={disengageFsd}>
+      {phase === "fsd" ? (
+        <div className="route-actions">
+          <button type="button" className="btn danger" onClick={disengageFsd}>
             End Self-Driving
           </button>
-        ) : (
-          <>
-            <button className="btn ghost" onClick={cancelNav}>
-              Cancel
-            </button>
-            <button className="btn primary" onClick={startFsd}>
-              Start Full Self-Driving
-            </button>
-          </>
-        )}
-      </div>
+        </div>
+      ) : null}
     </aside>
   );
 }

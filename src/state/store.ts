@@ -14,23 +14,34 @@ import type {
   ControlsTab,
   Gear,
   MediaState,
+  MediaTrack,
   Place,
+  SeatHeat,
   TripPhase,
   UiState,
   VehicleFlags,
   VehicleStore,
 } from "./types";
 
+export const MEDIA_LIBRARY: MediaTrack[] = [
+  { track: "Night Drive", artist: "Open Frequency", source: "radio" },
+  { track: "Allegheny After Dark", artist: "Three Rivers FM", source: "radio" },
+  { track: "Glass Horizon", artist: "North Side Ensemble", source: "streaming" },
+];
+
 const climate: ClimateState = {
   on: true,
   driverTempF: 70,
   passengerTempF: 70,
   split: false,
+  sync: true,
   fan: 3,
   auto: true,
   defrostFront: false,
   defrostRear: false,
   recirc: false,
+  rearOn: false,
+  bioweapon: false,
   seats: { fl: 0, fr: 0, rl: 0, rr: 0 },
 };
 
@@ -38,10 +49,13 @@ const media: MediaState = {
   playing: true,
   volume: 42,
   muted: false,
-  track: "Night Drive",
-  artist: "Open Frequency",
-  source: "Radio",
+  track: MEDIA_LIBRARY[0].track,
+  artist: MEDIA_LIBRARY[0].artist,
+  source: MEDIA_LIBRARY[0].source,
   progress: 0.34,
+  shuffle: false,
+  repeat: "off",
+  libraryIndex: 0,
 };
 
 const flags: VehicleFlags = {
@@ -53,28 +67,78 @@ const flags: VehicleFlags = {
   frunkOpen: false,
   trunkOpen: false,
   chargePortOpen: false,
+  doors: { fl: false, fr: false, rl: false, rr: false },
   headlights: "auto",
+  fogLights: false,
+  domeLights: false,
+  ambientLights: true,
+  autoHighBeam: true,
+  headlightsAfterExit: true,
+  steeringWheelLights: true,
   wipers: "auto",
   childLock: false,
+  windowLock: false,
+  walkAwayLock: true,
+  unlockOnPark: false,
+  lockConfirmationSound: true,
   steeringHeat: false,
   mirrorHeat: false,
+  mirrorsFolded: false,
+  autoFoldMirrors: true,
+  mirrorAutoTilt: true,
   followingDistance: 3,
   unitsMph: true,
   energyAsPercent: false,
+  temperatureF: true,
+  timeFormat24: false,
+  textSize: "standard",
+  appearance: "dark",
+  reduceBlueLight: false,
+  brightness: 70,
+  screenClean: false,
+  lockRearDisplay: false,
+  autoBrightness: true,
+  carWash: false,
+  chargeLimitPct: 80,
+  regenerativeBraking: "standard",
+  stoppingMode: "hold",
+  steeringMode: "standard",
+  slipStart: false,
+  onlineRouting: true,
+  avoidTolls: false,
+  avoidFerries: false,
+  avoidHighways: false,
+  automaticNavigation: true,
+  showChargingStops: true,
+  parkAssistChimes: true,
+  joeMode: false,
+  allowMobileAccess: true,
+  fsdEnabled: true,
+  autosteer: true,
+  trafficControl: true,
+  visualizationPreview: true,
+  wiperService: false,
+  jackMode: false,
+  cameraCalibrating: false,
+  gloveboxOpen: false,
+  vehicleName: "Pittsburgh",
 };
 
 const ui: UiState = {
   controlsOpen: false,
   controlsTab: "quick",
+  controlsQuery: "",
   climateOpen: false,
   mediaOpen: false,
   appsOpen: false,
   searchOpen: false,
+  tempPopup: null,
   vizRatio: VIZ_RATIO_DEFAULT,
   mapOrientation: "north",
   tracking: true,
   pinDrop: null,
   disclaimerDismissed: false,
+  driverProfile: "Anthony",
 };
 
 const qa = {
@@ -101,11 +165,21 @@ interface Actions {
   disengageFsd: () => void;
   tickDrive: (dt: number) => void;
   setPoseFromGps: (lng: number, lat: number) => void;
+  cycleSeat: (seat: keyof SeatHeat) => void;
+  nudgeTemp: (zone: "driver" | "passenger", delta: number) => void;
+  skipTrack: (dir: 1 | -1) => void;
+  closeSheets: () => void;
 }
 
 export type Store = VehicleStore & Actions;
 
 let searchTimer: number | undefined;
+
+function applyTrack(index: number): Partial<MediaState> {
+  const i = (index + MEDIA_LIBRARY.length) % MEDIA_LIBRARY.length;
+  const t = MEDIA_LIBRARY[i];
+  return { libraryIndex: i, track: t.track, artist: t.artist, source: t.source, progress: 0 };
+}
 
 export const useVehicle = create<Store>((set, get) => ({
   gear: "P",
@@ -140,11 +214,14 @@ export const useVehicle = create<Store>((set, get) => ({
     if (gear === "P") {
       if (phase === "fsd") {
         get().disengageFsd();
-        return;
       }
       set({
         gear: "P",
         pose: { ...get().pose, speedMph: 0 },
+        flags: {
+          ...get().flags,
+          locked: get().flags.unlockOnPark ? false : get().flags.locked,
+        },
       });
       return;
     }
@@ -163,7 +240,31 @@ export const useVehicle = create<Store>((set, get) => ({
   patchClimate: (partial) => set({ climate: { ...get().climate, ...partial } }),
   patchMedia: (partial) => set({ media: { ...get().media, ...partial } }),
   patchUi: (partial) => set({ ui: { ...get().ui, ...partial } }),
-  setControlsTab: (tab) => set({ ui: { ...get().ui, controlsTab: tab, controlsOpen: true } }),
+  setControlsTab: (tab) =>
+    set({
+      ui: {
+        ...get().ui,
+        controlsTab: tab,
+        controlsOpen: true,
+        climateOpen: false,
+        mediaOpen: false,
+        appsOpen: false,
+        tempPopup: null,
+        controlsQuery: tab === get().ui.controlsTab ? get().ui.controlsQuery : "",
+      },
+    }),
+
+  closeSheets: () =>
+    set({
+      ui: {
+        ...get().ui,
+        controlsOpen: false,
+        climateOpen: false,
+        mediaOpen: false,
+        appsOpen: false,
+        tempPopup: null,
+      },
+    }),
 
   setVizRatio: (ratio) =>
     set({
@@ -172,6 +273,36 @@ export const useVehicle = create<Store>((set, get) => ({
         vizRatio: Math.min(VIZ_RATIO_MAX, Math.max(VIZ_RATIO_MIN, ratio)),
       },
     }),
+
+  cycleSeat: (seat) => {
+    const seats = { ...get().climate.seats };
+    seats[seat] = ((seats[seat] + 1) % 4) as SeatHeat[typeof seat];
+    set({ climate: { ...get().climate, seats } });
+  },
+
+  nudgeTemp: (zone, delta) => {
+    const c = get().climate;
+    const next = {
+      on: true,
+      split: zone === "passenger" ? true : c.split,
+      sync: zone === "passenger" ? false : c.sync,
+      driverTempF: c.driverTempF,
+      passengerTempF: c.passengerTempF,
+    };
+    if (zone === "driver" || c.sync) {
+      next.driverTempF = Math.min(85, Math.max(59, c.driverTempF + delta));
+      if (c.sync && zone === "driver") next.passengerTempF = next.driverTempF;
+    }
+    if (zone === "passenger") {
+      next.passengerTempF = Math.min(85, Math.max(59, c.passengerTempF + delta));
+    }
+    set({ climate: { ...c, ...next } });
+  },
+
+  skipTrack: (dir) => {
+    const i = get().media.libraryIndex + dir;
+    set({ media: { ...get().media, ...applyTrack(i), playing: true } });
+  },
 
   setSearchQuery: (q) => {
     set({ searchQuery: q, ui: { ...get().ui, searchOpen: true } });
@@ -217,7 +348,7 @@ export const useVehicle = create<Store>((set, get) => ({
       destination: place,
       routeBusy: true,
       routeError: null,
-      ui: { ...get().ui, searchOpen: false },
+      ui: { ...get().ui, searchOpen: false, climateOpen: false, mediaOpen: false, appsOpen: false },
       searchQuery: place.name,
     });
     try {
@@ -266,13 +397,13 @@ export const useVehicle = create<Store>((set, get) => ({
   },
 
   startFsd: () => {
-    const { route, pose } = get();
-    if (!route) return;
+    const { route, pose, flags: f } = get();
+    if (!route || !f.fsdEnabled) return;
     const limit = route.maneuvers[0]?.speedLimitMph ?? DEFAULT_SPEED_LIMIT_MPH;
     set({
       phase: "fsd",
       gear: "D",
-      flags: { ...get().flags, locked: false },
+      flags: { ...f, locked: false },
       pose: {
         ...pose,
         setSpeedMph: Math.min(limit, 45),
@@ -287,6 +418,7 @@ export const useVehicle = create<Store>((set, get) => ({
         mediaOpen: false,
         appsOpen: false,
         searchOpen: false,
+        tempPopup: null,
       },
     });
   },
@@ -336,8 +468,6 @@ export const useVehicle = create<Store>((set, get) => ({
       return;
     }
     const sample = interpolate(index, nextM);
-    const remainingTime = speed > 1 ? sample.remainingM / mphToMps(Math.max(speed, 8)) : 0;
-    void remainingTime;
     set({
       pose: {
         lng: sample.position[0],

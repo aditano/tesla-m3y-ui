@@ -169,6 +169,14 @@ export function formatMiles(meters: number): string {
   return `${Math.round(mi)} mi`;
 }
 
+export function formatDistance(meters: number, miles: boolean): string {
+  if (miles) return formatMiles(meters);
+  const km = meters / 1000;
+  if (km < 0.1) return `${Math.round(meters)} m`;
+  if (km < 10) return `${km.toFixed(1)} km`;
+  return `${Math.round(km)} km`;
+}
+
 export function formatDuration(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));
   const h = Math.floor(s / 3600);

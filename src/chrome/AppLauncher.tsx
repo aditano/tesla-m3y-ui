@@ -19,16 +19,22 @@ export function AppLauncher() {
       {APPS.map((app) => (
         <button
           key={app.id}
-          className="app-btn"
+          type="button"
+          className="app-tile"
           title={app.label}
-          onClick={() => patchUi({ appsOpen: false, mediaOpen: app.id === "theater" })}
+          onClick={() =>
+            patchUi({
+              appsOpen: false,
+              mediaOpen: app.id === "theater",
+            })
+          }
         >
-          <app.Icon />
+          <span className="app-btn">
+            <app.Icon />
+          </span>
+          <span>{app.label}</span>
         </button>
       ))}
-      <button className="app-btn" onClick={() => patchUi({ appsOpen: false })}>
-        ×
-      </button>
     </div>
   );
 }

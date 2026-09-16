@@ -68,7 +68,15 @@ No secrets are required for the default demo path.
 - 3D Model 3: [David_Holiday](https://sketchfab.com/David_Holiday), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — see [LICENSE-3D.md](LICENSE-3D.md).
 - UI type: [Inter](https://rsms.me/inter/) (OFL). Not Tesla’s proprietary font.
 
-Layout is informed by publicly documented Tesla owner-manual behavior (status bar, map always present in Park, visualization expand, Controls overlay, dock, PRND) and public UI v12 notes (NotATeslaApp parked viz: centered 3D vehicle, map snippet, Navigate To, media strip). Existing open demos were used for inspiration only; this tree is original aside from the attributed CC model.
+Layout is informed by publicly documented Tesla owner-manual behavior — status bar, map always present in Park, visualization expand, Controls overlay with Search, dock climate/media, PRND — and public UI v12 notes (NotATeslaApp parked viz: centered 3D vehicle, map snippet, Navigate To, media strip). Sources used for information architecture only (no copyrighted manual text is reproduced here):
+
+- [Touchscreen](https://www.tesla.com/ownersmanual/model3/en_us/GUID-518C51C1-E9AC-4A68-AE12-07F4FF8C881E.html)
+- [Operating Climate Controls](https://www.tesla.com/ownersmanual/model3/en_us/GUID-4F3599A1-20D9-4A49-B4A0-5261F957C096.html)
+- [Maps and Navigation](https://www.tesla.com/ownersmanual/model3/en_us/GUID-01F1A582-99D1-4933-B5FB-B2F0203FFE6F.html)
+- [Media](https://www.tesla.com/ownersmanual/model3/en_us/GUID-7A85FB6B-9DF6-4C55-A2F9-793207E48E9D.html)
+- [Lights](https://www.tesla.com/ownersmanual/model3/en_us/GUID-1C209641-AA23-47AC-B0D1-3FE3779CF222.html)
+
+Chrome uses **Inter Tight** (Google Fonts), not Tesla’s vehicle typeface. Existing open demos were used for inspiration only; this tree is original CSS / SVG aside from the attributed CC model.
 
 ## Fidelity / screenshot QA
 
