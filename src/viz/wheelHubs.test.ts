@@ -35,6 +35,5 @@ describe("wheelHubs", () => {
     expect(hubs[0]?.id).toBe("wheel.001");
     expect(hubs[0]?.side).toBe("L");
     expect(hubs[0]?.position[0]).toBeCloseTo(-0.8, 1);
-    expect(hubs[0]?.radius).toBeGreaterThan(0.29);
   });
 });

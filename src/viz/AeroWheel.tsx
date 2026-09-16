@@ -16,8 +16,7 @@ const SIDEWALL = new Color("#0a0a0c");
 const RIM = new Color("#14161a");
 const COVER = new Color("#1a1d22");
 const HUB = new Color("#0c0e10");
-const ROTOR = new Color("#7c828a");
-const CALIPER = new Color("#b01018");
+const ROTOR = new Color("#6c7280");
 
 function petalGeometry(inner: number, outer: number, halfAngle: number, depth: number): ExtrudeGeometry {
   const shape = new Shape();
@@ -60,10 +59,11 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
   group.name = "aero-wheel";
 
   const tire = new Mesh(
-    new TorusGeometry(radius * 0.84, width * 0.42, 24, 64),
+    new TorusGeometry(radius * 0.84, width * 0.42, 28, 72),
     phys(RUBBER, { roughness: 0.96, metalness: 0 }),
   );
-  tire.rotation.y = Math.PI / 2;
+  // Torus hole is along Y by default; rotate Z=PI/2 so hole → X (axle axis).
+  tire.rotation.z = Math.PI / 2;
   tire.castShadow = true;
   tire.receiveShadow = true;
   group.add(tire);
@@ -109,10 +109,10 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
   group.add(rotor);
 
   const caliper = new Mesh(
-    new BoxGeometry(0.07, 0.11, 0.15),
-    phys(CALIPER, { metalness: 0.22, roughness: 0.4, clearcoat: 0.35 }),
+    new BoxGeometry(0.06, 0.10, 0.14),
+    phys(new Color("#16181d"), { metalness: 0.32, roughness: 0.5 }),
   );
-  caliper.position.set(rimR * 0.46, 0, 0);
+  caliper.position.set(0, rimR * -0.48, 0);
   caliper.castShadow = true;
   group.add(caliper);
 

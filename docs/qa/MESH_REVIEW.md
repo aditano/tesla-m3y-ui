@@ -80,6 +80,27 @@ Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the
 
 **Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
 
+## Iteration 5 — 2026-09-16 (hub-artifact + shadow + leader lane)
+
+Still: `parked-home.png` after:
+- Caliper dark (no red `#b01018` box sticking out of hub)
+- Tire rotation fixed y→z (tire stands vertical, not flat)
+- Compact wheel size (~480mm OD, fits fender arch)
+- Contact shadow darkened (opacity 0.74, blur 1.2, colour #28242a)
+- TRUNK pin at floor-level rear bumper [0.12, 0.08, −2.0], stem 50vh/440px
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Smooth candy Ultra Red, studio reflections, no caliper artifact. Still flatter than nata. |
+| Glass | PARTIAL | Cabin blocker prevents tunnel. Roof glass dark. Side glass still cheap. |
+| Wheels | PARTIAL | Front-left shows a compact arc inside the fender (27k fender opening is shallow — ceiling for this mesh). Rear-right correct under the body. No red artifacts. |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata yaw. Smoother silhouette from subdiv. |
+| Lighting | PARTIAL | White studio. Contact shadow is now a clear dark oval. Better match to nata. |
+| Leaders | PARTIAL | FRUNK floats in empty studio (top). TRUNK card improved but still overlaps glass — geometric ceiling: this camera angle + this mesh leave no empty space above the rear glass. Stem goes to floor-level bumper. CHARGE attached. |
+
+**Lane ceiling reached for this mesh + camera combo:** TRUNK card into pure empty studio requires a lower camera polar angle or a longer car (different topology). Siblings working on camera/topology will resolve.
+
+
 
 
 

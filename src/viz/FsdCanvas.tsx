@@ -64,7 +64,14 @@ function ParkedStudio() {
       <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.2, 0]} position={[-0.04, 0, 0.04]}>
         <Model3 scale={1.12} />
       </group>
-      <ContactShadows opacity={0.55} scale={12} blur={2.6} far={6} resolution={1024} color="#3f3c3e" />
+      <ContactShadows
+        opacity={0.74}
+        scale={9}
+        blur={1.2}
+        far={4.5}
+        resolution={1024}
+        color="#28242a"
+      />
       <OrbitControls
         enablePan={false}
         minDistance={5.6}
