@@ -80,6 +80,19 @@ Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the
 
 **Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
 
+## Iteration 5 — 2026-09-16 (topology surgery: liners + side-glass split)
 
+Blender GLB now carries original **wheel-well liner shells** (dark plastic cup + back-wall disc at each hub, parented under `RootNode`) and a **`SideGlass` material split** — the near-vertical greenhouse panes (side windows, windshield, backlight rake) get their own slot so the runtime can tint them independently of the panoramic roof. Stray `Cylinder012` studio prop dropped; AO bake gated off (never bound at runtime). Runtime derivative: `glass` kind → near-zero env dark laminate (kills the Fresnel blow-out), `roofGlass` → glossy dark roof only, `chrome` tamed (satin, not mirror), and the `AeroWheel` caliper moved off the hub center to the lower-rear rim.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Smooth candy Ultra Red, no AO blotch, studio reflections. Unchanged from iter 4 — still a touch flatter than nata; C-pillar highlight is a broad wrap. |
+| Glass | PARTIAL | Big jump: side windows + backlight + roof now read as dark tinted laminate, not a chrome-bright opening. Near-side front pane keeps a nata-like reflection streak; the far-side panes still catch a brighter key-light smear. |
+| Wheels | PARTIAL | Front well is now a dark liner cavity — the red inner-well hole is gone. Rear-right 5-cover aero reads from overhead. The floating red caliper cube (aero-wheel caliper at the hub center) is fixed. |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata. The front side-marker still reads as a dark socket with a bright rim; window corners, spoiler lip, and panel gaps are still the 27k-derived silhouette. |
+| Lighting | PARTIAL | White studio + contact shadow. Shadow still lighter than nata’s oval. |
+| Leaders | PARTIAL | TRUNK pin on the decklid; card kisses the backlight. FRUNK/CHARGE attached. |
+
+**Worst FAIL:** Proportions — the front side-marker socket artifact plus soft window-corner/panel-gap silhouette. Next (iter 6): reshape/close the side-marker so it stops reading as a hole, then bevel-tighten window corners and panel gaps.
 
 

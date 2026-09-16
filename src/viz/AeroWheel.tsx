@@ -108,11 +108,14 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
   rotor.rotation.z = Math.PI / 2;
   group.add(rotor);
 
+  // Small caliper tucked behind the cover at the lower-rear rim (not a red box
+  // floating at the hub center). Axle is local X; the wheel face is the Y–Z
+  // plane, so place it at a radius, low and slightly inboard.
   const caliper = new Mesh(
-    new BoxGeometry(0.07, 0.11, 0.15),
-    phys(CALIPER, { metalness: 0.22, roughness: 0.4, clearcoat: 0.35 }),
+    new BoxGeometry(0.05, 0.13, 0.055),
+    phys(CALIPER, { metalness: 0.24, roughness: 0.42, clearcoat: 0.32 }),
   );
-  caliper.position.set(rimR * 0.46, 0, 0);
+  caliper.position.set(-width * 0.14, -rimR * 0.74, -rimR * 0.36);
   caliper.castShadow = true;
   group.add(caliper);
 
