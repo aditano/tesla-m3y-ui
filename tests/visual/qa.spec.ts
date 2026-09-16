@@ -14,9 +14,23 @@ async function capture(page: import("@playwright/test").Page, scene: QaSceneId):
   const bezel = page.locator(".bezel");
   await expect(bezel).toBeVisible();
   await expect(page.locator(".shell")).toHaveAttribute("data-qa-scene", scene);
-  await bezel.screenshot({
+  // Parked WebGL + MapLibre overlays can keep the bezel's box from ever
+  // reporting "stable", so crop a page screenshot instead of element.screenshot.
+  const box = await bezel.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height };
+  });
+  const x = Math.max(0, Math.floor(box.x));
+  const y = Math.max(0, Math.floor(box.y));
+  await page.screenshot({
     path: path.join(OUT, `${scene}.png`),
     animations: "disabled",
+    clip: {
+      x,
+      y,
+      width: Math.max(1, Math.min(Math.ceil(box.width), 1920 - x)),
+      height: Math.max(1, Math.min(Math.ceil(box.height), 1200 - y)),
+    },
   });
 }
 
