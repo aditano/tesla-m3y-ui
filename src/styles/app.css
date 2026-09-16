@@ -1363,17 +1363,17 @@ button {
 }
 
 .parked-callout.trunk {
-  --stem-h: 96px;
-  --pin-x: 58px;
+  --stem-h: 72px;
+  --pin-x: 118px;
 }
 
 .parked-callout.frunk {
-  --stem-h: 58px;
+  --stem-h: 52px;
   --pin-x: 50px;
 }
 
 .parked-callout.charge {
-  --stem-h: 48px;
+  --stem-h: 40px;
   --pin-x: 52px;
 }
 

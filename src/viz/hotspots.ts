@@ -17,7 +17,7 @@ export type HotspotPin = {
 export const HOTSPOT_PINS: readonly HotspotPin[] = [
   { id: "frunk", kicker: "FRUNK", position: [0, 0.78, 1.52], hit: [1.48, 0.18, 0.88] },
   { id: "trunk", kicker: "TRUNK", position: [0, 0.82, -1.92], hit: [1.22, 0.14, 0.52] },
-  { id: "charge", kicker: "CHARGE", position: [-0.93, 0.68, -1.4], hit: [0.16, 0.26, 0.28] },
+  { id: "charge", kicker: "CHARGE", position: [-0.93, 0.7, -1.58], hit: [0.16, 0.26, 0.28] },
 ];
 
 export function hotspotPin(id: HotspotId): HotspotPin {

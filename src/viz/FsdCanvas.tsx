@@ -71,8 +71,8 @@ function ParkedStudio() {
           map={floorMap}
           color="#e7e9ee"
           roughness={0.78}
-          metalness={0.14}
-          envMapIntensity={0.42}
+          metalness={0.05}
+          envMapIntensity={0.22}
         />
       </mesh>
       <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.24, 0]} position={[0.12, 0, 0.14]}>
