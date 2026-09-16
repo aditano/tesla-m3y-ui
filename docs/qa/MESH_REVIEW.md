@@ -95,6 +95,21 @@ Still: `parked-home.png` after candy-coat materials, greenhouse split, Lightform
 
 **Worst FAIL:** empty Lightformer cubemap flattened paint and glass. Next: `preset="studio"` + a few startup env frames, compute tangents, restore 3/4 so the C-pillar can catch a streak.
 
+## Iteration 6 — 2026-09-16 (env capture + 3/4, `af406c4`)
+
+Still: `parked-home.png` after studio-preset Lightformers (8 frames) and rear-right camera.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Gloss is back (no longer clay). Still a broad satin wrap; C-pillar highlight is not a nata streak. Studio HDRI lights are too soft. |
+| Glass | PARTIAL | Roof is darker and reads as glass. Side openings no longer tunnel to white. Still missing chrome-belt laminate sparkle. |
+| Wheels | PARTIAL | Unchanged mesh ceiling. |
+| Proportions | PARTIAL | 3/4 is closer to nata than iter 5. |
+| Lighting | PARTIAL | Oval contact shadow holds. Floor gloss still weak. Soft studio wrap remains. |
+| Leaders | PARTIAL | TRUNK still floats in empty studio with a long vertical to the decklid. |
+
+**Worst remaining:** C-pillar streak. Next: drop the HDRI wrap and paint a static equirect with a thin overhead strip.
+
 
 
 

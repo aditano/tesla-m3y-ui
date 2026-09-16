@@ -2,7 +2,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import {
   ContactShadows,
   Environment,
-  Lightformer,
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
@@ -14,7 +13,7 @@ import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
 import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
-import { PARKED_STUDIO } from "./parkedStudio";
+import { createCandyStudioEnv, PARKED_STUDIO } from "./parkedStudio";
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -42,6 +41,7 @@ function studioFloorMap(): CanvasTexture {
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   const floorMap = useMemo(() => studioFloorMap(), []);
+  const envMap = useMemo(() => createCandyStudioEnv(), []);
   const { camera, car, shadow, floor, background } = PARKED_STUDIO;
   return (
     <>
@@ -54,52 +54,10 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.4} />
-      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.3]} />
-      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.48} color="#f6f5f2" />
-      <Environment
-        preset="studio"
-        frames={PARKED_STUDIO.envFrames}
-        resolution={PARKED_STUDIO.envResolution}
-        environmentIntensity={PARKED_STUDIO.envIntensity}
-      >
-        <Lightformer
-          form="rect"
-          intensity={1.05}
-          color="#ffffff"
-          position={[0, 9.2, 0]}
-          scale={[20, 20, 1]}
-          rotation={[Math.PI / 2, 0, 0]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={11.5}
-          color="#ffffff"
-          position={[4.1, 5.4, -2.2]}
-          scale={[0.12, 8.2, 1]}
-          target={[0.22, 0.88, -1.05]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={3.6}
-          color="#f3f5f8"
-          position={[2.6, 6.2, 1.35]}
-          scale={[0.13, 5.1, 1]}
-          target={[0, 0.72, 0.15]}
-        />
-        <Lightformer form="rect" intensity={0.82} color="#f1f2f5" position={[0, 2.3, -9]} scale={[14, 8, 1]} />
-        <Lightformer form="rect" intensity={0.48} color="#eceef2" position={[0, 2.1, 9]} scale={[14, 7, 1]} />
-        <Lightformer form="rect" intensity={0.36} color="#e7edf2" position={[9, 2.5, 0]} scale={[14, 8, 1]} />
-        <Lightformer form="rect" intensity={0.28} color="#e4e7ec" position={[-9, 2.3, 0]} scale={[14, 8, 1]} />
-        <Lightformer
-          form="rect"
-          intensity={0.26}
-          color="#d8dce2"
-          position={[0, -0.15, 0]}
-          scale={[16, 16, 1]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        />
-      </Environment>
+      <ambientLight intensity={0.38} />
+      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.26]} />
+      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.42} color="#f6f5f2" />
+      <Environment map={envMap} environmentIntensity={PARKED_STUDIO.envIntensity} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
         <meshPhysicalMaterial
