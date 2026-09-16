@@ -64,17 +64,18 @@ export function replaceStockWheels(root: Object3D): WheelHub[] {
     parent.traverse((obj) => {
       if (obj instanceof Mesh) obj.visible = false;
     });
-    const { radius, width, center } = localWheelSize(parent);
-    const wheel = createAeroWheel(radius, Math.min(width, radius * 0.72));
-    wheel.position.copy(center);
-    parent.add(wheel);
+    const { center } = localWheelSize(parent);
     const world = new Vector3();
     parent.getWorldPosition(world);
+    const wheel = createAeroWheel(0.365, 0.245);
+    wheel.position.copy(center);
+    wheel.position.x += (world.x < 0 ? -1 : 1) * 0.1;
+    parent.add(wheel);
     hubs.push({
       id: parent.name.toLowerCase(),
       position: [world.x, world.y, world.z],
-      radius,
-      width,
+      radius: 0.365,
+      width: 0.245,
       side: world.x < 0 ? "L" : "R",
     });
   }

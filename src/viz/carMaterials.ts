@@ -35,7 +35,7 @@ const PLASTIC = new Color("#121316");
 const GLASS = new Color("#07090d");
 const ROOF_GLASS = new Color("#050608");
 const CALIPER = new Color("#b01018");
-const INTERIOR = new Color("#3a322c");
+const INTERIOR = new Color("#161412");
 const RIM = new Color("#16181c");
 
 export function classifyCarMaterial(name: string): CarMaterialKind {
@@ -177,8 +177,8 @@ function physical(
         metalness: 0.04,
         roughness: 0.028,
         transparent: true,
-        opacity: parked ? 0.92 : 0.55,
-        transmission: parked ? 0.02 : 0.32,
+        opacity: parked ? 0.96 : 0.55,
+        transmission: parked ? 0 : 0.32,
         thickness: 0.62,
         envMapIntensity: parked ? 1.15 : 0.85,
         ior: 1.48,

@@ -60,7 +60,7 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
   group.name = "aero-wheel";
 
   const tire = new Mesh(
-    new TorusGeometry(radius * 0.78, width * 0.38, 24, 64),
+    new TorusGeometry(radius * 0.84, width * 0.42, 24, 64),
     phys(RUBBER, { roughness: 0.96, metalness: 0 }),
   );
   tire.rotation.y = Math.PI / 2;
@@ -69,7 +69,7 @@ export function createAeroWheel(radius = 0.338, width = 0.235): Group {
   group.add(tire);
 
   const barrel = new Mesh(
-    new CylinderGeometry(radius * 0.7, radius * 0.7, width * 0.46, 64),
+    new CylinderGeometry(radius * 0.78, radius * 0.78, width * 0.52, 64),
     phys(SIDEWALL, { roughness: 0.92, metalness: 0 }),
   );
   barrel.rotation.z = Math.PI / 2;
