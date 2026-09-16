@@ -138,64 +138,62 @@ function physical(
     case "paint":
       return new MeshPhysicalMaterial({
         color: new Color(paintHex),
-        metalness: 0.22,
-        roughness: 0.18,
-        roughnessMap: getFlakeRoughness(),
-        clearcoat: 1,
-        clearcoatRoughness: 0.045,
-        clearcoatRoughnessMap: getFlakeRoughness(),
+        metalness: 0.6,
+        roughness: 0.12,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.02,
         clearcoatNormalMap: getFlakeNormal(),
-        clearcoatNormalScale: new Vector2(0.055, 0.055),
-        envMapIntensity: parked ? 1.22 : 1.05,
-        sheen: parked ? 0.22 : 0.14,
+        clearcoatNormalScale: new Vector2(0.005, 0.005),
+        envMapIntensity: parked ? 1.8 : 1.2,
+        sheen: parked ? 0.2 : 0.14,
         sheenColor: new Color("#6a1218"),
         sheenRoughness: 0.48,
-        specularIntensity: 0.85,
+        specularIntensity: 1.0,
         ...(aoMap
           ? { aoMap, aoMapIntensity: parked ? 0.62 : 0.45 }
           : {}),
       });
     case "chrome":
       return new MeshPhysicalMaterial({
-        color: CHROME,
-        metalness: 0.98,
-        roughness: parked ? 0.1 : 0.14,
-        envMapIntensity: parked ? 1.35 : 1.15,
+        color: new Color("#e0e0e0"),
+        metalness: 1.0,
+        roughness: 0.05,
+        envMapIntensity: parked ? 2.0 : 1.15,
       });
     case "rim":
       return new MeshPhysicalMaterial({
-        color: RIM,
-        metalness: 0.88,
-        roughness: 0.32,
-        envMapIntensity: 0.7,
-        clearcoat: 0.22,
-        clearcoatRoughness: 0.28,
+        color: new Color("#222222"),
+        metalness: 0.9,
+        roughness: 0.2,
+        envMapIntensity: 1.0,
+        clearcoat: 0.1,
+        clearcoatRoughness: 0.2,
       });
     case "glass":
       return new MeshPhysicalMaterial({
-        color: GLASS,
-        metalness: 0.04,
-        roughness: 0.028,
+        color: new Color("#020202"),
+        metalness: 0.1,
+        roughness: 0.0,
         transparent: true,
-        opacity: parked ? 0.96 : 0.55,
-        transmission: parked ? 0 : 0.32,
-        thickness: 0.62,
-        envMapIntensity: parked ? 1.15 : 0.85,
-        ior: 1.48,
+        opacity: 1.0,
+        transmission: parked ? 0.85 : 0.32,
+        thickness: 1.5,
+        envMapIntensity: parked ? 2.5 : 0.85,
+        ior: 1.52,
         attenuationColor: new Color("#05070a"),
         attenuationDistance: 0.42,
         specularIntensity: 1,
       });
     case "roofGlass":
       return new MeshPhysicalMaterial({
-        color: ROOF_GLASS,
-        metalness: 0.08,
-        roughness: 0.045,
+        color: new Color("#000000"),
+        metalness: 0.1,
+        roughness: 0.0,
         transparent: true,
-        opacity: parked ? 0.97 : 0.7,
-        transmission: parked ? 0.015 : 0.12,
-        thickness: 0.35,
-        envMapIntensity: parked ? 0.72 : 0.55,
+        opacity: 1.0,
+        transmission: parked ? 0.8 : 0.12,
+        thickness: 1.5,
+        envMapIntensity: parked ? 1.5 : 0.55,
         ior: 1.5,
       });
     case "headlight":

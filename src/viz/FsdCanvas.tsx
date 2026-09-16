@@ -50,7 +50,7 @@ function ParkedStudio() {
       <directionalLight position={[2.4, 7.4, -4.0]} intensity={0.7} color="#f8f7f4" />
       <directionalLight position={[-4.6, 2.8, 2.2]} intensity={0.32} color="#d7e3f0" />
       <directionalLight position={[5.4, 2.2, 1.8]} intensity={0.36} color="#c5d2e2" />
-      <Environment preset="studio" environmentIntensity={0.72} />
+      <Environment preset="sunset" environmentIntensity={1.5} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
         <meshPhysicalMaterial
