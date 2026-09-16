@@ -1,7 +1,7 @@
 import { useLoader } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Box3, Group, Object3D, Quaternion, Vector3 } from "three";
+import { Box3, BoxGeometry, Group, Mesh, MeshPhysicalMaterial, Object3D, Quaternion, Vector3 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
@@ -46,6 +46,13 @@ function extractCar(scene: Object3D): Group {
     if (/debris|speaker/i.test(obj.name)) obj.visible = false;
   });
   replaceStockWheels(wrapper);
+  const cabin = new Mesh(
+    new BoxGeometry(1.4, 0.68, 2.55),
+    new MeshPhysicalMaterial({ color: "#141312", roughness: 0.92, metalness: 0 }),
+  );
+  cabin.name = "orig-cabin-blocker";
+  cabin.position.set(0, 0.94, -0.1);
+  wrapper.add(cabin);
   return wrapper;
 }
 

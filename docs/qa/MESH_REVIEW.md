@@ -50,4 +50,20 @@ Still: `parked-home.png` after parenting aero wheels onto `wheel` / `wheel.N` no
 
 **Worst FAIL:** front-left wheel well is empty. Next: place each aero wheel on the stock mesh’s local bbox center (hub origin is not the geometric center), then darken side glass.
 
+## Iteration 3 — 2026-09-16 (outboard 18" aero, `a0230e7`)
+
+Still: `parked-home.png` after uniform 0.365m aero wheels with 0.1m outboard offset.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Smooth candy red, no AO blotch. Still a bit dark vs nata; C-pillar wrap is broad. |
+| Glass | FAIL | Overhead angle turns the cabin into a white tunnel; toy seats still read through the glass. |
+| Wheels | PARTIAL | Rear-right 5-cover aero is the first honest nata-like wheel. Front-left tire now shows; a red inner-well hole remains above it. |
+| Proportions | PARTIAL | Rear-right 3/4 is right. Front well cutout on this mesh is still a bite out of the fender. |
+| Lighting | PARTIAL | White studio OK; contact shadow still faint. |
+| Leaders | PARTIAL | TRUNK still on the backlight. |
+
+**Worst FAIL:** see-through cabin. Next: original dark cabin blocker + wheel-well liners, pull camera back so TRUNK can sit in empty studio.
+
+
 

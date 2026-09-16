@@ -272,7 +272,7 @@ export function applyCarMaterials(
 ): void {
   root.traverse((obj) => {
     if (!(obj instanceof Mesh)) return;
-    if (obj.name === "aero-wheel" || obj.parent?.name === "aero-wheel") return;
+    if (obj.name.startsWith("orig-") || obj.parent?.name === "aero-wheel" || obj.parent?.name.startsWith("orig-")) return;
     obj.castShadow = true;
     obj.receiveShadow = true;
     const mats = Array.isArray(obj.material) ? obj.material : [obj.material];

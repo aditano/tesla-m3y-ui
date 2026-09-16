@@ -44,7 +44,7 @@ function ParkedStudio() {
     <>
       <color attach="background" args={["#f3f4f6"]} />
       <fog attach="fog" args={["#f3f4f6", 18, 42]} />
-      <PerspectiveCamera makeDefault fov={28} position={[4.55, 5.85, -5.7]} near={0.1} far={80} />
+      <PerspectiveCamera makeDefault fov={28} position={[4.85, 6.05, -6.0]} near={0.1} far={80} />
       <ambientLight intensity={0.62} />
       <hemisphereLight args={["#f7f8fa", "#d5d8de", 0.48]} />
       <directionalLight position={[2.4, 7.4, -4.0]} intensity={0.7} color="#f8f7f4" />
@@ -62,7 +62,7 @@ function ParkedStudio() {
         />
       </mesh>
       <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.2, 0]} position={[-0.04, 0, 0.04]}>
-        <Model3 scale={1.18} />
+        <Model3 scale={1.12} />
       </group>
       <ContactShadows opacity={0.55} scale={12} blur={2.6} far={6} resolution={1024} color="#3f3c3e" />
       <OrbitControls
