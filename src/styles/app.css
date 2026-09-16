@@ -1168,17 +1168,14 @@ button {
 
 .parked-callouts {
   position: absolute;
-  left: 18%;
-  right: 18%;
-  top: 18%;
+  inset: 0;
   z-index: 6;
-  display: flex;
-  justify-content: space-between;
   pointer-events: none;
 }
 
 .parked-chip {
   pointer-events: auto;
+  position: absolute;
   display: inline-flex;
   align-items: center;
   height: 28px;
@@ -1190,6 +1187,22 @@ button {
   font-weight: var(--weight-ui);
   letter-spacing: 0.03em;
   color: #2a2c31;
+}
+
+.parked-callouts .parked-chip:nth-child(1) {
+  left: 14%;
+  top: 42%;
+}
+
+.parked-callouts .parked-chip:nth-child(2) {
+  left: 52%;
+  top: 16%;
+}
+
+.parked-callouts .parked-chip:nth-child(3) {
+  left: 26%;
+  top: 56%;
+  right: auto;
 }
 
 .parked-chip.on {

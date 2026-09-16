@@ -17,12 +17,11 @@ import { isParkedFullscreen } from "./layout";
 
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
-  const frozen = useVehicle((s) => s.qa.frozen);
   return (
     <>
       <color attach="background" args={["#e7ebf0"]} />
       <fog attach="fog" args={["#e7ebf0", 12, 28]} />
-      <PerspectiveCamera makeDefault fov={28} position={[-5.35, 1.48, 6.55]} near={0.1} far={80} />
+      <PerspectiveCamera makeDefault fov={28} position={[-6.15, 1.32, 4.85]} near={0.1} far={80} />
       <ambientLight intensity={0.62} />
       <hemisphereLight args={["#f4f7fb", "#c5ccd4", 0.85]} />
       <spotLight
@@ -43,21 +42,20 @@ function ParkedStudio() {
         <Lightformer intensity={1.8} position={[0, 2, -8]} scale={[14, 6, 1]} color="#f7f9fc" form="rect" />
       </Environment>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <circleGeometry args={[24, 80]} />
-        <meshStandardMaterial color="#dfe3ea" roughness={0.42} metalness={0.22} />
+        <planeGeometry args={[48, 48]} />
+        <meshStandardMaterial color="#e7ebf0" roughness={0.92} metalness={0} />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.42, 0]} position={[0, 0, 0.1]}>
-        <Model3 scale={1.08} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.22, 0]} position={[0, 0, 0.08]}>
+        <Model3 scale={1.12} />
       </group>
-      <ContactShadows opacity={0.38} scale={18} blur={2.8} far={9} resolution={1024} color="#7a818c" />
+      <ContactShadows opacity={0.28} scale={16} blur={2.6} far={8} resolution={1024} color="#8b919a" />
       <OrbitControls
         enablePan={false}
-        minDistance={5.4}
-        maxDistance={10.2}
-        autoRotate={!frozen}
-        autoRotateSpeed={0.22}
-        minPolarAngle={0.95}
-        maxPolarAngle={1.2}
+        minDistance={5.1}
+        maxDistance={9.2}
+        autoRotate={false}
+        minPolarAngle={1.18}
+        maxPolarAngle={1.38}
         target={[0, 0.52, 0]}
       />
     </>

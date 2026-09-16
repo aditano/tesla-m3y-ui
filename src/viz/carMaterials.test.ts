@@ -8,6 +8,7 @@ describe("classifyCarMaterial", () => {
     expect(classifyCarMaterial("Glass")).toBe("glass");
     expect(classifyCarMaterial("LED PHARE")).toBe("headlight");
     expect(classifyCarMaterial("Material.007")).toBe("tail");
+    expect(classifyCarMaterial("Material.002")).toBe("paint");
     expect(classifyCarMaterial("Material.014")).toBe("caliper");
     expect(classifyCarMaterial("Material.009")).toBe("rubber");
     expect(classifyCarMaterial("PLASTIC")).toBe("plastic");

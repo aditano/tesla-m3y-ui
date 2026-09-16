@@ -27,19 +27,25 @@ export function classifyCarMaterial(name: string): CarMaterialKind {
   if (n.includes("chrome")) return "chrome";
   if (n.includes("glass") || n === "material.017") return "glass";
   if (n.includes("led") || n.includes("phare")) return "headlight";
-  if (n === "material.007" || n === "material.002") return "tail";
+  if (n === "material.007") return "tail";
+  if (n === "material.002") return "paint";
   if (n === "material.014") return "caliper";
   if (n === "material.009") return "rubber";
-  if (n === "material.011" || n === "material.012" || n === "material.003" || n === "material.004") {
+  if (
+    n === "material.011" ||
+    n === "material.012" ||
+    n === "material.010" ||
+    n === "material.013" ||
+    n === "material.003" ||
+    n === "material.004"
+  ) {
     return "rim";
   }
   if (
     n.includes("plastic") ||
     n === "material.001" ||
     n === "material.008" ||
-    n === "material.016" ||
-    n === "material.010" ||
-    n === "material.013"
+    n === "material.016"
   ) {
     return "plastic";
   }
@@ -71,13 +77,13 @@ function physical(kind: CarMaterialKind, lit: boolean, parked: boolean): MeshPhy
     case "glass":
       return new MeshPhysicalMaterial({
         color: GLASS,
-        metalness: 0.12,
-        roughness: 0.04,
+        metalness: 0.05,
+        roughness: 0.02,
         transparent: true,
-        opacity: 0.42,
-        transmission: 0.28,
-        thickness: 0.35,
-        envMapIntensity: 1.4,
+        opacity: 0.22,
+        transmission: 0.55,
+        thickness: 0.45,
+        envMapIntensity: 1.6,
       });
     case "headlight":
       return new MeshPhysicalMaterial({

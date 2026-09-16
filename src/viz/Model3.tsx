@@ -1,7 +1,7 @@
 import { useLoader } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Box3, Group, Object3D, Vector3 } from "three";
+import { Box3, Group, Object3D, Quaternion, Vector3 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
@@ -100,18 +100,6 @@ function DoorCard({
         label={`${side} door`}
         onToggle={onToggle}
       />
-      {open ? (
-        <mesh position={[side === "L" ? -0.04 : 0.04, 0, 0]} castShadow>
-          <boxGeometry args={[0.05, 0.74, 1.02]} />
-          <meshPhysicalMaterial
-            color="#2a2d33"
-            metalness={0.86}
-            roughness={0.28}
-            clearcoat={1}
-            clearcoatRoughness={0.08}
-          />
-        </mesh>
-      ) : null}
     </group>
   );
 }
@@ -140,10 +128,15 @@ export function Model3({
   }, [car, lit, parked]);
 
   useEffect(() => {
-    const hood = car.getObjectByName("Capot");
-    if (hood) hood.rotation.x = frunk ? -0.55 : 0;
-    const rear = car.getObjectByName("Capot.008");
-    if (rear) rear.rotation.x = trunk ? 0.7 : 0;
+    const hinge = (name: string, axis: Vector3, openAngle: number, open: boolean) => {
+      const node = car.getObjectByName(name);
+      if (!node) return;
+      if (!node.userData.baseQuat) node.userData.baseQuat = node.quaternion.clone();
+      const extra = new Quaternion().setFromAxisAngle(axis, open ? openAngle : 0);
+      node.quaternion.copy(node.userData.baseQuat as Quaternion).multiply(extra);
+    };
+    hinge("Capot", new Vector3(1, 0, 0), -0.9, frunk);
+    hinge("Capot.008", new Vector3(1, 0, 0), 0.85, trunk);
   }, [car, frunk, trunk]);
 
   return (
