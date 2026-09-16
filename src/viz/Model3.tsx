@@ -46,14 +46,30 @@ function extractCar(scene: Object3D): Group {
     if (/debris|speaker/i.test(obj.name)) obj.visible = false;
   });
   replaceStockWheels(wrapper);
+  addCabinBlocker(car);
+  return wrapper;
+}
+
+function addCabinBlocker(car: Object3D): void {
+  car.updateWorldMatrix(true, true);
+  const box = new Box3().setFromObject(car);
+  const worldSize = box.getSize(new Vector3());
+  const worldCenter = box.getCenter(new Vector3());
+  const scale = new Vector3();
+  car.getWorldScale(scale);
   const cabin = new Mesh(
-    new BoxGeometry(1.4, 0.68, 2.55),
-    new MeshPhysicalMaterial({ color: "#141312", roughness: 0.92, metalness: 0 }),
+    new BoxGeometry(
+      (worldSize.x * 0.72) / Math.max(scale.x, 1e-4),
+      (worldSize.y * 0.34) / Math.max(scale.y, 1e-4),
+      (worldSize.z * 0.48) / Math.max(scale.z, 1e-4),
+    ),
+    new MeshPhysicalMaterial({ color: "#121110", roughness: 0.95, metalness: 0 }),
   );
   cabin.name = "orig-cabin-blocker";
-  cabin.position.set(0, 0.94, -0.1);
-  wrapper.add(cabin);
-  return wrapper;
+  car.worldToLocal(worldCenter);
+  cabin.position.copy(worldCenter);
+  cabin.position.y += 0.1;
+  car.add(cabin);
 }
 
 function Hit({

@@ -1,4 +1,4 @@
-import { Box3, CylinderGeometry, Mesh, MeshPhysicalMaterial, Object3D, Vector3 } from "three";
+import { Box3, Mesh, Object3D, Vector3 } from "three";
 import { createAeroWheel } from "./AeroWheel";
 
 export type WheelHub = {
@@ -72,15 +72,6 @@ export function replaceStockWheels(root: Object3D): WheelHub[] {
     wheel.position.x += (world.x < 0 ? -1 : 1) * 0.1;
     wheel.position.y += 0.02;
     parent.add(wheel);
-    const liner = new Mesh(
-      new CylinderGeometry(0.4, 0.4, 0.18, 40),
-      new MeshPhysicalMaterial({ color: "#0a0a0c", roughness: 0.92, metalness: 0 }),
-    );
-    liner.name = "orig-wheel-liner";
-    liner.rotation.z = Math.PI / 2;
-    liner.position.copy(wheel.position);
-    liner.position.x += (world.x < 0 ? -1 : 1) * -0.04;
-    parent.add(liner);
     hubs.push({
       id: parent.name.toLowerCase(),
       position: [world.x, world.y, world.z],
