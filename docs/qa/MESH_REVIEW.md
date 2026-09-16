@@ -65,5 +65,21 @@ Still: `parked-home.png` after uniform 0.365m aero wheels with 0.1m outboard off
 
 **Worst FAIL:** see-through cabin. Next: original dark cabin blocker + wheel-well liners, pull camera back so TRUNK can sit in empty studio.
 
+## Iteration 4 — 2026-09-16 (fitted cabin, `1485608`)
+
+Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the wrapper-space blocker sat on the roof and was pulled back under the glass).
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Smooth candy Ultra Red, no AO blotch, studio reflections. Still flatter than nata; C-pillar highlight is a wrap not a streak. |
+| Glass | PARTIAL | Cabin no longer tunnels to the studio. Roof/backlight are dark. Side glass still a cheap opening, not nata’s tinted laminate. |
+| Wheels | PARTIAL | Rear-right 5-cover aero reads from overhead. Front-left tire is present; this mesh’s fender cutout still shows a red inner well. |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata’s yaw. Window corners, spoiler, and panel gaps remain a 27k-derived silhouette. |
+| Lighting | PARTIAL | White studio + contact shadow. Shadow is still lighter than nata’s oval. |
+| Leaders | PARTIAL | TRUNK pin on the decklid; card still kisses the backlight. FRUNK/CHARGE attached. |
+
+**Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
+
+
 
 
