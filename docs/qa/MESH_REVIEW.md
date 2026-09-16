@@ -140,6 +140,21 @@ Still: `parked-home.png` after PMREM-baking the painted studio.
 
 **Worst remaining:** C-pillar streak. Next: thin `RectAreaLight` keys (direct lobe on clearcoat, not only IBL).
 
+## Iteration 9 — 2026-09-16 (RectAreaLights, `986afc4`)
+
+Still: `parked-home.png` after a 6cm C-pillar key + overhead strip.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | First honest candy streak on the camera-side C-pillar / rear shoulder. Midtones still a bit toy-bright vs nata Ultra Red. |
+| Glass | PARTIAL | Roof is a dark slab; chrome beltline now reads. Side glass still a cheap tinted hole. |
+| Wheels | PARTIAL | Unchanged mesh ceiling. |
+| Proportions | PARTIAL | Rear-right 3/4 holds. |
+| Lighting | PARTIAL | Oval contact shadow is close to nata. Floor picked up a left-side area-light hotspot — next pass damps it. |
+| Leaders | PARTIAL | TRUNK floats in empty studio with a long vertical to the decklid. FRUNK still on the roof. |
+
+**Next:** deepen candy midtones, thin the pillar key, kill the floor bloom.
+
 
 
 

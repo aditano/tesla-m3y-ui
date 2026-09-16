@@ -30,7 +30,7 @@ export type CarMaterialKind =
   | "other";
 
 /** Ultra Red–like albedo. CC-BY allows material tint; mesh is still David_Holiday. */
-export const PAINT_NATA_RED = "#b41c28";
+export const PAINT_NATA_RED = "#9c1620";
 
 export const GLASS_OPTICS = {
   windshield: { ior: 1.51, transmission: 0.01, opacity: 0.982, thickness: 0.55 },
@@ -221,7 +221,7 @@ function physical(
     case "glass":
       return glassPhysical(GLASS, parked, GLASS_OPTICS.windshield, parked ? 1.08 : 0.85);
     case "sideGlass":
-      return glassPhysical(SIDE_GLASS, parked, GLASS_OPTICS.side, parked ? 0.95 : 0.75);
+      return glassPhysical(SIDE_GLASS, parked, GLASS_OPTICS.side, parked ? 1.12 : 0.75);
     case "backGlass":
       return glassPhysical(BACK_GLASS, parked, GLASS_OPTICS.back, parked ? 1.18 : 0.88);
     case "roofGlass":

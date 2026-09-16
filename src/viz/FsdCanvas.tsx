@@ -76,17 +76,17 @@ function CPillarKeys() {
     <>
       <rectAreaLight
         ref={pillar}
-        width={0.06}
-        height={2.7}
-        intensity={62}
+        width={0.045}
+        height={2.85}
+        intensity={78}
         color="#ffffff"
-        position={[2.15, 1.62, -0.42]}
+        position={[2.05, 1.58, -0.55]}
       />
       <rectAreaLight
         ref={shoulder}
-        width={3.8}
-        height={0.09}
-        intensity={22}
+        width={3.6}
+        height={0.07}
+        intensity={16}
         color="#f7f8fa"
         position={[0.15, 3.35, -0.35]}
       />
@@ -94,7 +94,7 @@ function CPillarKeys() {
         ref={bounce}
         width={6}
         height={4}
-        intensity={4.5}
+        intensity={2.1}
         color="#e8edf2"
         position={[-2.8, 1.8, 2.2]}
       />

@@ -35,11 +35,11 @@ export const PARKED_STUDIO = {
     resolution: 1024,
   },
   floor: {
-    roughness: 0.34,
-    metalness: 0.1,
-    envMapIntensity: 0.48,
-    clearcoat: 0.18,
-    clearcoatRoughness: 0.36,
+    roughness: 0.46,
+    metalness: 0.07,
+    envMapIntensity: 0.32,
+    clearcoat: 0.1,
+    clearcoatRoughness: 0.48,
   },
 } as const;
 
