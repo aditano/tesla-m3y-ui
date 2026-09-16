@@ -1,4 +1,5 @@
 import { useVehicle } from "../state/store";
+import { isParkedFullscreen } from "../viz/layout";
 import {
   IconApps,
   IconBolt,
@@ -17,6 +18,7 @@ export function BottomDock() {
   const climate = useVehicle((s) => s.climate);
   const media = useVehicle((s) => s.media);
   const ui = useVehicle((s) => s.ui);
+  const parked = useVehicle((s) => isParkedFullscreen(s.gear, s.phase));
   const patchClimate = useVehicle((s) => s.patchClimate);
   const patchMedia = useVehicle((s) => s.patchMedia);
   const patchUi = useVehicle((s) => s.patchUi);
@@ -88,7 +90,7 @@ export function BottomDock() {
       </div>
 
       <button
-        className="media-card"
+        className={`media-card ${parked ? "parked" : ""}`}
         onClick={() => patchUi({ mediaOpen: !ui.mediaOpen, climateOpen: false, appsOpen: false })}
       >
         <div className="media-art" />
@@ -98,6 +100,11 @@ export function BottomDock() {
             {media.artist} · {media.source}
           </span>
         </div>
+        {parked ? (
+          <div className="media-progress" aria-hidden="true">
+            <i style={{ width: `${Math.round(media.progress * 100)}%` }} />
+          </div>
+        ) : null}
         <div className="media-controls">
           <span
             role="presentation"

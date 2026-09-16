@@ -97,7 +97,7 @@ function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: numb
   map.fitBounds(b, { padding: { top: 56, left: 80, right: 48, bottom: 88 }, duration, maxZoom: 14.8 });
 }
 
-export function TeslaMap() {
+export function TeslaMap({ compact = false }: { compact?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -183,9 +183,13 @@ export function TeslaMap() {
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       <div ref={host} style={{ position: "absolute", inset: 0 }} />
-      <RouteCard />
-      <NavSearch />
-      <div className="map-tools">
+      {compact ? null : (
+        <>
+          <RouteCard />
+          <NavSearch />
+        </>
+      )}
+      <div className={`map-tools ${compact ? "compact" : ""}`}>
         <button
           className={orientation === "heading" ? "on" : ""}
           title="Heading / North up"
@@ -221,7 +225,7 @@ export function TeslaMap() {
           ◎
         </button>
       </div>
-      {dest ? null : (
+      {dest || compact ? null : (
         <div
           style={{
             position: "absolute",

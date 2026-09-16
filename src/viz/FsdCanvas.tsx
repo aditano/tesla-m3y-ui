@@ -1,40 +1,64 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  Lightformer,
+  OrbitControls,
+  PerspectiveCamera,
+} from "@react-three/drei";
 import { useMemo, useRef } from "react";
 import type { Group } from "three";
-import { Vector3 } from "three";
+import { ACESFilmicToneMapping, SRGBColorSpace, Vector3 } from "three";
 import { useVehicle } from "../state/store";
 import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
 import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld } from "./RoadKit";
+import { isParkedFullscreen } from "./layout";
 
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   const frozen = useVehicle((s) => s.qa.frozen);
   return (
     <>
-      <color attach="background" args={["#05060a"]} />
-      <ambientLight intensity={0.55} />
-      <spotLight position={[5, 9, 6]} angle={0.5} penumbra={0.85} intensity={120} castShadow />
-      <directionalLight position={[-4, 6, 3]} intensity={1.8} />
-      <directionalLight position={[2, 3, -6]} intensity={0.45} color="#8ab4ff" />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <circleGeometry args={[28, 64]} />
-        <meshStandardMaterial color="#0c0e14" roughness={0.92} />
+      <color attach="background" args={["#07080c"]} />
+      <fog attach="fog" args={["#07080c", 10, 26]} />
+      <PerspectiveCamera makeDefault fov={30} position={[5.15, 1.42, 6.35]} near={0.1} far={80} />
+      <ambientLight intensity={0.18} />
+      <hemisphereLight args={["#8ea0b8", "#08090d", 0.38]} />
+      <spotLight
+        position={[4.2, 7.4, 5.2]}
+        angle={0.38}
+        penumbra={0.92}
+        intensity={90}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0002}
+      />
+      <spotLight position={[-5.2, 4.8, 2.4]} angle={0.55} penumbra={1} intensity={28} color="#9bb4d4" />
+      <directionalLight position={[0.6, 6.5, -5.5]} intensity={0.55} color="#d5deea" />
+      <Environment resolution={256} environmentIntensity={0.32}>
+        <Lightformer intensity={5.5} position={[0, 6, 2]} scale={[9, 1.15, 1]} form="rect" />
+        <Lightformer intensity={2.4} position={[-5, 2.2, 1]} scale={[4, 5, 1]} color="#8aa4c8" form="rect" />
+        <Lightformer intensity={3.2} position={[6, 1.4, -1.5]} scale={[2.4, 7, 1]} form="rect" />
+        <Lightformer intensity={1.4} position={[0, 2.8, -7]} scale={[12, 5, 1]} color="#c5d0e0" form="rect" />
+      </Environment>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <circleGeometry args={[22, 72]} />
+        <meshStandardMaterial color="#0a0b10" roughness={0.88} metalness={0.18} />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.85, 0]} position={[0, 0, 0]}>
-        <Model3 scale={1.2} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.52, 0]} position={[0, 0, 0.15]}>
+        <Model3 scale={1.05} />
       </group>
-      <ContactShadows opacity={0.55} scale={22} blur={2.4} far={10} />
+      <ContactShadows opacity={0.62} scale={18} blur={2.6} far={9} resolution={1024} color="#000" />
       <OrbitControls
         enablePan={false}
-        minDistance={6}
-        maxDistance={13}
+        minDistance={5.6}
+        maxDistance={10.5}
         autoRotate={!frozen}
-        autoRotateSpeed={0.45}
-        minPolarAngle={0.85}
-        maxPolarAngle={1.28}
-        target={[0, 0.5, 0]}
+        autoRotateSpeed={0.28}
+        minPolarAngle={0.92}
+        maxPolarAngle={1.22}
+        target={[0, 0.58, 0]}
       />
     </>
   );
@@ -77,7 +101,7 @@ function DrivingWorld() {
         <color attach="background" args={["#07090f"]} />
         <fog attach="fog" args={["#07090f", 40, 160]} />
         <ambientLight intensity={0.5} />
-        <Model3 />
+        <Model3 showHits={false} />
       </>
     );
   }
@@ -97,9 +121,30 @@ function DrivingWorld() {
       {fsd ? <TrafficPack route={route} origin={origin} traveledM={pose.traveledM} /> : null}
       <SignalProps maneuvers={route.maneuvers} origin={origin} />
       <group ref={cam} position={[carPos.x, 0, carPos.z]} rotation={headingQuat(pose.heading)}>
-        <Model3 />
+        <Model3 showHits={false} />
       </group>
     </>
+  );
+}
+
+function OpenCallout({ label }: { label: string }) {
+  return <span className="parked-chip">{label}</span>;
+}
+
+function ParkedHud() {
+  const flags = useVehicle((s) => s.flags);
+  const items = [
+    flags.frunkOpen ? "Frunk" : null,
+    flags.trunkOpen ? "Trunk" : null,
+    flags.chargePortOpen ? "Charge port" : null,
+  ].filter((v): v is string => Boolean(v));
+  if (!items.length) return null;
+  return (
+    <div className="parked-callouts">
+      {items.map((label) => (
+        <OpenCallout key={label} label={label} />
+      ))}
+    </div>
   );
 }
 
@@ -140,18 +185,25 @@ export function FsdCanvas() {
   const phase = useVehicle((s) => s.phase);
   const gear = useVehicle((s) => s.gear);
   const route = useVehicle((s) => s.route);
-  const driving = phase === "fsd" || gear === "D" || gear === "N" || (phase === "disengaged" && Boolean(route));
+  const parked = isParkedFullscreen(gear, phase);
+  const driving = !parked && (phase === "fsd" || gear === "D" || gear === "N" || (phase === "disengaged" && Boolean(route)));
 
   return (
     <>
       <Canvas
         shadows
         dpr={[1, 1.6]}
-        camera={{ fov: 38, position: [5.8, 1.85, 5.2], near: 0.1, far: 500 }}
+        gl={{
+          antialias: true,
+          toneMapping: ACESFilmicToneMapping,
+          toneMappingExposure: 1.08,
+          outputColorSpace: SRGBColorSpace,
+        }}
+        camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}
       >
         {driving ? <DrivingWorld /> : <ParkedStudio />}
       </Canvas>
-      <VizHud />
+      {parked ? <ParkedHud /> : <VizHud />}
     </>
   );
 }

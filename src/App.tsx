@@ -8,6 +8,9 @@ import { ClimatePanel } from "./chrome/ClimatePanel";
 import { MediaPanel } from "./chrome/MediaPanel";
 import { AppLauncher } from "./chrome/AppLauncher";
 import { markQaReady } from "./qa/applyScene";
+import { NavSearch } from "./chrome/NavSearch";
+import { RouteCard } from "./chrome/RouteCard";
+import { isParkedFullscreen, useMiniMap } from "./viz/layout";
 
 const TeslaMap = lazy(() =>
   import("./map/TeslaMap").then((m) => ({ default: m.TeslaMap })),
@@ -107,12 +110,15 @@ function QaReady() {
 export default function App() {
   const vizRatio = useVehicle((s) => s.ui.vizRatio);
   const scene = useVehicle((s) => s.qa.scene);
-  const mini = vizRatio > 0.74;
+  const gear = useVehicle((s) => s.gear);
+  const phase = useVehicle((s) => s.phase);
+  const parked = isParkedFullscreen(gear, phase);
+  const mini = useMiniMap(parked, vizRatio);
 
   return (
     <div className="shell" data-qa-scene={scene ?? undefined}>
       <QaReady />
-      <div className="bezel">
+      <div className={`bezel ${parked ? "parked" : "driving"}`}>
         <StatusBar />
         <div className="display-main">
           <DriveStrip />
@@ -121,11 +127,11 @@ export default function App() {
               <Suspense fallback={<div className="busy">Loading visualization…</div>}>
                 <FsdCanvas />
               </Suspense>
-              <VizDivider />
+              {parked ? null : <VizDivider />}
               {mini ? (
-                <div className="map-pane mini">
+                <div className={`map-pane mini ${parked ? "parked" : ""}`}>
                   <Suspense fallback={<div className="busy">Loading map…</div>}>
-                    <TeslaMap />
+                    <TeslaMap compact={parked} />
                   </Suspense>
                 </div>
               ) : null}
@@ -137,6 +143,12 @@ export default function App() {
                 </Suspense>
               </div>
             )}
+            {parked ? (
+              <>
+                <NavSearch variant="parked" />
+                <RouteCard />
+              </>
+            ) : null}
             <ControlsOverlay />
             <ClimatePanel />
             <MediaPanel />
