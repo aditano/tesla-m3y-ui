@@ -52,15 +52,16 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 - Research **only** from public web: Tesla owner manuals, Tesla software-release notes republished by press, NotATeslaApp articles.
 - Do **not** paste large copyrighted manual text into the repo. Inventory files summarize **function lists** and cite URLs.
-- Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Plus Jakarta Sans — that is a known FAIL vs Tesla’s UI type).
+- Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Inter OFL — PARTIAL vs Tesla’s UI type; still not Tesla Sans).
 - Reference images are fair-use stills for offline comparison, attributed in [`REFERENCES.md`](references/REFERENCES.md). They are **not** to be bundled into the shipped UI.
 
 ## Current verdict (this pass)
 
-Tone’s first-pass notes still hold against the public references:
+Parked viz lane (after CC Model 3 + Highland layout):
 
-- Parked mode is a **split viz + map**, not Highland full-screen centered vehicle.
+- Parked home is **full-screen centered vehicle** with a faded map snippet top-right and Navigate + media in the lower third. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — layout matches the intended `parked-home` state; mesh/PBR/hotspot chrome are not Tesla-grade.
+- Type is Inter (OFL), not Plus Jakarta Sans. Still not Tesla Sans. Score: **PARTIAL**.
 - FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
-- Car mesh, type, dock, and Controls chrome do not match v12 placement.
+- PRND, status-bar order, dock climate cluster, and Controls chrome still FAIL.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.
