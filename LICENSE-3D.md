@@ -39,10 +39,12 @@ mesh). **It is not in this tree** because:
 - Paid / editorial archives (CGTrader, iMeshh) are out of policy.
 
 The vendored 27k-face GLB has **no** `normalTexture` / `occlusionTexture` /
-`emissiveTexture` in its glTF materials. Runtime PBR (clearcoat flake normal,
-glass IOR/transmission, rubber bump, rim metal, studio reflector floor) is an
-adaptation under CC-BY-4.0; the mesh is still David_Holiday’s 27k asset. It is
-not Tesla’s viz-grade Highland mesh.
+`emissiveTexture` in its glTF materials. Runtime PBR (clearcoat flake normal in
+linear/`NoColorSpace`, glass IOR/transmission, rubber bump, rim metal, glossy
+studio floor that picks up the environment) is an adaptation under CC-BY-4.0;
+the mesh is still David_Holiday’s 27k asset. It is not Tesla’s viz-grade
+Highland mesh. A true `MeshReflectorMaterial` ground was tried and dropped:
+extra render targets blew the parked blit and hung Chromium QA.
 
 Runtime: Three.js `GLTFLoader` with the bundled glTF Draco decoder. Hit volumes
 for frunk, trunk, charge port, and doors are original to this project. Draco

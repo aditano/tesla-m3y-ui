@@ -3,7 +3,6 @@ import {
   ContactShadows,
   Environment,
   Lightformer,
-  MeshReflectorMaterial,
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
@@ -26,9 +25,9 @@ function studioFloorMap(): CanvasTexture {
     tex.colorSpace = SRGBColorSpace;
     return tex;
   }
-  const g = ctx.createRadialGradient(256, 256, 12, 256, 256, 248);
-  g.addColorStop(0, "#d2d5dc");
-  g.addColorStop(0.38, "#e4e6eb");
+  const g = ctx.createRadialGradient(256, 256, 18, 256, 256, 250);
+  g.addColorStop(0, "#d8dbe2");
+  g.addColorStop(0.42, "#e6e8ed");
   g.addColorStop(1, "#eef0f3");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 512, 512);
@@ -44,61 +43,50 @@ function ParkedStudio() {
   return (
     <>
       <color attach="background" args={["#eef0f3"]} />
-      <fog attach="fog" args={["#eef0f3", 11, 26]} />
-      <PerspectiveCamera makeDefault fov={30} position={[-4.28, 4.78, -4.72]} near={0.1} far={80} />
-      <ambientLight intensity={0.42} />
-      <hemisphereLight args={["#f4f6f8", "#c5c8ce", 0.62]} />
-      {/* Soft key from above-behind so Ultra Red reads metallic, not plastic. */}
-      <directionalLight position={[-2.4, 8.6, -5.2]} intensity={1.18} color="#ffffff" />
-      {/* Cool fill from camera-right */}
-      <directionalLight position={[5.4, 3.4, -1.2]} intensity={0.42} color="#e4eaf2" />
-      {/* Rim along the far flank */}
-      <directionalLight position={[1.6, 2.6, 5.8]} intensity={0.58} color="#f7f8fa" />
+      <fog attach="fog" args={["#eef0f3", 13, 28]} />
+      <PerspectiveCamera makeDefault fov={28} position={[-5.12, 4.05, -5.58]} near={0.1} far={80} />
+      <ambientLight intensity={0.62} />
+      <hemisphereLight args={["#f7f8fa", "#cfd2d8", 0.72]} />
+      <directionalLight position={[-3.2, 7.8, -4.6]} intensity={1.05} color="#ffffff" />
+      <directionalLight position={[5.6, 2.9, 1.8]} intensity={0.36} color="#e4eaf2" />
+      <directionalLight position={[0.8, 3.1, 6.2]} intensity={0.48} color="#f4f6f8" />
       <spotLight
-        position={[-1.4, 9.2, -2.8]}
-        angle={0.72}
+        position={[-1.8, 8.6, -3.1]}
+        angle={0.7}
         penumbra={1}
-        intensity={9.5}
+        intensity={11}
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.00018}
+        shadow-bias={-0.0002}
       />
-      <Environment resolution={512} environmentIntensity={0.78}>
-        <Lightformer intensity={7.2} position={[0, 9, 0]} scale={[18, 2.4, 1]} form="rect" color="#ffffff" />
-        <Lightformer intensity={2.1} position={[-8, 3.2, -2]} scale={[5, 9, 1]} color="#e8ecf2" form="rect" />
-        <Lightformer intensity={1.7} position={[8, 2.4, 1]} scale={[4, 10, 1]} form="rect" color="#f3f5f8" />
-        <Lightformer intensity={1.35} position={[0, 2.6, 8]} scale={[16, 5, 1]} color="#f7f8fa" form="rect" />
+      <Environment resolution={256} environmentIntensity={0.62}>
+        <Lightformer intensity={4.4} position={[0, 8.4, 0]} scale={[16, 2.2, 1]} form="rect" color="#ffffff" />
+        <Lightformer intensity={1.6} position={[-7.5, 3, -2]} scale={[5, 8, 1]} color="#e8ecf2" form="rect" />
+        <Lightformer intensity={1.35} position={[7.5, 2.4, 1]} scale={[4, 9, 1]} form="rect" color="#f3f5f8" />
+        <Lightformer intensity={1.1} position={[0, 2.8, 8]} scale={[14, 5, 1]} color="#f7f8fa" form="rect" />
       </Environment>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
-        <planeGeometry args={[42, 42]} />
-        <meshBasicMaterial color="#eef0f3" />
-      </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <planeGeometry args={[16, 16]} />
-        <MeshReflectorMaterial
-          blur={[280, 50]}
-          resolution={384}
-          mixBlur={1}
-          mixStrength={0.2}
-          roughness={0.86}
-          metalness={0.16}
-          color="#e2e4e9"
-          mirror={0.12}
+        <planeGeometry args={[40, 40]} />
+        <meshPhysicalMaterial
           map={floorMap}
+          color="#e7e9ee"
+          roughness={0.78}
+          metalness={0.14}
+          envMapIntensity={0.42}
         />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.36, 0]} position={[0.06, 0, 0.18]}>
-        <Model3 scale={1.34} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.24, 0]} position={[0.12, 0, 0.14]}>
+        <Model3 scale={1.26} />
       </group>
-      <ContactShadows opacity={0.28} scale={16} blur={2.55} far={8} resolution={1024} color="#7a7578" />
+      <ContactShadows opacity={0.26} scale={16} blur={2.7} far={8} resolution={1024} color="#7a7578" />
       <OrbitControls
         enablePan={false}
-        minDistance={5.8}
-        maxDistance={9.4}
+        minDistance={6.4}
+        maxDistance={10}
         autoRotate={false}
-        minPolarAngle={0.92}
-        maxPolarAngle={1.12}
-        target={[0.02, 0.36, -0.18]}
+        minPolarAngle={1.02}
+        maxPolarAngle={1.22}
+        target={[0, 0.38, -0.32]}
       />
     </>
   );
@@ -212,12 +200,12 @@ export function FsdCanvas() {
     <>
       <Canvas
         shadows
-        dpr={[1, 1.75]}
+        dpr={[1, 1.6]}
         gl={{
           antialias: true,
           preserveDrawingBuffer: frozen,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1.08,
+          toneMappingExposure: 1.1,
           outputColorSpace: SRGBColorSpace,
         }}
         camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}

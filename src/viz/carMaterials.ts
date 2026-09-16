@@ -4,6 +4,7 @@ import {
   Mesh,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
+  NoColorSpace,
   Object3D,
   RepeatWrapping,
   RGBAFormat,
@@ -81,6 +82,7 @@ function noiseTexture(size: number, strength: number): DataTexture {
     data[i * 4 + 3] = 255;
   }
   const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
+  tex.colorSpace = NoColorSpace;
   tex.wrapS = RepeatWrapping;
   tex.wrapT = RepeatWrapping;
   tex.needsUpdate = true;
@@ -119,14 +121,10 @@ function physical(
         clearcoatRoughness: 0.022,
         clearcoatNormalMap: getFlakeNormal(),
         clearcoatNormalScale: new Vector2(0.07, 0.07),
-        envMapIntensity: parked ? 1.82 : 1.15,
-        sheen: 0.16,
+        envMapIntensity: parked ? 1.62 : 1.15,
+        sheen: 0.14,
         sheenColor: new Color("#5a1014"),
-        sheenRoughness: 0.38,
-        iridescence: parked ? 0.12 : 0,
-        iridescenceIOR: 1.32,
-        iridescenceThicknessRange: [90, 320],
-        anisotropy: parked ? 0.28 : 0,
+        sheenRoughness: 0.4,
         specularIntensity: 1,
       });
     case "chrome":

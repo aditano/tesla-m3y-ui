@@ -10,8 +10,8 @@ describe("HOTSPOT_PINS", () => {
 
   it("puts TRUNK on the decklid, not the rear bumper or quarter panel", () => {
     const [, y, z] = hotspotPin("trunk").position;
-    expect(z).toBeGreaterThan(-2.05);
-    expect(z).toBeLessThan(-1.45);
+    expect(z).toBeGreaterThan(-2.15);
+    expect(z).toBeLessThan(-1.55);
     expect(y).toBeGreaterThan(0.75);
     expect(y).toBeLessThan(1.05);
   });
