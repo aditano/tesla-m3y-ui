@@ -16,6 +16,7 @@ export type CarMaterialKind =
   | "paint"
   | "chrome"
   | "glass"
+  | "roofGlass"
   | "headlight"
   | "tail"
   | "rubber"
@@ -26,20 +27,22 @@ export type CarMaterialKind =
   | "other";
 
 /** Ultra Red–like albedo. CC-BY allows material tint; mesh is still David_Holiday. */
-export const PAINT_NATA_RED = "#8c151c";
-const CHROME = new Color("#b8c0c8");
-const RUBBER = new Color("#0c0c0e");
-const PLASTIC = new Color("#141518");
-const GLASS = new Color("#12161c");
-const CALIPER = new Color("#c4121a");
-const INTERIOR = new Color("#121316");
-const RIM = new Color("#1a1c20");
+export const PAINT_NATA_RED = "#7a141c";
+const CHROME = new Color("#c4c9d0");
+const RUBBER = new Color("#08080a");
+const PLASTIC = new Color("#121316");
+const GLASS = new Color("#0e1218");
+const ROOF_GLASS = new Color("#050608");
+const CALIPER = new Color("#b01018");
+const INTERIOR = new Color("#3a322c");
+const RIM = new Color("#16181c");
 
 export function classifyCarMaterial(name: string): CarMaterialKind {
   const n = name.toLowerCase().replace(/\s+/g, "_");
   if (n.includes("car") && n.includes("paint")) return "paint";
   if (n.includes("chrome")) return "chrome";
-  if (n.includes("glass") || n === "material.017") return "glass";
+  if (n.includes("glass")) return "glass";
+  if (n === "material.017") return "roofGlass";
   if (n === "material.005") return "chrome";
   if (n.includes("led") || n.includes("phare")) return "headlight";
   if (n === "material.007") return "tail";
@@ -69,17 +72,27 @@ export function classifyCarMaterial(name: string): CarMaterialKind {
 }
 
 let flakeNormal: DataTexture | null = null;
+let flakeRough: DataTexture | null = null;
 let rubberBump: DataTexture | null = null;
 
-function noiseTexture(size: number, strength: number): DataTexture {
+function noiseTexture(size: number, strength: number, asRoughness = false): DataTexture {
   const data = new Uint8Array(size * size * 4);
   for (let i = 0; i < size * size; i++) {
-    const nx = 0.5 + (Math.random() * 2 - 1) * strength;
-    const ny = 0.5 + (Math.random() * 2 - 1) * strength;
-    data[i * 4] = Math.round(nx * 255);
-    data[i * 4 + 1] = Math.round(ny * 255);
-    data[i * 4 + 2] = 255;
-    data[i * 4 + 3] = 255;
+    const n = Math.random();
+    if (asRoughness) {
+      const r = Math.round((0.42 + n * 0.38) * 255);
+      data[i * 4] = r;
+      data[i * 4 + 1] = r;
+      data[i * 4 + 2] = r;
+      data[i * 4 + 3] = 255;
+    } else {
+      const nx = 0.5 + (n * 2 - 1) * strength;
+      const ny = 0.5 + (Math.random() * 2 - 1) * strength;
+      data[i * 4] = Math.round(nx * 255);
+      data[i * 4 + 1] = Math.round(ny * 255);
+      data[i * 4 + 2] = 255;
+      data[i * 4 + 3] = 255;
+    }
   }
   const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
   tex.colorSpace = NoColorSpace;
@@ -91,16 +104,24 @@ function noiseTexture(size: number, strength: number): DataTexture {
 
 function getFlakeNormal(): DataTexture {
   if (!flakeNormal) {
-    flakeNormal = noiseTexture(64, 0.22);
-    flakeNormal.repeat.set(22, 22);
+    flakeNormal = noiseTexture(64, 0.16);
+    flakeNormal.repeat.set(28, 28);
   }
   return flakeNormal;
 }
 
+function getFlakeRoughness(): DataTexture {
+  if (!flakeRough) {
+    flakeRough = noiseTexture(64, 0.2, true);
+    flakeRough.repeat.set(18, 18);
+  }
+  return flakeRough;
+}
+
 function getRubberBump(): DataTexture {
   if (!rubberBump) {
-    rubberBump = noiseTexture(48, 0.18);
-    rubberBump.repeat.set(6, 14);
+    rubberBump = noiseTexture(48, 0.22);
+    rubberBump.repeat.set(8, 18);
   }
   return rubberBump;
 }
@@ -115,96 +136,113 @@ function physical(
     case "paint":
       return new MeshPhysicalMaterial({
         color: new Color(paintHex),
-        metalness: 0.58,
-        roughness: 0.16,
+        metalness: 0.34,
+        roughness: 0.28,
+        roughnessMap: getFlakeRoughness(),
         clearcoat: 1,
-        clearcoatRoughness: 0.022,
+        clearcoatRoughness: 0.06,
+        clearcoatRoughnessMap: getFlakeRoughness(),
         clearcoatNormalMap: getFlakeNormal(),
-        clearcoatNormalScale: new Vector2(0.07, 0.07),
-        envMapIntensity: parked ? 1.62 : 1.15,
-        sheen: 0.14,
-        sheenColor: new Color("#5a1014"),
-        sheenRoughness: 0.4,
-        specularIntensity: 1,
+        clearcoatNormalScale: new Vector2(0.045, 0.045),
+        envMapIntensity: parked ? 0.92 : 1.05,
+        sheen: parked ? 0.38 : 0.14,
+        sheenColor: new Color("#5c1014"),
+        sheenRoughness: 0.55,
+        specularIntensity: 0.72,
       });
     case "chrome":
       return new MeshPhysicalMaterial({
         color: CHROME,
-        metalness: 1,
-        roughness: 0.08,
-        envMapIntensity: 1.55,
+        metalness: 0.96,
+        roughness: 0.14,
+        envMapIntensity: 1.15,
       });
     case "rim":
       return new MeshPhysicalMaterial({
         color: RIM,
-        metalness: 0.96,
-        roughness: 0.22,
-        envMapIntensity: 1.05,
-        clearcoat: 0.35,
-        clearcoatRoughness: 0.18,
+        metalness: 0.88,
+        roughness: 0.32,
+        envMapIntensity: 0.7,
+        clearcoat: 0.22,
+        clearcoatRoughness: 0.28,
       });
     case "glass":
       return new MeshPhysicalMaterial({
         color: GLASS,
-        metalness: 0.04,
-        roughness: 0.018,
+        metalness: 0.02,
+        roughness: 0.04,
         transparent: true,
-        opacity: parked ? 0.82 : 0.55,
-        transmission: parked ? 0.18 : 0.35,
-        thickness: 0.72,
-        envMapIntensity: 1.45,
+        opacity: parked ? 0.72 : 0.55,
+        transmission: parked ? 0.08 : 0.32,
+        thickness: 0.55,
+        envMapIntensity: 0.85,
         ior: 1.5,
-        attenuationColor: new Color("#0c1016"),
-        attenuationDistance: 0.85,
+        attenuationColor: new Color("#07090c"),
+        attenuationDistance: 0.55,
+      });
+    case "roofGlass":
+      return new MeshPhysicalMaterial({
+        color: ROOF_GLASS,
+        metalness: 0.06,
+        roughness: 0.08,
+        transparent: true,
+        opacity: parked ? 0.94 : 0.7,
+        transmission: parked ? 0.02 : 0.12,
+        thickness: 0.4,
+        envMapIntensity: 0.55,
+        ior: 1.5,
       });
     case "headlight":
       return new MeshPhysicalMaterial({
-        color: lit && !parked ? "#f7fbff" : "#c5ccd4",
-        emissive: lit && !parked ? new Color("#eef6ff") : new Color("#1a1c20"),
-        emissiveIntensity: lit && !parked ? 3.4 : parked ? 0.12 : 0.05,
-        metalness: 0.18,
-        roughness: 0.1,
+        color: lit && !parked ? "#f7fbff" : "#9aa3ac",
+        emissive: lit && !parked ? new Color("#eef6ff") : new Color("#14161a"),
+        emissiveIntensity: lit && !parked ? 3.4 : parked ? 0.04 : 0.05,
+        metalness: 0.55,
+        roughness: 0.18,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.92,
       });
     case "tail":
       return new MeshPhysicalMaterial({
-        color: "#5a0c10",
-        emissive: new Color(parked ? "#d41822" : "#5a0008"),
-        emissiveIntensity: parked ? 0.55 : 0.45,
-        metalness: 0.3,
-        roughness: 0.32,
+        color: "#3a080c",
+        emissive: new Color(parked ? "#7a1016" : "#5a0008"),
+        emissiveIntensity: parked ? 0.18 : 0.45,
+        metalness: 0.22,
+        roughness: 0.42,
       });
     case "rubber":
       return new MeshPhysicalMaterial({
         color: RUBBER,
-        metalness: 0.04,
-        roughness: 0.78,
-        sheen: 0.28,
-        sheenColor: new Color("#1a1a1c"),
-        sheenRoughness: 0.62,
+        metalness: 0,
+        roughness: 0.94,
+        sheen: 0.12,
+        sheenColor: new Color("#121214"),
+        sheenRoughness: 0.82,
         bumpMap: getRubberBump(),
-        bumpScale: 0.018,
+        bumpScale: 0.028,
       });
     case "plastic":
       return new MeshPhysicalMaterial({
         color: PLASTIC,
-        metalness: 0.06,
-        roughness: 0.58,
+        metalness: 0.04,
+        roughness: 0.64,
       });
     case "caliper":
       return new MeshPhysicalMaterial({
         color: CALIPER,
-        metalness: 0.42,
-        roughness: 0.32,
-        clearcoat: 0.55,
-        clearcoatRoughness: 0.2,
+        metalness: 0.22,
+        roughness: 0.44,
+        clearcoat: 0.4,
+        clearcoatRoughness: 0.28,
       });
     case "interior":
       return new MeshPhysicalMaterial({
         color: INTERIOR,
-        metalness: 0.04,
-        roughness: 0.74,
+        metalness: 0.02,
+        roughness: 0.82,
+        sheen: 0.18,
+        sheenColor: new Color("#5a4c42"),
+        sheenRoughness: 0.7,
       });
     case "other":
       return new MeshPhysicalMaterial({

@@ -42,6 +42,7 @@ export function ParkedHotspots(): ReactNode {
           occlude={false}
           zIndexRange={[40, 10]}
           style={{ pointerEvents: "none" }}
+          wrapperClass="parked-hotspot-html"
         >
           <div className={`parked-callout ${pin.id} ${open[pin.id] ? "on" : ""}`} data-hotspot={pin.id}>
             <div className="parked-callout-head">

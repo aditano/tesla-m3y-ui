@@ -46,7 +46,7 @@ export function StatusBar() {
       <header className="status-bar parked">
         <div className="status-left">
           <button
-            className="status-icon"
+            className="status-icon status-lock"
             title={flags.locked ? "Lock" : "Unlock"}
             onClick={() => patchFlags({ locked: !flags.locked })}
           >

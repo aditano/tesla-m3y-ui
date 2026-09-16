@@ -121,7 +121,7 @@ button {
 .bezel.parked {
   --dock-h: 78px;
   --status-h: 44px;
-  --prnd-w: 58px;
+  --prnd-w: 52px;
   --text: #1c1d20;
   --muted: #5c5f66;
 }
@@ -144,12 +144,21 @@ button {
   color: #111;
 }
 
-.bezel.parked .status-time,
-.bezel.parked .status-temp,
-.bezel.parked .battery-chip,
-.bezel.parked .range-label,
-.bezel.parked .status-profile {
-  color: #1c1d20;
+.bezel.parked .status-bar {
+  padding: 0 18px 0 10px;
+}
+
+.bezel.parked .status-lock {
+  color: #111;
+}
+
+.bezel.parked .status-lock svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bezel.parked .status-left {
+  gap: 8px;
 }
 
 .bezel.parked .drive-strip {
@@ -173,40 +182,73 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
+  padding-top: 2px;
 }
 
 .auto-shift-prnd {
   display: flex;
-  gap: 3px;
-  font-size: 10px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   color: #9aa0a8;
 }
 
-.auto-shift-prnd .on {
+.auto-shift-letter {
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: 1.2;
+}
+
+.auto-shift-letter.on {
   color: #111;
 }
 
+.auto-shift-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .auto-shift-car {
-  width: 22px;
-  height: 22px;
-  color: #6b7078;
-  opacity: 0.7;
+  width: 26px;
+  height: 34px;
+  color: #5c6168;
+  opacity: 0.85;
+  margin: 2px 0;
 }
 
 .bezel.parked .gear.auto {
-  width: 32px;
-  height: 28px;
+  width: 28px;
+  height: 26px;
   font-size: 15px;
+  font-weight: 600;
+  position: relative;
+  background: transparent;
+  box-shadow: none;
+  z-index: 1;
 }
 
-.bezel.parked .gear.auto.p.on {
-  width: 36px;
-  height: 32px;
-  font-size: 18px;
+.bezel.parked .gear.auto.magnet::before {
+  content: "";
+  position: absolute;
+  inset: -14px -8px;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at center, rgba(96, 148, 224, 0.32) 0%, rgba(96, 148, 224, 0.08) 48%, transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bezel.parked .gear.auto.on {
+  color: #111;
+  background: transparent;
+  box-shadow: none;
 }
 
 .bezel.parked .bottom-dock {
@@ -782,17 +824,17 @@ button {
 
 .search-panel.parked {
   left: auto;
-  right: 18px;
-  bottom: 16px;
-  width: min(340px, 32%);
+  right: 22px;
+  bottom: 18px;
+  width: min(320px, 30%);
   z-index: 9;
 }
 
 .search-panel.parked .search-bar {
-  height: 48px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   color: #1c1d20;
 }
 
@@ -834,17 +876,17 @@ button {
 
 .parked-media {
   position: absolute;
-  left: 18px;
-  bottom: 16px;
+  left: 22px;
+  bottom: 18px;
   z-index: 9;
-  width: min(420px, 40%);
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 16px;
-  padding: 10px 12px 12px;
+  width: min(400px, 38%);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  padding: 12px 14px 12px;
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 8px 10px;
+  gap: 8px 12px;
   color: #1c1d20;
   backdrop-filter: blur(12px);
 }
@@ -864,12 +906,13 @@ button {
 }
 
 .parked-media .media-meta strong {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 600;
   color: #111;
 }
 
 .parked-media .media-meta span {
-  font-size: 12px;
+  font-size: 13px;
   color: #5c5f66;
 }
 
@@ -1272,10 +1315,7 @@ button {
   color: #fff;
 }
 
-.parked-callouts {
-  position: absolute;
-  inset: 0;
-  z-index: 6;
+.parked-hotspot-html {
   pointer-events: none;
 }
 
@@ -1284,56 +1324,56 @@ button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  --pin-x: 54px;
-  --stem-h: 72px;
-  transform: translate(calc(-1 * var(--pin-x)), calc(-100% + 5px));
-  filter: none;
+  --pin-x: 58px;
+  --stem-h: 64px;
+  transform: translate(calc(-1 * var(--pin-x)), calc(-100% + 4px));
 }
 
 .parked-callout-head {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .parked-callout-kicker {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
   line-height: 1;
-  color: #8e949c;
+  color: #9aa0a8;
   text-transform: uppercase;
 }
 
 .parked-callout-card {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  min-width: 108px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 4px;
-  background: #d5d8de;
+  gap: 10px;
+  min-width: 118px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 2px;
+  background: #cfd2d8;
   color: #2a2c31;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  box-shadow: 0 1px 2px rgba(20, 24, 32, 0.06);
+  box-shadow: none;
 }
 
 .parked-callout-card:hover {
-  background: #c9cdd4;
+  background: #c4c8ce;
 }
 
 .parked-callout-card:active {
-  transform: scale(0.98);
+  transform: none;
+  background: #b8bcc4;
 }
 
 .parked-callout-card svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex: none;
 }
 
@@ -1350,31 +1390,31 @@ button {
   width: 1px;
   height: var(--stem-h);
   margin-left: var(--pin-x);
-  background: #b0b4ba;
+  background: #b4b8be;
 }
 
 .parked-callout-dot {
   width: 7px;
   height: 7px;
   margin-left: calc(var(--pin-x) - 3px);
-  border-radius: 1.5px;
+  border-radius: 1px;
   background: #c8ccd2;
   box-shadow: inset 0 0 0 1.5px #8e939a;
 }
 
 .parked-callout.trunk {
-  --stem-h: 72px;
-  --pin-x: 118px;
+  --stem-h: min(24vh, 220px);
+  --pin-x: 64px;
 }
 
 .parked-callout.frunk {
-  --stem-h: 52px;
-  --pin-x: 50px;
+  --stem-h: min(8vh, 64px);
+  --pin-x: 52px;
 }
 
 .parked-callout.charge {
-  --stem-h: 40px;
-  --pin-x: 52px;
+  --stem-h: min(6vh, 48px);
+  --pin-x: 54px;
 }
 
 .map-tools.compact {

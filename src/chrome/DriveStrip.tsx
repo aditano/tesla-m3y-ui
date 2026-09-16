@@ -1,7 +1,7 @@
 import { useVehicle } from "../state/store";
 import type { Gear } from "../state/types";
 import { isParkedFullscreen } from "../viz/layout";
-import { IconCarOutline } from "./Icons";
+import { IconAutoShiftCar } from "./Icons";
 
 const GEARS: Gear[] = ["P", "R", "N", "D"];
 
@@ -23,34 +23,35 @@ export function DriveStrip() {
     return (
       <aside className="drive-strip parked" aria-label="Drive mode">
         <div className="auto-shift">
-          <div className="auto-shift-prnd" aria-hidden="true">
+          <div className="auto-shift-prnd">
             {GEARS.map((g) => (
-              <span key={g} className={gear === g ? "on" : ""}>
+              <button
+                key={g}
+                type="button"
+                className={`auto-shift-letter ${gear === g ? "on" : ""}`}
+                onClick={() => select(g)}
+              >
                 {g}
-              </span>
+              </button>
             ))}
           </div>
-          <button
-            className={`gear auto p ${gear === "P" ? "on" : ""}`}
-            onClick={() => select("P")}
-          >
-            P
-          </button>
-          <button
-            className={`gear auto d ${gear === "D" ? "on" : ""}`}
-            onClick={() => select("D")}
-            title="Drive"
-          >
-            D
-          </button>
-          <IconCarOutline className="auto-shift-car" />
-          <button
-            className={`gear auto r ${gear === "R" ? "on" : ""}`}
-            onClick={() => select("R")}
-            title="Reverse"
-          >
-            R
-          </button>
+          <div className="auto-shift-stack">
+            <button
+              className={`gear auto magnet d ${gear === "D" ? "on" : ""}`}
+              onClick={() => select("D")}
+              title="Drive"
+            >
+              D
+            </button>
+            <IconAutoShiftCar className="auto-shift-car" />
+            <button
+              className={`gear auto magnet r ${gear === "R" ? "on" : ""}`}
+              onClick={() => select("R")}
+              title="Reverse"
+            >
+              R
+            </button>
+          </div>
         </div>
       </aside>
     );

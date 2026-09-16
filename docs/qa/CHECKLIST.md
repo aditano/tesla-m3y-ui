@@ -19,7 +19,7 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 
 | Scene | Latest still | vs reference | Status | Notes (update me) |
 | --- | --- | --- | --- | --- |
-| Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | PARTIAL | Tighter nata rear-3/4: Ultra Red fills the stage, TRUNK leader on decklid center (not quarter), FRUNK on hood, CHARGE on port, compact Auto Shift, Park status-bar, snippet map chip (`parked-home.png` 2026-09-16). Remaining: 27k David_Holiday mesh is the ceiling (737k CC-BY sibling exists on Sketchfab but download is 401 without a token; no public mirror). Not Tesla viz-grade. |
+| Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | PARTIAL | Same 27k mesh; softer studio, richer red midtones, cool rim, decklid TRUNK leader, nata-like Open cards, compact Auto Shift magnets, visible lock (`parked-home.png` 2026-09-16). Remaining: mesh is still not Tesla viz-grade. |
 | Route set | `screenshots/route-set.png` | `manual-m3-maps-nav-p170.jpg`, `nata-trip-progress.jpg` | PARTIAL | Turn list + Start FSD sit on the parked fullscreen (map snippet TR). No traffic progress bar, no gray traveled path, no energy-to-destination. |
 | FSD engaged | `screenshots/fsd-engaged.png` | `manual-m3-driving-status-p16.jpg`, `nata-ui-v12-hero.jpg` | FAIL | CC Model 3 now sits on the ribbon (this PR) but does not prove it is on the same road the map drives. Cheap traffic/lanes. Media player is in the dock, not on the viz. |
 | Controls open | `screenshots/controls.png` | `nata-quick-controls.jpg`, `nata-controls-search.jpg` | FAIL | Sheet covers the whole stage. Missing top Search, wrong categories (no Dynamics/Charging/Trips), tile layout ≠ Quick Controls. |
@@ -32,14 +32,14 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 | Check | Reference | Status | Notes |
 | --- | --- | --- | --- |
 | Typeface | Tesla UI is not Plus Jakarta Sans | PARTIAL | Inter (OFL) via Google Fonts — licensed SF-like grotesque. Still not Tesla Sans / Universal. Do not rip car fonts. |
-| Status bar order (Park) | `nata-status-bar.jpg` | PARTIAL | Lock / profile / Sentry / Wi‑Fi toward the driver; clock + 72° center; passenger airbag + range on the right. Profile label is generic “Driver”; temp is a stub. |
-| PRND / Auto Shift | `nata-auto-shift.jpg` | PARTIAL | Parked is a compact Auto Shift (PRND header, P selected, D / car / R) instead of a full-height ladder. Missing nata’s blue D/R magnets and car-outline fidelity. Driving still uses the taller strip. |
+| Status bar order (Park) | `nata-status-bar.jpg` | PARTIAL | Lock (now filled/darker) / profile / Sentry / Wi‑Fi toward the driver; clock + 72° center; passenger airbag + range on the right. Profile label is generic “Driver”; temp is a stub. |
+| PRND / Auto Shift | `nata-auto-shift.jpg` | PARTIAL | Parked is PRND header + D / top-down car / R with blue magnets (P lives in the header, not a full-height ladder). Missing nata chevron dots. Driving still uses the taller strip. |
 | Dock: My Apps + climate cluster + volume | `manual-m3-touchscreen-p8.jpg` | FAIL | Extra app icons, climate not a Tesla cluster. Parked media now overlays the viz (closer to v12); dock media card is hidden while Parked. |
 | Vertical power / regen meter | `nata-regen-speedometer.jpg` | missing | Should sit left of viz while driving. |
 | Larger speed readout | `nata-regen-speedometer.jpg`, driving-status PDF | PARTIAL | HUD exists; type/size/placement off. |
 | Map orientation + tracking chip | Maps PDF p.169 | PARTIAL | Compass toggle exists; no “Tracking Disabled” chip. |
 | FSD viz ↔ map polyline | Tone + driving-status PDF | FAIL | Other lane. Harness scene `fsd-engaged` is the regression still. |
-| Parked full-screen vehicle | UI v12 notes + `nata-parked-car-vis.jpg` | PARTIAL | Scene `parked-home`: overhead rear-3/4, studio reflector floor, projected trunk/frunk/charge pins. Mesh still the 27k CC-BY David_Holiday (see `LICENSE-3D.md`); not Tesla viz-grade. |
+| Parked full-screen vehicle | UI v12 notes + `nata-parked-car-vis.jpg` | PARTIAL | Scene `parked-home`: overhead rear-3/4, glossy studio floor + contact shadow, projected trunk/frunk/charge pins. Mesh still the 27k CC-BY David_Holiday (see `LICENSE-3D.md`); not Tesla viz-grade. |
 | Controls overlay on **map only** | Touchscreen PDF + `nata-quick-controls.jpg` | FAIL | Other lane. Scene `controls`. |
 
 ## How to record a pass

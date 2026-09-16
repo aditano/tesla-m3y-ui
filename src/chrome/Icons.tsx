@@ -14,8 +14,8 @@ function I(props: IconProps & { children: ReactNode }) {
 export function IconLock(props: IconProps) {
   return (
     <I {...props}>
-      <rect x="6" y="11" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M8.5 11V8.2a3.5 3.5 0 0 1 7 0V11" stroke="currentColor" strokeWidth="1.7" />
+      <rect x="6" y="11" width="12" height="9" rx="2" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8.5 11V8.2a3.5 3.5 0 0 1 7 0V11" stroke="currentColor" strokeWidth="1.8" />
     </I>
   );
 }
@@ -155,17 +155,16 @@ export function IconChargePort(props: IconProps) {
   );
 }
 
-export function IconCarOutline(props: IconProps) {
+export function IconAutoShiftCar(props: IconProps) {
   return (
     <I {...props}>
       <path
-        d="M8 16.5 7 12l2-4h6l2 4-1 4.5"
+        d="M9.1 3.6h5.8l2.3 3.5v9.8l-1.5 3.4H8.3L6.8 16.9V7.1L9.1 3.6Z"
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      <circle cx="8.2" cy="16.8" r="1.15" fill="currentColor" />
-      <circle cx="15.8" cy="16.8" r="1.15" fill="currentColor" />
+      <path d="M8.1 9.4h7.8" stroke="currentColor" strokeWidth="1.3" />
     </I>
   );
 }

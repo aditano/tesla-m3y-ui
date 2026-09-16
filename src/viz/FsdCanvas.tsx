@@ -26,8 +26,9 @@ function studioFloorMap(): CanvasTexture {
     return tex;
   }
   const g = ctx.createRadialGradient(256, 256, 18, 256, 256, 250);
-  g.addColorStop(0, "#d8dbe2");
-  g.addColorStop(0.42, "#e6e8ed");
+  g.addColorStop(0, "#c2c6ce");
+  g.addColorStop(0.28, "#dce0e6");
+  g.addColorStop(0.58, "#e6e8ed");
   g.addColorStop(1, "#eef0f3");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 512, 512);
@@ -43,50 +44,41 @@ function ParkedStudio() {
   return (
     <>
       <color attach="background" args={["#eef0f3"]} />
-      <fog attach="fog" args={["#eef0f3", 13, 28]} />
-      <PerspectiveCamera makeDefault fov={28} position={[-5.12, 4.05, -5.58]} near={0.1} far={80} />
-      <ambientLight intensity={0.62} />
-      <hemisphereLight args={["#f7f8fa", "#cfd2d8", 0.72]} />
-      <directionalLight position={[-3.2, 7.8, -4.6]} intensity={1.05} color="#ffffff" />
-      <directionalLight position={[5.6, 2.9, 1.8]} intensity={0.36} color="#e4eaf2" />
-      <directionalLight position={[0.8, 3.1, 6.2]} intensity={0.48} color="#f4f6f8" />
-      <spotLight
-        position={[-1.8, 8.6, -3.1]}
-        angle={0.7}
-        penumbra={1}
-        intensity={11}
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0002}
-      />
-      <Environment resolution={256} environmentIntensity={0.62}>
-        <Lightformer intensity={4.4} position={[0, 8.4, 0]} scale={[16, 2.2, 1]} form="rect" color="#ffffff" />
-        <Lightformer intensity={1.6} position={[-7.5, 3, -2]} scale={[5, 8, 1]} color="#e8ecf2" form="rect" />
-        <Lightformer intensity={1.35} position={[7.5, 2.4, 1]} scale={[4, 9, 1]} form="rect" color="#f3f5f8" />
-        <Lightformer intensity={1.1} position={[0, 2.8, 8]} scale={[14, 5, 1]} color="#f7f8fa" form="rect" />
+      <fog attach="fog" args={["#eef0f3", 10, 24]} />
+      <PerspectiveCamera makeDefault fov={26} position={[-4.58, 4.38, -4.95]} near={0.1} far={80} />
+      <ambientLight intensity={0.82} />
+      <hemisphereLight args={["#eef2f6", "#c4c8ce", 0.9]} />
+      <directionalLight position={[-2.4, 6.4, -3.6]} intensity={0.48} color="#f4f6f8" />
+      <directionalLight position={[5.8, 2.4, 2.2]} intensity={0.28} color="#d5e0ec" />
+      <directionalLight position={[-6.2, 2.2, 1.4]} intensity={0.46} color="#b7c8dc" />
+      <Environment resolution={256} environmentIntensity={0.44}>
+        <Lightformer intensity={2.4} position={[0, 8.2, 0]} scale={[18, 3.2, 1]} form="rect" color="#f4f6f8" />
+        <Lightformer intensity={1.15} position={[-8, 2.8, -1.5]} scale={[6, 10, 1]} color="#cdd8e6" form="rect" />
+        <Lightformer intensity={0.9} position={[8, 2.2, 1]} scale={[5, 10, 1]} form="rect" color="#eef1f5" />
+        <Lightformer intensity={0.7} position={[0, 2.4, 8]} scale={[16, 5, 1]} color="#f3f5f8" form="rect" />
       </Environment>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
         <meshPhysicalMaterial
           map={floorMap}
-          color="#e7e9ee"
-          roughness={0.78}
-          metalness={0.05}
-          envMapIntensity={0.22}
+          color="#e6e8ed"
+          roughness={0.94}
+          metalness={0.02}
+          envMapIntensity={0.12}
         />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.24, 0]} position={[0.12, 0, 0.14]}>
-        <Model3 scale={1.26} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.22, 0]} position={[0.08, 0, 0.1]}>
+        <Model3 scale={1.32} />
       </group>
-      <ContactShadows opacity={0.26} scale={16} blur={2.7} far={8} resolution={1024} color="#7a7578" />
+      <ContactShadows opacity={0.4} scale={14} blur={3.6} far={7} resolution={1024} color="#5c585c" />
       <OrbitControls
         enablePan={false}
-        minDistance={6.4}
-        maxDistance={10}
+        minDistance={5.5}
+        maxDistance={9.2}
         autoRotate={false}
-        minPolarAngle={1.02}
-        maxPolarAngle={1.22}
-        target={[0, 0.38, -0.32]}
+        minPolarAngle={0.98}
+        maxPolarAngle={1.14}
+        target={[0.02, 0.32, -0.22]}
       />
     </>
   );
@@ -205,7 +197,7 @@ export function FsdCanvas() {
           antialias: true,
           preserveDrawingBuffer: frozen,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1.1,
+          toneMappingExposure: 1.02,
           outputColorSpace: SRGBColorSpace,
         }}
         camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}

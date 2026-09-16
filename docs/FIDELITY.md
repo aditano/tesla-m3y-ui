@@ -57,9 +57,9 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 ## Current verdict (this pass)
 
-Parked viz polish (mesh squeeze + projected leaders):
+Parked viz polish (same 27k mesh, studio/materials/chrome):
 
-- Parked home is a **full-screen overhead rear-3/4 Model 3** with nata-style Open cards whose leaders project onto the decklid / hood / charge-port, a compact Auto Shift, Park status-bar order, a blurred map snippet TR, and Navigate + media in the lower third. Score: **better PARTIAL** vs `nata-parked-car-vis.jpg`. The 27k David_Holiday CC-BY mesh remains the ceiling (a 737k same-author CC-BY model exists on Sketchfab but is not downloadable here; see `LICENSE-3D.md`).
+- Parked home is a **full-screen overhead rear-3/4 Model 3** with softer multi-bounce lighting, richer red midtones, a cool rim, nata-style Open cards pinned to decklid/hood/charge-port, compact Auto Shift magnets, a visible lock, a blurred map snippet, and Navigate + media in the lower third. Score: **better PARTIAL** vs `nata-parked-car-vis.jpg`. The 27k David_Holiday CC-BY mesh remains the ceiling.
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - Park status-bar order and parked PRND remain **PARTIAL**.
 - FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
