@@ -19,7 +19,7 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 
 | Scene | Latest still | vs reference | Status | Notes (update me) |
 | --- | --- | --- | --- | --- |
-| Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | PARTIAL | CC-BY derivative remesh (~94k) + original aero wheels, rear-right studio, dark cabin. Still not Tesla viz-grade: front well cutout, TRUNK card on glass (`parked-home.png` 2026-09-16). |
+| Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | PARTIAL | Candy Ultra Red + C-pillar streak, pane-split glass, oval contact shadow, TRUNK card in empty studio (`parked-home.png` 2026-09-16). Still not Tesla viz-grade: front well cutout, side-glass openings. |
 | Route set | `screenshots/route-set.png` | `manual-m3-maps-nav-p170.jpg`, `nata-trip-progress.jpg` | PARTIAL | Turn list + Start FSD sit on the parked fullscreen (map snippet TR). No traffic progress bar, no gray traveled path, no energy-to-destination. |
 | FSD engaged | `screenshots/fsd-engaged.png` | `manual-m3-driving-status-p16.jpg`, `nata-ui-v12-hero.jpg` | FAIL | CC Model 3 now sits on the ribbon (this PR) but does not prove it is on the same road the map drives. Cheap traffic/lanes. Media player is in the dock, not on the viz. |
 | Controls open | `screenshots/controls.png` | `nata-quick-controls.jpg`, `nata-controls-search.jpg` | FAIL | Sheet covers the whole stage. Missing top Search, wrong categories (no Dynamics/Charging/Trips), tile layout ≠ Quick Controls. |
@@ -39,7 +39,7 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 | Larger speed readout | `nata-regen-speedometer.jpg`, driving-status PDF | PARTIAL | HUD exists; type/size/placement off. |
 | Map orientation + tracking chip | Maps PDF p.169 | PARTIAL | Compass toggle exists; no “Tracking Disabled” chip. |
 | FSD viz ↔ map polyline | Tone + driving-status PDF | FAIL | Other lane. Harness scene `fsd-engaged` is the regression still. |
-| Parked full-screen vehicle | UI v12 notes + `nata-parked-car-vis.jpg` | PARTIAL | Scene `parked-home`: rear-right studio, CC-BY remesh + original aero wheels, dark cabin. Front well cutout and TRUNK-on-glass remain. See `LICENSE-3D.md` + `MESH_REVIEW.md`. |
+| Parked full-screen vehicle | UI v12 notes + `nata-parked-car-vis.jpg` | PARTIAL | Scene `parked-home`: candy Ultra Red, C-pillar streak, pane glass, oval shadow, TRUNK leader in empty studio. Front well cutout remains. See `LICENSE-3D.md` + `MESH_REVIEW.md`. |
 | Controls overlay on **map only** | Touchscreen PDF + `nata-quick-controls.jpg` | FAIL | Other lane. Scene `controls`. |
 
 ## How to record a pass

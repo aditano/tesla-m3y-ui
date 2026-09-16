@@ -155,6 +155,22 @@ Still: `parked-home.png` after a 6cm C-pillar key + overhead strip.
 
 **Next:** deepen candy midtones, thin the pillar key, kill the floor bloom.
 
+## Iteration 10 — 2026-09-16 (streak polish, `4bbc07a`)
+
+Still: `parked-home.png` after deeper Ultra Red, thinner C-pillar key, damped floor gloss.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Candy Ultra Red with a visible C-pillar / rear-shoulder streak (not a plastic wrap). Midtones still flatter than nata; mesh normals cannot hold a razor highlight. |
+| Glass | PARTIAL | Roof is a dark laminate slab; chrome beltline reads. Side/back IOR split is live; side glass still a cheap opening vs nata’s tinted pane. |
+| Wheels | PARTIAL | Unchanged mesh ceiling (front well cutout). |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata’s yaw. Panel gaps remain 27k-derived. |
+| Lighting | PARTIAL | White studio + deeper oval contact shadow. Floor gloss is present and blit-safe (no reflector RT). Mild left fill remains. |
+| Leaders | PARTIAL | TRUNK Open card floats in empty studio with a long vertical to a decklid pin — no longer kissing the backlight. FRUNK still sits on the roof. |
+
+**Ceiling (this lane):** paint/glass/lighting/leaders are as close as this CC-BY remesh + runtime PBR can get without a new mesh. Remaining FAILs that need a different mesh: fender-well wrap, side-glass laminate, panel gaps. Floor stays blit-safe.
+
+
 
 
 

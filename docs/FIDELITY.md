@@ -59,7 +59,7 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 Parked viz hyper-real campaign (CC-BY David_Holiday derivative, not a new Sketchfab download):
 
-- Parked home is a **full-screen overhead rear-right Model 3** on a white studio, with a subdivided/bevelled CC-BY mesh (~94k faces), original 5-cover aero wheels, dark cabin, nata-style Open cards, compact Auto Shift, and Navigate + media in the lower third. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — no longer a toy disc-wheel car, still not Tesla viz-grade (front well cutout, glass, panel gaps). See `docs/qa/MESH_REVIEW.md`.
+- Parked home is a **full-screen rear-right Model 3** on a white studio, with a subdivided/bevelled CC-BY mesh (~94k faces), candy Ultra Red clearcoat + C-pillar streak, pane-split glass IOR, oval contact shadow, original 5-cover aero wheels, and a TRUNK Open card on a long vertical in empty studio. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — materials/leaders moved; front well cutout and side-glass openings remain a mesh ceiling. See `docs/qa/MESH_REVIEW.md`.
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - Park status-bar order and parked PRND remain **PARTIAL**.
 - FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
