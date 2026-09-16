@@ -4,7 +4,7 @@
 
 Status: `FAIL` / `PARTIAL` / `PASS`. Every FAIL needs a one-line reason. Compare against [`../references/REFERENCES.md`](../references/REFERENCES.md). Re-run `npm run qa:screenshots` and link the new still.
 
-Baseline captured from `main` + this harness (2026-09-16). OSM / MapLibre / OSRM mapping is in-scope to **keep**.
+Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`). OSM / MapLibre / OSRM mapping is in-scope to **keep**.
 
 ## Lane ownership
 

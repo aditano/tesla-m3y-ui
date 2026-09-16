@@ -23,7 +23,7 @@ async function capture(page: import("@playwright/test").Page, scene: QaSceneId):
 test.describe("visual QA harness", () => {
   test("captures parked home", async ({ page }) => {
     await capture(page, "parked-home");
-    await expect(page.getByRole("button", { name: "P" })).toHaveClass(/on/);
+    await expect(page.getByRole("button", { name: "P", exact: true })).toHaveClass(/on/);
     await expect(page.getByLabel("Controls")).toHaveCount(0);
   });
 
