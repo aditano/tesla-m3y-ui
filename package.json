@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc -b --pretty false"
+    "typecheck": "tsc -b --pretty false",
+    "qa:install": "playwright install chromium",
+    "qa:screenshots": "playwright test --config playwright.qa.config.ts"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",
@@ -26,6 +28,7 @@
     "@types/react-dom": "^18.3.5",
     "@types/three": "^0.170.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@playwright/test": "^1.51.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",
     "vitest": "^2.1.8"

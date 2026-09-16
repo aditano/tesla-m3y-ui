@@ -10,6 +10,7 @@ import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld }
 
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
+  const frozen = useVehicle((s) => s.qa.frozen);
   return (
     <>
       <color attach="background" args={["#05060a"]} />
@@ -29,7 +30,7 @@ function ParkedStudio() {
         enablePan={false}
         minDistance={6}
         maxDistance={13}
-        autoRotate
+        autoRotate={!frozen}
         autoRotateSpeed={0.45}
         minPolarAngle={0.85}
         maxPolarAngle={1.28}
@@ -57,6 +58,12 @@ function DrivingWorld() {
     const height = 7.2;
     const camPos = new Vector3(loc.x - Math.sin(h) * back, height, loc.z - Math.cos(h) * back);
     const look = new Vector3(loc.x + Math.sin(h) * 26, 0.2, loc.z + Math.cos(h) * 26);
+    const frozen = useVehicle.getState().qa.frozen;
+    if (frozen) {
+      camera.position.copy(camPos);
+      camera.lookAt(look);
+      return;
+    }
     camera.position.lerp(camPos, 0.14);
     camera.lookAt(look);
   });

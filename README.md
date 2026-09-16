@@ -66,6 +66,17 @@ No secrets are required for the default demo path.
 
 Layout is informed by publicly documented Tesla owner-manual behavior (status bar, map always present in Park, visualization expand, Controls overlay, dock, PRND) and public UI v12 notes. Existing open demos were used for inspiration only; this tree is original.
 
+## Fidelity / screenshot QA
+
+Public inventory, fair-use reference stills, and a Playwright harness live under [`docs/`](docs/FIDELITY.md). Other agents must update [`docs/qa/CHECKLIST.md`](docs/qa/CHECKLIST.md) when they change parked viz, FSD/map sync, or Controls.
+
+```bash
+npm run qa:install          # once: Playwright Chromium
+npm run qa:screenshots      # writes docs/qa/screenshots/*.png
+```
+
+Frozen scenes: `/?qa=parked-home` · `route-set` · `fsd-engaged` · `controls` · `climate` · `media` · `viz-expanded`.
+
 ## License
 
 MIT. Original UI art in this repository. Do not add ripped Tesla assets.

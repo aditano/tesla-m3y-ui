@@ -26,7 +26,9 @@ function useClock(): string {
 }
 
 export function StatusBar() {
-  const time = useClock();
+  const live = useClock();
+  const qaClock = useVehicle((s) => s.qa.clock);
+  const time = qaClock ?? live;
   const flags = useVehicle((s) => s.flags);
   const patchFlags = useVehicle((s) => s.patchFlags);
   const patchUi = useVehicle((s) => s.patchUi);

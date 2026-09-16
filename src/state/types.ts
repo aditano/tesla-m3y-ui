@@ -112,6 +112,13 @@ export interface UiState {
   disclaimerDismissed: boolean;
 }
 
+/** Visual QA harness freeze. Production UI never sets this unless `?qa=` is present. */
+export interface QaState {
+  frozen: boolean;
+  clock: string | null;
+  scene: string | null;
+}
+
 export interface EgoPose {
   lng: number;
   lat: number;
@@ -130,6 +137,7 @@ export interface VehicleStore {
   climate: ClimateState;
   media: MediaState;
   ui: UiState;
+  qa: QaState;
   origin: Place;
   destination: Place | null;
   route: RoutePlan | null;
