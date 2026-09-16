@@ -73,6 +73,24 @@ function ensureLayers(map: maplibregl.Map): void {
   }
 }
 
+type CamState = {
+  phase: string;
+  pose: { lng: number; lat: number; heading: number };
+  ui: { tracking: boolean; mapOrientation: "north" | "heading" };
+  qa: { frozen: boolean };
+};
+
+function trackingView(state: CamState, zoom: number) {
+  const headingUp = state.ui.mapOrientation === "heading";
+  const fsd = state.phase === "fsd";
+  return {
+    center: [state.pose.lng, state.pose.lat] as [number, number],
+    bearing: headingUp ? state.pose.heading : 0,
+    pitch: fsd ? 42 : 0,
+    zoom: fsd ? 16.2 : zoom,
+  };
+}
+
 function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: number, destLat?: number): void {
   ensureLayers(map);
   const src = map.getSource("route") as maplibregl.GeoJSONSource;
@@ -101,6 +119,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
+  const lastCam = useRef(0);
   const route = useVehicle((s) => s.route);
   const dest = useVehicle((s) => s.destination);
   const origin = useVehicle((s) => s.origin);
@@ -111,24 +130,36 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
   useEffect(() => {
     if (!host.current || mapRef.current) return;
     const start = useVehicle.getState();
+    const boot = trackingView(start, 14.2);
     const map = new maplibregl.Map({
       container: host.current,
       style: compact ? MAP_STYLE_PARKED : MAP_STYLE,
-      center: [start.origin.lng, start.origin.lat],
-      zoom: 14.2,
-      pitch: 0,
+      center: boot.center,
+      zoom: boot.zoom,
+      pitch: boot.pitch,
+      maxPitch: 50,
+      fadeDuration: 0,
+      bearing: boot.bearing,
       attributionControl: { compact: true },
-      canvasContextAttributes: start.qa.frozen ? { preserveDrawingBuffer: true } : undefined,
+      canvasContextAttributes: {
+        antialias: true,
+        preserveDrawingBuffer: true,
+        failIfMajorPerformanceCaveat: false,
+      },
     });
     const el = document.createElement("div");
     el.innerHTML = carSvg();
     const marker = new maplibregl.Marker({ element: el.firstElementChild as HTMLElement, rotationAlignment: "map" })
-      .setLngLat([start.origin.lng, start.origin.lat])
+      .setLngLat([start.pose.lng, start.pose.lat])
+      .setRotation(start.pose.heading)
       .addTo(map);
     markerRef.current = marker;
     const onReady = () => {
       const s = useVehicle.getState();
       paintRoute(map, s.route, s.destination?.lng, s.destination?.lat);
+      if (s.ui.tracking) {
+        map.jumpTo(trackingView(s, map.getZoom()));
+      }
     };
     map.on("load", onReady);
     map.once("idle", () => {
@@ -140,7 +171,10 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
       void setOriginFromMap(e.lngLat.lng, e.lngLat.lat);
     });
     mapRef.current = map;
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(host.current);
     return () => {
+      ro.disconnect();
       marker.remove();
       map.remove();
       mapRef.current = null;
@@ -162,22 +196,31 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
   }, [origin.lat, origin.lng]);
 
   useEffect(() => {
-    return useVehicle.subscribe((state) => {
+    return useVehicle.subscribe((state, prev) => {
       const map = mapRef.current;
       const marker = markerRef.current;
       if (!map || !marker) return;
+      const poseMoved =
+        !prev ||
+        state.pose.lng !== prev.pose.lng ||
+        state.pose.lat !== prev.pose.lat ||
+        state.pose.heading !== prev.pose.heading ||
+        state.ui.tracking !== prev.ui.tracking ||
+        state.ui.mapOrientation !== prev.ui.mapOrientation ||
+        state.phase !== prev.phase;
+      if (!poseMoved) return;
       marker.setLngLat([state.pose.lng, state.pose.lat]);
       marker.setRotation(state.pose.heading);
-      if (!state.ui.tracking) return;
-      const headingUp = state.ui.mapOrientation === "heading";
-      map.easeTo({
-        center: [state.pose.lng, state.pose.lat],
-        bearing: headingUp ? state.pose.heading : 0,
-        pitch: state.phase === "fsd" ? 50 : 0,
-        zoom: state.phase === "fsd" ? 16.5 : map.getZoom(),
-        duration: state.qa.frozen ? 0 : 280,
-        essential: true,
-      });
+      if (!state.ui.tracking || !map.isStyleLoaded()) return;
+      const view = trackingView(state, map.getZoom());
+      if (state.phase === "fsd") {
+        const now = performance.now();
+        if (!state.qa.frozen && now - lastCam.current < 90) return;
+        lastCam.current = now;
+        map.jumpTo(view);
+        return;
+      }
+      map.easeTo({ ...view, duration: state.qa.frozen ? 0 : 280, essential: true });
     });
   }, []);
 

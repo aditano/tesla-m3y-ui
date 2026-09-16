@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
+import { WORK_PLACE } from "./geo/constants";
+import { indexFor, interpolate } from "./geo/polyline";
 import { useVehicle } from "./state/store";
 import { StatusBar } from "./chrome/StatusBar";
 import { DriveStrip } from "./chrome/DriveStrip";
@@ -108,6 +110,41 @@ function QaReady() {
   return null;
 }
 
+/** `?demo=work&at=400` boots the Pittsburgh → CMU route and optionally skips ahead along the polyline. */
+function DemoBoot() {
+  const booted = useRef(false);
+  useEffect(() => {
+    if (booted.current) return;
+    if (useVehicle.getState().qa.frozen) return;
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("demo") !== "work") return;
+    booted.current = true;
+    const at = Number(q.get("at") || "0");
+    void (async () => {
+      const api = useVehicle.getState();
+      api.patchUi({ disclaimerDismissed: true });
+      await api.navigateTo(WORK_PLACE);
+      api.startFsd();
+      if (!(at > 0)) return;
+      const route = useVehicle.getState().route;
+      if (!route) return;
+      const sample = interpolate(indexFor(route.coords), at);
+      useVehicle.setState({
+        pose: {
+          ...useVehicle.getState().pose,
+          lng: sample.position[0],
+          lat: sample.position[1],
+          heading: sample.heading,
+          traveledM: sample.traveledM,
+          remainingM: sample.remainingM,
+          speedMph: Math.max(22, useVehicle.getState().pose.speedMph),
+        },
+      });
+    })();
+  }, []);
+  return null;
+}
+
 export default function App() {
   const vizRatio = useVehicle((s) => s.ui.vizRatio);
   const scene = useVehicle((s) => s.qa.scene);
@@ -160,6 +197,7 @@ export default function App() {
         </div>
         <BottomDock />
         <DriveLoop />
+        <DemoBoot />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildIndex } from "../geo/polyline";
+import { buildIndex, haversineMeters, interpolate } from "../geo/polyline";
 import {
   QA_SCENE_IDS,
   buildQaRoute,
@@ -56,5 +56,22 @@ describe("QA scenes", () => {
     expect(isQaSceneId("not-a-scene")).toBe(false);
     const id: QaSceneId = "media";
     expect(id).toBe("media");
+  });
+
+  it("places frozen FSD ego on the canned MapLibre/OSRM polyline", () => {
+    for (const id of ["fsd-engaged", "viz-expanded"] as const) {
+      const snap = snapshotForScene(id);
+      expect(snap.route).not.toBeNull();
+      const index = buildIndex(snap.route!.coords);
+      const expected = interpolate(index, index.totalMeters * 0.32);
+      expect(snap.pose.traveledM).toBeCloseTo(expected.traveledM, 5);
+      expect(snap.pose.remainingM).toBeCloseTo(expected.remainingM, 5);
+      expect(snap.pose.lng).toBeCloseTo(expected.position[0], 7);
+      expect(snap.pose.lat).toBeCloseTo(expected.position[1], 7);
+      expect(snap.pose.heading).toBeCloseTo(expected.heading, 5);
+      expect(
+        haversineMeters([snap.pose.lng, snap.pose.lat], expected.position),
+      ).toBeLessThan(0.05);
+    }
   });
 });

@@ -5,14 +5,13 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3, type Group } from "three";
+import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3 } from "three";
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 
 RectAreaLightUniformsLib.init();
 import { useVehicle } from "../state/store";
-import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
-import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld } from "./RoadKit";
+import { EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
 import { createCandyStudioEnv, PARKED_STUDIO } from "./parkedStudio";
 
@@ -162,65 +161,50 @@ function ParkedStudio() {
   );
 }
 
+const CAM_POS = new Vector3(0, 6.35, -11.2);
+const CAM_LOOK = new Vector3(0, 0.28, 18);
+
+/** Chase camera for the driving world; snaps immediately when frozen for QA stills. */
+function EgoCamera() {
+  const snapped = useRef(false);
+  useFrame(({ camera }) => {
+    const frozen = useVehicle.getState().qa.frozen;
+    if (!snapped.current || frozen) {
+      camera.position.copy(CAM_POS);
+      snapped.current = true;
+    } else {
+      camera.position.lerp(CAM_POS, 0.2);
+    }
+    camera.lookAt(CAM_LOOK);
+  });
+  return null;
+}
+
 function DrivingWorld() {
   const route = useVehicle((s) => s.route);
-  const pose = useVehicle((s) => s.pose);
   const phase = useVehicle((s) => s.phase);
-  const cam = useRef<Group>(null);
-
-  const origin = useMemo(
-    () => (route ? { lng: route.coords[0][0], lat: route.coords[0][1] } : { lng: pose.lng, lat: pose.lat }),
-    [pose.lat, pose.lng, route],
-  );
-
-  useFrame(({ camera }) => {
-    const loc = lngLatToLocal([pose.lng, pose.lat], [origin.lng, origin.lat]);
-    const h = (pose.heading * Math.PI) / 180;
-    const back = 16.5;
-    const height = 7.2;
-    const camPos = new Vector3(loc.x - Math.sin(h) * back, height, loc.z - Math.cos(h) * back);
-    const look = new Vector3(loc.x + Math.sin(h) * 26, 0.2, loc.z + Math.cos(h) * 26);
-    const frozen = useVehicle.getState().qa.frozen;
-    if (frozen) {
-      camera.position.copy(camPos);
-      camera.lookAt(look);
-      return;
-    }
-    camera.position.lerp(camPos, 0.14);
-    camera.lookAt(look);
-  });
-
-  const carPos = toWorld([pose.lng, pose.lat], origin);
   const fsd = phase === "fsd";
-
-  if (!route) {
-    return (
-      <>
-        <color attach="background" args={["#07090f"]} />
-        <fog attach="fog" args={["#07090f", 40, 160]} />
-        <ambientLight intensity={0.5} />
-        <Model3 showHits={false} />
-      </>
-    );
-  }
 
   return (
     <>
       <color attach="background" args={["#07090f"]} />
-      <fog attach="fog" args={["#07090f", 55, 220]} />
-      <ambientLight intensity={0.62} />
-      <directionalLight position={[10, 22, 8]} intensity={1.85} castShadow />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[carPos.x, 0, carPos.z]} receiveShadow>
-        <planeGeometry args={[500, 500]} />
-        <meshStandardMaterial color="#12151c" />
+      <fog attach="fog" args={["#07090f", 42, 160]} />
+      <EgoCamera />
+      <hemisphereLight args={["#9eb6d4", "#12141c", 0.55]} />
+      <ambientLight intensity={0.42} />
+      <directionalLight position={[8, 18, 6]} intensity={1.55} castShadow={false} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 40]} receiveShadow>
+        <circleGeometry args={[220, 64]} />
+        <meshStandardMaterial color="#10131a" roughness={0.96} />
       </mesh>
-      <RoadRibbon route={route} origin={origin} />
-      <LaneMarks route={route} origin={origin} />
-      {fsd ? <TrafficPack route={route} origin={origin} traveledM={pose.traveledM} /> : null}
-      <SignalProps maneuvers={route.maneuvers} origin={origin} />
-      <group ref={cam} position={[carPos.x, 0, carPos.z]} rotation={headingQuat(pose.heading)}>
-        <Model3 showHits={false} />
-      </group>
+      {route ? (
+        <EgoFrame>
+          <RouteRoad route={route} />
+          {fsd ? <TrafficPack route={route} /> : null}
+          <SignalProps route={route} />
+        </EgoFrame>
+      ) : null}
+      <EgoCar />
     </>
   );
 }
@@ -274,11 +258,17 @@ export function FsdCanvas() {
         gl={{
           antialias: true,
           preserveDrawingBuffer: frozen,
+          failIfMajorPerformanceCaveat: false,
           toneMapping: ACESFilmicToneMapping,
           toneMappingExposure: parked ? 1.02 : 1.08,
           outputColorSpace: SRGBColorSpace,
         }}
-        camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}
+        camera={{ fov: 40, position: [0, 6.35, -11.2], near: 0.1, far: 500 }}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener("webglcontextlost", (event) => {
+            event.preventDefault();
+          });
+        }}
       >
         {driving ? <DrivingWorld /> : <ParkedStudio />}
       </Canvas>

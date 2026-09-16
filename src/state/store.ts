@@ -8,7 +8,7 @@ import {
 } from "../geo/constants";
 import { fetchRoute, speedLimitAt } from "../geo/osrm";
 import { reverseGeocode, searchPlaces } from "../geo/geocode";
-import { buildIndex, interpolate, mphToMps } from "../geo/polyline";
+import { indexFor, interpolate, mphToMps } from "../geo/polyline";
 import type {
   ClimateState,
   ControlsTab,
@@ -106,11 +106,6 @@ interface Actions {
 export type Store = VehicleStore & Actions;
 
 let searchTimer: number | undefined;
-const polylineCache = { key: "", index: buildIndex([]) };
-
-function routeKey(coords: [number, number][]): string {
-  return `${coords.length}:${coords[0]?.join(",")}:${coords[coords.length - 1]?.join(",")}`;
-}
 
 export const useVehicle = create<Store>((set, get) => ({
   gear: "P",
@@ -266,6 +261,7 @@ export const useVehicle = create<Store>((set, get) => ({
         traveledM: 0,
         remainingM: 0,
       },
+      ui: { ...get().ui, mapOrientation: "north", tracking: true },
     });
   },
 
@@ -309,12 +305,7 @@ export const useVehicle = create<Store>((set, get) => ({
     const state = get();
     if (state.qa.frozen) return;
     if (state.phase !== "fsd" || !state.route) return;
-    const key = routeKey(state.route.coords);
-    if (polylineCache.key !== key) {
-      polylineCache.key = key;
-      polylineCache.index = buildIndex(state.route.coords);
-    }
-    const index = polylineCache.index;
+    const index = indexFor(state.route.coords);
     const limit = speedLimitAt(state.pose.traveledM, state.route.maneuvers);
     const remaining = Math.max(0, index.totalMeters - state.pose.traveledM);
     let target = Math.min(state.pose.setSpeedMph || limit, limit);

@@ -119,9 +119,11 @@ export interface QaState {
   scene: string | null;
 }
 
+/** Canonical ego pose. MapLibre's car marker and the Three.js FSD viz both read this. */
 export interface EgoPose {
   lng: number;
   lat: number;
+  /** Geographic heading, degrees clockwise from north. Shared with MapLibre marker rotation. */
   heading: number;
   speedMph: number;
   setSpeedMph: number;

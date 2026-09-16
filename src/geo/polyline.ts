@@ -48,12 +48,47 @@ export function buildIndex(coords: LngLat[]): PolylineIndex {
   return { coords, cumMeters: cum, totalMeters: cum[cum.length - 1] };
 }
 
+const indexCache: { key: string; index: PolylineIndex } = {
+  key: "",
+  index: buildIndex([]),
+};
+
+function indexKey(coords: LngLat[]): string {
+  if (coords.length === 0) return "0";
+  const mid = coords[Math.floor(coords.length / 2)];
+  return `${coords.length}:${coords[0].join(",")}:${mid.join(",")}:${coords[coords.length - 1].join(",")}`;
+}
+
+/** Shared polyline index for the drive sim and FSD viz so both sample the same meters. */
+export function indexFor(coords: LngLat[]): PolylineIndex {
+  const key = indexKey(coords);
+  if (indexCache.key !== key) {
+    indexCache.key = key;
+    indexCache.index = buildIndex(coords);
+  }
+  return indexCache.index;
+}
+
 export interface SampledPose {
   position: LngLat;
   heading: number;
   traveledM: number;
   remainingM: number;
   segmentIndex: number;
+}
+
+export function closestTraveledM(index: PolylineIndex, p: LngLat): number {
+  if (index.coords.length === 0) return 0;
+  let bestM = 0;
+  let bestD = Infinity;
+  for (let i = 0; i < index.coords.length; i++) {
+    const d = haversineMeters(index.coords[i], p);
+    if (d < bestD) {
+      bestD = d;
+      bestM = index.cumMeters[i];
+    }
+  }
+  return bestM;
 }
 
 export function interpolate(index: PolylineIndex, meters: number): SampledPose {

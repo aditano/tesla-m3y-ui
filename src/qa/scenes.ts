@@ -4,7 +4,7 @@ import {
   VIZ_RATIO_MAX,
   WORK_PLACE,
 } from "../geo/constants";
-import { buildIndex } from "../geo/polyline";
+import { buildIndex, interpolate } from "../geo/polyline";
 import type {
   ClimateState,
   ControlsTab,
@@ -232,25 +232,7 @@ function routedBase(scene: QaSceneId, ui: UiState, phase: TripPhase): QaSnapshot
   const route = buildQaRoute();
   const index = buildIndex(route.coords);
   const traveled = phase === "fsd" ? index.totalMeters * 0.32 : 0;
-  const sample = traveled > 0
-    ? {
-        lng: route.coords[2][0],
-        lat: route.coords[2][1],
-        heading: 82,
-        speedMph: 32,
-        setSpeedMph: 25,
-        traveledM: traveled,
-        remainingM: index.totalMeters - traveled,
-      }
-    : {
-        lng: DEFAULT_ORIGIN.lng,
-        lat: DEFAULT_ORIGIN.lat,
-        heading: 82,
-        speedMph: 0,
-        setSpeedMph: 0,
-        traveledM: 0,
-        remainingM: route.distanceM,
-      };
+  const sample = interpolate(index, traveled);
   return {
     gear: phase === "fsd" ? "D" : "P",
     phase,
@@ -263,8 +245,14 @@ function routedBase(scene: QaSceneId, ui: UiState, phase: TripPhase): QaSnapshot
     destination: QA_DESTINATION,
     route,
     pose: {
-      ...sample,
+      lng: sample.position[0],
+      lat: sample.position[1],
+      heading: sample.heading,
+      speedMph: phase === "fsd" ? 32 : 0,
+      setSpeedMph: phase === "fsd" ? 25 : 0,
       speedLimitMph: 25,
+      traveledM: sample.traveledM,
+      remainingM: sample.remainingM,
     },
     searchQuery: QA_DESTINATION.name,
     searchResults: [],
