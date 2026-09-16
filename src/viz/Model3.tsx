@@ -6,6 +6,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
 import { applyCarMaterials } from "./carMaterials";
+import { splitGreenhouseGlass } from "./glassPanes";
 import { HOTSPOT_PINS } from "./hotspots";
 import { ParkedHotspots } from "./ParkedHotspots";
 import { replaceStockWheels } from "./wheelHubs";
@@ -47,6 +48,7 @@ function extractCar(scene: Object3D): Group {
   });
   replaceStockWheels(wrapper);
   addCabinBlocker(car);
+  splitGreenhouseGlass(wrapper);
   return wrapper;
 }
 
@@ -59,11 +61,11 @@ function addCabinBlocker(car: Object3D): void {
   car.getWorldScale(scale);
   const cabin = new Mesh(
     new BoxGeometry(
-      (worldSize.x * 0.72) / Math.max(scale.x, 1e-4),
-      (worldSize.y * 0.26) / Math.max(scale.y, 1e-4),
-      (worldSize.z * 0.4) / Math.max(scale.z, 1e-4),
+      (worldSize.x * 0.78) / Math.max(scale.x, 1e-4),
+      (worldSize.y * 0.32) / Math.max(scale.y, 1e-4),
+      (worldSize.z * 0.46) / Math.max(scale.z, 1e-4),
     ),
-    new MeshPhysicalMaterial({ color: "#121110", roughness: 0.95, metalness: 0 }),
+    new MeshPhysicalMaterial({ color: "#070706", roughness: 0.97, metalness: 0 }),
   );
   cabin.name = "orig-cabin-blocker";
   car.worldToLocal(worldCenter);

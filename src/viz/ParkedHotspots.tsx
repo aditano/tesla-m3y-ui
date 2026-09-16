@@ -40,6 +40,7 @@ export function ParkedHotspots(): ReactNode {
           key={pin.id}
           position={[pin.position[0], pin.position[1], pin.position[2]]}
           occlude={false}
+          transform={false}
           zIndexRange={[40, 10]}
           style={{ pointerEvents: "none" }}
           wrapperClass="parked-hotspot-html"

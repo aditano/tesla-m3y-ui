@@ -17,6 +17,8 @@ export type CarMaterialKind =
   | "paint"
   | "chrome"
   | "glass"
+  | "sideGlass"
+  | "backGlass"
   | "roofGlass"
   | "headlight"
   | "tail"
@@ -28,20 +30,33 @@ export type CarMaterialKind =
   | "other";
 
 /** Ultra Red–like albedo. CC-BY allows material tint; mesh is still David_Holiday. */
-export const PAINT_NATA_RED = "#8c1a22";
+export const PAINT_NATA_RED = "#b41c28";
+
+export const GLASS_OPTICS = {
+  windshield: { ior: 1.51, transmission: 0.01, opacity: 0.982, thickness: 0.55 },
+  side: { ior: 1.5, transmission: 0.004, opacity: 0.99, thickness: 0.42 },
+  roof: { ior: 1.52, transmission: 0, opacity: 0.996, thickness: 0.28 },
+  back: { ior: 1.54, transmission: 0, opacity: 0.994, thickness: 0.5 },
+} as const;
+
 const CHROME = new Color("#c4c9d0");
 const RUBBER = new Color("#08080a");
 const PLASTIC = new Color("#121316");
-const GLASS = new Color("#07090d");
+const GLASS = new Color("#0a0c10");
+const SIDE_GLASS = new Color("#080a0e");
 const ROOF_GLASS = new Color("#050608");
+const BACK_GLASS = new Color("#07080b");
 const CALIPER = new Color("#b01018");
-const INTERIOR = new Color("#161412");
+const INTERIOR = new Color("#0c0b0a");
 const RIM = new Color("#16181c");
 
 export function classifyCarMaterial(name: string): CarMaterialKind {
   const n = name.toLowerCase().replace(/\s+/g, "_");
   if (n.includes("car") && n.includes("paint")) return "paint";
   if (n.includes("chrome")) return "chrome";
+  if (n.includes("glass-back") || n === "backglass") return "backGlass";
+  if (n.includes("glass-side") || n === "sideglass") return "sideGlass";
+  if (n.includes("glass-wind")) return "glass";
   if (n.includes("glass")) return "glass";
   if (n === "material.017") return "roofGlass";
   if (n === "material.005") return "chrome";
@@ -72,28 +87,19 @@ export function classifyCarMaterial(name: string): CarMaterialKind {
   return "other";
 }
 
-let flakeNormal: DataTexture | null = null;
-let flakeRough: DataTexture | null = null;
 let rubberBump: DataTexture | null = null;
+let streakNormal: DataTexture | null = null;
 
-function noiseTexture(size: number, strength: number, asRoughness = false): DataTexture {
+function noiseTexture(size: number, strength: number): DataTexture {
   const data = new Uint8Array(size * size * 4);
   for (let i = 0; i < size * size; i++) {
     const n = Math.random();
-    if (asRoughness) {
-      const r = Math.round((0.42 + n * 0.38) * 255);
-      data[i * 4] = r;
-      data[i * 4 + 1] = r;
-      data[i * 4 + 2] = r;
-      data[i * 4 + 3] = 255;
-    } else {
-      const nx = 0.5 + (n * 2 - 1) * strength;
-      const ny = 0.5 + (Math.random() * 2 - 1) * strength;
-      data[i * 4] = Math.round(nx * 255);
-      data[i * 4 + 1] = Math.round(ny * 255);
-      data[i * 4 + 2] = 255;
-      data[i * 4 + 3] = 255;
-    }
+    const nx = 0.5 + (n * 2 - 1) * strength;
+    const ny = 0.5 + (Math.random() * 2 - 1) * strength;
+    data[i * 4] = Math.round(nx * 255);
+    data[i * 4 + 1] = Math.round(ny * 255);
+    data[i * 4 + 2] = 255;
+    data[i * 4 + 3] = 255;
   }
   const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
   tex.colorSpace = NoColorSpace;
@@ -103,20 +109,30 @@ function noiseTexture(size: number, strength: number, asRoughness = false): Data
   return tex;
 }
 
-function getFlakeNormal(): DataTexture {
-  if (!flakeNormal) {
-    flakeNormal = noiseTexture(64, 0.16);
-    flakeNormal.repeat.set(28, 28);
+/** Thin directional ridges so the C-pillar reads a streak, not a plastic wrap. */
+function streakNormalTexture(): DataTexture {
+  const size = 256;
+  const data = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const wave = Math.sin(x * 0.38 + Math.sin(y * 0.05) * 2.1);
+      const ridge = Math.pow(Math.max(0, wave), 20);
+      const nx = 0.5 + wave * 0.028 + ridge * 0.05;
+      const ny = 0.5 + Math.sin(y * 0.018) * 0.008;
+      const i = (y * size + x) * 4;
+      data[i] = Math.round(Math.min(1, Math.max(0, nx)) * 255);
+      data[i + 1] = Math.round(Math.min(1, Math.max(0, ny)) * 255);
+      data[i + 2] = 255;
+      data[i + 3] = 255;
+    }
   }
-  return flakeNormal;
-}
-
-function getFlakeRoughness(): DataTexture {
-  if (!flakeRough) {
-    flakeRough = noiseTexture(64, 0.2, true);
-    flakeRough.repeat.set(18, 18);
-  }
-  return flakeRough;
+  const tex = new DataTexture(data, size, size, RGBAFormat, UnsignedByteType);
+  tex.colorSpace = NoColorSpace;
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
+  tex.repeat.set(5.5, 1.8);
+  tex.needsUpdate = true;
+  return tex;
 }
 
 function getRubberBump(): DataTexture {
@@ -125,6 +141,35 @@ function getRubberBump(): DataTexture {
     rubberBump.repeat.set(8, 18);
   }
   return rubberBump;
+}
+
+function getStreakNormal(): DataTexture {
+  if (!streakNormal) streakNormal = streakNormalTexture();
+  return streakNormal;
+}
+
+function glassPhysical(
+  color: Color,
+  parked: boolean,
+  optics: (typeof GLASS_OPTICS)[keyof typeof GLASS_OPTICS],
+  env: number,
+): MeshPhysicalMaterial {
+  return new MeshPhysicalMaterial({
+    color,
+    metalness: 0.02,
+    roughness: parked ? 0.022 : 0.036,
+    transparent: true,
+    opacity: parked ? optics.opacity : Math.min(0.7, optics.opacity * 0.62),
+    transmission: parked ? optics.transmission : Math.max(0.16, optics.transmission * 14),
+    thickness: optics.thickness,
+    envMapIntensity: parked ? env : env * 0.72,
+    ior: optics.ior,
+    attenuationColor: new Color("#05070a"),
+    attenuationDistance: parked ? 0.22 : 0.55,
+    specularIntensity: 1,
+    clearcoat: parked ? 0.35 : 0.12,
+    clearcoatRoughness: 0.04,
+  });
 }
 
 function physical(
@@ -138,29 +183,31 @@ function physical(
     case "paint":
       return new MeshPhysicalMaterial({
         color: new Color(paintHex),
-        metalness: 0.22,
-        roughness: 0.18,
-        roughnessMap: getFlakeRoughness(),
+        metalness: 0.28,
+        roughness: 0.11,
         clearcoat: 1,
-        clearcoatRoughness: 0.045,
-        clearcoatRoughnessMap: getFlakeRoughness(),
-        clearcoatNormalMap: getFlakeNormal(),
-        clearcoatNormalScale: new Vector2(0.055, 0.055),
-        envMapIntensity: parked ? 1.22 : 1.05,
-        sheen: parked ? 0.22 : 0.14,
-        sheenColor: new Color("#6a1218"),
-        sheenRoughness: 0.48,
-        specularIntensity: 0.85,
-        ...(aoMap
-          ? { aoMap, aoMapIntensity: parked ? 0.62 : 0.45 }
-          : {}),
+        clearcoatRoughness: 0.018,
+        clearcoatNormalMap: getStreakNormal(),
+        clearcoatNormalScale: new Vector2(0.028, 0.018),
+        anisotropy: parked ? 0.42 : 0.22,
+        anisotropyRotation: 1.12,
+        envMapIntensity: parked ? 1.38 : 1.05,
+        sheen: parked ? 0.08 : 0.1,
+        sheenColor: new Color("#4a0c12"),
+        sheenRoughness: 0.7,
+        specularIntensity: 1,
+        specularColor: new Color("#ffd6d0"),
+        iridescence: parked ? 0.045 : 0.02,
+        iridescenceIOR: 1.28,
+        iridescenceThicknessRange: [80, 220],
+        ...(aoMap ? { aoMap, aoMapIntensity: parked ? 0.28 : 0.2 } : {}),
       });
     case "chrome":
       return new MeshPhysicalMaterial({
         color: CHROME,
         metalness: 0.98,
-        roughness: parked ? 0.1 : 0.14,
-        envMapIntensity: parked ? 1.35 : 1.15,
+        roughness: parked ? 0.08 : 0.14,
+        envMapIntensity: parked ? 1.4 : 1.15,
       });
     case "rim":
       return new MeshPhysicalMaterial({
@@ -172,32 +219,13 @@ function physical(
         clearcoatRoughness: 0.28,
       });
     case "glass":
-      return new MeshPhysicalMaterial({
-        color: GLASS,
-        metalness: 0.04,
-        roughness: 0.028,
-        transparent: true,
-        opacity: parked ? 0.96 : 0.55,
-        transmission: parked ? 0 : 0.32,
-        thickness: 0.62,
-        envMapIntensity: parked ? 1.15 : 0.85,
-        ior: 1.48,
-        attenuationColor: new Color("#05070a"),
-        attenuationDistance: 0.42,
-        specularIntensity: 1,
-      });
+      return glassPhysical(GLASS, parked, GLASS_OPTICS.windshield, parked ? 1.08 : 0.85);
+    case "sideGlass":
+      return glassPhysical(SIDE_GLASS, parked, GLASS_OPTICS.side, parked ? 0.95 : 0.75);
+    case "backGlass":
+      return glassPhysical(BACK_GLASS, parked, GLASS_OPTICS.back, parked ? 1.18 : 0.88);
     case "roofGlass":
-      return new MeshPhysicalMaterial({
-        color: ROOF_GLASS,
-        metalness: 0.08,
-        roughness: 0.045,
-        transparent: true,
-        opacity: parked ? 0.97 : 0.7,
-        transmission: parked ? 0.015 : 0.12,
-        thickness: 0.35,
-        envMapIntensity: parked ? 0.72 : 0.55,
-        ior: 1.5,
-      });
+      return glassPhysical(ROOF_GLASS, parked, GLASS_OPTICS.roof, parked ? 0.62 : 0.5);
     case "headlight":
       return new MeshPhysicalMaterial({
         color: lit && !parked ? "#f7fbff" : "#9aa3ac",
@@ -245,10 +273,10 @@ function physical(
       return new MeshPhysicalMaterial({
         color: INTERIOR,
         metalness: 0.02,
-        roughness: 0.82,
-        sheen: 0.18,
-        sheenColor: new Color("#5a4c42"),
-        sheenRoughness: 0.7,
+        roughness: 0.88,
+        sheen: 0.1,
+        sheenColor: new Color("#3a322c"),
+        sheenRoughness: 0.78,
       });
     case "other":
       return new MeshPhysicalMaterial({
@@ -278,7 +306,8 @@ export function applyCarMaterials(
     const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
     const next = mats.map((mat) => {
       const name = (mat as MeshStandardMaterial).name || obj.name || "";
-      const kind = classifyCarMaterial(name);
+      const fromUser = obj.userData.glassKind as CarMaterialKind | undefined;
+      const kind = fromUser ?? classifyCarMaterial(obj.name.startsWith("glass-") ? obj.name : name);
       const paintAo = kind === "paint" ? aoMap : null;
       const upgraded = physical(kind, lit, parked, paintHex, paintAo);
       upgraded.name = name;

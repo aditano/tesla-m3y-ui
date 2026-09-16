@@ -2,6 +2,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import {
   ContactShadows,
   Environment,
+  Lightformer,
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
@@ -13,6 +14,7 @@ import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
 import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
+import { PARKED_STUDIO } from "./parkedStudio";
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -24,11 +26,11 @@ function studioFloorMap(): CanvasTexture {
     tex.colorSpace = SRGBColorSpace;
     return tex;
   }
-  const g = ctx.createRadialGradient(256, 256, 18, 256, 256, 250);
-  g.addColorStop(0, "#d8dce2");
-  g.addColorStop(0.28, "#e8eaee");
-  g.addColorStop(0.58, "#f0f1f4");
-  g.addColorStop(1, "#f4f5f7");
+  const g = ctx.createRadialGradient(256, 256, 22, 256, 256, 248);
+  g.addColorStop(0, "#c4c7cd");
+  g.addColorStop(0.2, "#e2e4e8");
+  g.addColorStop(0.52, "#eef0f3");
+  g.addColorStop(1, "#f3f4f6");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 512, 512);
   const tex = new CanvasTexture(c);
@@ -40,39 +42,98 @@ function studioFloorMap(): CanvasTexture {
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   const floorMap = useMemo(() => studioFloorMap(), []);
+  const { camera, car, shadow, floor, background } = PARKED_STUDIO;
   return (
     <>
-      <color attach="background" args={["#f3f4f6"]} />
-      <fog attach="fog" args={["#f3f4f6", 18, 42]} />
-      <PerspectiveCamera makeDefault fov={28} position={[4.85, 6.05, -6.0]} near={0.1} far={80} />
-      <ambientLight intensity={0.62} />
-      <hemisphereLight args={["#f7f8fa", "#d5d8de", 0.48]} />
-      <directionalLight position={[2.4, 7.4, -4.0]} intensity={0.7} color="#f8f7f4" />
-      <directionalLight position={[-4.6, 2.8, 2.2]} intensity={0.32} color="#d7e3f0" />
-      <directionalLight position={[5.4, 2.2, 1.8]} intensity={0.36} color="#c5d2e2" />
-      <Environment preset="studio" environmentIntensity={0.72} />
+      <color attach="background" args={[background]} />
+      <fog attach="fog" args={[background, 22, 48]} />
+      <PerspectiveCamera
+        makeDefault
+        fov={camera.fov}
+        position={[...camera.position]}
+        near={camera.near}
+        far={camera.far}
+      />
+      <ambientLight intensity={0.28} />
+      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.22]} />
+      <directionalLight position={[2.8, 6.6, -3.2]} intensity={0.34} color="#f6f5f2" />
+      <Environment
+        frames={PARKED_STUDIO.envFrames}
+        resolution={PARKED_STUDIO.envResolution}
+        environmentIntensity={PARKED_STUDIO.envIntensity}
+      >
+        <Lightformer
+          form="rect"
+          intensity={1.4}
+          color="#ffffff"
+          position={[0, 9.2, 0]}
+          scale={[20, 20, 1]}
+          rotation={[Math.PI / 2, 0, 0]}
+        />
+        <Lightformer
+          form="rect"
+          intensity={10.2}
+          color="#ffffff"
+          position={[3.35, 5.7, -2.55]}
+          scale={[0.15, 7.6, 1]}
+          target={[0.18, 0.92, -1.12]}
+        />
+        <Lightformer
+          form="rect"
+          intensity={3.6}
+          color="#f3f5f8"
+          position={[2.6, 6.2, 1.35]}
+          scale={[0.13, 5.1, 1]}
+          target={[0, 0.72, 0.15]}
+        />
+        <Lightformer form="rect" intensity={0.82} color="#f1f2f5" position={[0, 2.3, -9]} scale={[14, 8, 1]} />
+        <Lightformer form="rect" intensity={0.48} color="#eceef2" position={[0, 2.1, 9]} scale={[14, 7, 1]} />
+        <Lightformer form="rect" intensity={0.36} color="#e7edf2" position={[9, 2.5, 0]} scale={[14, 8, 1]} />
+        <Lightformer form="rect" intensity={0.28} color="#e4e7ec" position={[-9, 2.3, 0]} scale={[14, 8, 1]} />
+        <Lightformer
+          form="rect"
+          intensity={0.26}
+          color="#d8dce2"
+          position={[0, -0.15, 0]}
+          scale={[16, 16, 1]}
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
+      </Environment>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
         <meshPhysicalMaterial
           map={floorMap}
           color="#eef0f3"
-          roughness={0.72}
-          metalness={0.04}
-          envMapIntensity={0.22}
+          roughness={floor.roughness}
+          metalness={floor.metalness}
+          envMapIntensity={floor.envMapIntensity}
+          clearcoat={floor.clearcoat}
+          clearcoatRoughness={floor.clearcoatRoughness}
         />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.2, 0]} position={[-0.04, 0, 0.04]}>
-        <Model3 scale={1.12} />
+      <group
+        rotation={gear === "R" ? [0, Math.PI, 0] : [0, car.rotationY, 0]}
+        position={[...car.position]}
+      >
+        <Model3 scale={car.scale} />
       </group>
-      <ContactShadows opacity={0.55} scale={12} blur={2.6} far={6} resolution={1024} color="#3f3c3e" />
+      <ContactShadows
+        opacity={shadow.opacity}
+        scale={[...shadow.scale]}
+        blur={shadow.blur}
+        far={shadow.far}
+        resolution={shadow.resolution}
+        color={shadow.color}
+        frames={shadow.frames}
+      />
       <OrbitControls
         enablePan={false}
-        minDistance={5.6}
-        maxDistance={9.2}
+        minDistance={camera.minDistance}
+        maxDistance={camera.maxDistance}
         autoRotate={false}
-        minPolarAngle={0.78}
-        maxPolarAngle={1.02}
-        target={[0, 0.22, -0.16]}
+        minPolarAngle={camera.minPolar}
+        maxPolarAngle={camera.maxPolar}
+        target={[...camera.target]}
       />
     </>
   );
@@ -191,7 +252,7 @@ export function FsdCanvas() {
           antialias: true,
           preserveDrawingBuffer: frozen,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1.08,
+          toneMappingExposure: parked ? 1.02 : 1.08,
           outputColorSpace: SRGBColorSpace,
         }}
         camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}
