@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MAP_STYLE } from "../geo/constants";
+import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
 import { RouteCard } from "../chrome/RouteCard";
@@ -97,7 +97,7 @@ function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: numb
   map.fitBounds(b, { padding: { top: 56, left: 80, right: 48, bottom: 88 }, duration, maxZoom: 14.8 });
 }
 
-export function TeslaMap() {
+export function TeslaMap({ compact = false }: { compact?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -113,11 +113,12 @@ export function TeslaMap() {
     const start = useVehicle.getState();
     const map = new maplibregl.Map({
       container: host.current,
-      style: MAP_STYLE,
+      style: compact ? MAP_STYLE_PARKED : MAP_STYLE,
       center: [start.origin.lng, start.origin.lat],
       zoom: 14.2,
       pitch: 0,
       attributionControl: { compact: true },
+      canvasContextAttributes: start.qa.frozen ? { preserveDrawingBuffer: true } : undefined,
     });
     const el = document.createElement("div");
     el.innerHTML = carSvg();
@@ -144,7 +145,7 @@ export function TeslaMap() {
       map.remove();
       mapRef.current = null;
     };
-  }, [patchUi, setOriginFromMap]);
+  }, [compact, patchUi, setOriginFromMap]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -183,9 +184,14 @@ export function TeslaMap() {
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       <div ref={host} style={{ position: "absolute", inset: 0 }} />
-      <RouteCard />
-      <NavSearch />
-      <div className="map-tools">
+      {compact ? null : (
+        <>
+          <RouteCard />
+          <NavSearch />
+        </>
+      )}
+      {compact ? null : (
+        <div className="map-tools">
         <button
           className={orientation === "heading" ? "on" : ""}
           title="Heading / North up"
@@ -221,7 +227,8 @@ export function TeslaMap() {
           ◎
         </button>
       </div>
-      {dest ? null : (
+      )}
+      {dest || compact ? null : (
         <div
           style={{
             position: "absolute",

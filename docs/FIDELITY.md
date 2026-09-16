@@ -52,15 +52,17 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 - Research **only** from public web: Tesla owner manuals, Tesla software-release notes republished by press, NotATeslaApp articles.
 - Do **not** paste large copyrighted manual text into the repo. Inventory files summarize **function lists** and cite URLs.
-- Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Plus Jakarta Sans — that is a known FAIL vs Tesla’s UI type).
+- Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Inter OFL — PARTIAL vs Tesla’s UI type; still not Tesla Sans).
 - Reference images are fair-use stills for offline comparison, attributed in [`REFERENCES.md`](references/REFERENCES.md). They are **not** to be bundled into the shipped UI.
 
 ## Current verdict (this pass)
 
-Tone’s first-pass notes still hold against the public references:
+Parked viz hyper-real campaign (CC-BY David_Holiday derivative, not a new Sketchfab download):
 
-- Parked mode is a **split viz + map**, not Highland full-screen centered vehicle.
+- Parked home is a **full-screen rear-right Model 3** on a white studio, with a subdivided/bevelled CC-BY mesh (~94k faces), candy Ultra Red clearcoat + C-pillar streak, pane-split glass IOR, oval contact shadow, original 5-cover aero wheels, and a TRUNK Open card on a long vertical in empty studio. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — materials/leaders moved; front well cutout and side-glass openings remain a mesh ceiling. See `docs/qa/MESH_REVIEW.md`.
+- Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
+- Park status-bar order and parked PRND remain **PARTIAL**.
 - FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
-- Car mesh, type, dock, and Controls chrome do not match v12 placement.
+- Dock climate cluster and Controls chrome still FAIL (other lanes).
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

@@ -14,8 +14,8 @@ function I(props: IconProps & { children: ReactNode }) {
 export function IconLock(props: IconProps) {
   return (
     <I {...props}>
-      <rect x="6" y="11" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M8.5 11V8.2a3.5 3.5 0 0 1 7 0V11" stroke="currentColor" strokeWidth="1.7" />
+      <rect x="6" y="11" width="12" height="9" rx="2" fill="currentColor" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8.5 11V8.2a3.5 3.5 0 0 1 7 0V11" stroke="currentColor" strokeWidth="1.8" />
     </I>
   );
 }
@@ -102,6 +102,69 @@ export function IconShield(props: IconProps) {
         strokeWidth="1.7"
         strokeLinejoin="round"
       />
+    </I>
+  );
+}
+
+export function IconSentry(props: IconProps) {
+  return (
+    <I {...props}>
+      <path d="m4 11 8-7 8 7" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M7 10.5V19h10v-8.5" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M10 19v-5h4v5" stroke="currentColor" strokeWidth="1.7" />
+    </I>
+  );
+}
+
+export function IconTrunk(props: IconProps) {
+  return (
+    <I {...props}>
+      <path
+        d="M5 14.5V11l2.2-3.2h9.6L19 11v3.5"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M4.5 14.5h15" stroke="currentColor" strokeWidth="1.7" />
+      <circle cx="7.5" cy="17.2" r="1.3" fill="currentColor" />
+      <circle cx="16.5" cy="17.2" r="1.3" fill="currentColor" />
+    </I>
+  );
+}
+
+export function IconFrunk(props: IconProps) {
+  return (
+    <I {...props}>
+      <path
+        d="M4.8 14.2 7 9.5h10l2.2 4.7H4.8Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M7.2 9.5 8.4 6.8h7.2l1.2 2.7" stroke="currentColor" strokeWidth="1.7" />
+    </I>
+  );
+}
+
+export function IconChargePort(props: IconProps) {
+  return (
+    <I {...props}>
+      <rect x="7" y="5" width="10" height="14" rx="2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M12 9v4M10.2 12.2 12 14.2l1.8-2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </I>
+  );
+}
+
+export function IconAutoShiftCar(props: IconProps) {
+  return (
+    <I {...props}>
+      <path
+        d="M9.1 3.6h5.8l2.3 3.5v9.8l-1.5 3.4H8.3L6.8 16.9V7.1L9.1 3.6Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path d="M8.1 9.4h7.8" stroke="currentColor" strokeWidth="1.3" />
     </I>
   );
 }

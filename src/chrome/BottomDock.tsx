@@ -1,4 +1,5 @@
 import { useVehicle } from "../state/store";
+import { isParkedFullscreen } from "../viz/layout";
 import {
   IconApps,
   IconBolt,
@@ -17,6 +18,7 @@ export function BottomDock() {
   const climate = useVehicle((s) => s.climate);
   const media = useVehicle((s) => s.media);
   const ui = useVehicle((s) => s.ui);
+  const parked = useVehicle((s) => isParkedFullscreen(s.gear, s.phase));
   const patchClimate = useVehicle((s) => s.patchClimate);
   const patchMedia = useVehicle((s) => s.patchMedia);
   const patchUi = useVehicle((s) => s.patchUi);
@@ -87,32 +89,34 @@ export function BottomDock() {
         </button>
       </div>
 
-      <button
-        className="media-card"
-        onClick={() => patchUi({ mediaOpen: !ui.mediaOpen, climateOpen: false, appsOpen: false })}
-      >
-        <div className="media-art" />
-        <div className="media-meta">
-          <strong>{media.track}</strong>
-          <span>
-            {media.artist} · {media.source}
-          </span>
-        </div>
-        <div className="media-controls">
-          <span
-            role="presentation"
-            onClick={(e) => {
-              e.stopPropagation();
-              patchMedia({ playing: !media.playing });
-            }}
-          >
-            {media.playing ? <IconPause /> : <IconPlay />}
-          </span>
-          <span role="presentation">
-            <IconSkip />
-          </span>
-        </div>
-      </button>
+      {parked ? null : (
+        <button
+          className="media-card"
+          onClick={() => patchUi({ mediaOpen: !ui.mediaOpen, climateOpen: false, appsOpen: false })}
+        >
+          <div className="media-art" />
+          <div className="media-meta">
+            <strong>{media.track}</strong>
+            <span>
+              {media.artist} · {media.source}
+            </span>
+          </div>
+          <div className="media-controls">
+            <span
+              role="presentation"
+              onClick={(e) => {
+                e.stopPropagation();
+                patchMedia({ playing: !media.playing });
+              }}
+            >
+              {media.playing ? <IconPause /> : <IconPlay />}
+            </span>
+            <span role="presentation">
+              <IconSkip />
+            </span>
+          </div>
+        </button>
+      )}
 
       <div className="volume-wrap">
         <IconVolume />

@@ -2,7 +2,7 @@ import { HOME_PLACE, SCHOOL_PLACE, WORK_PLACE } from "../geo/constants";
 import { useVehicle } from "../state/store";
 import { IconHome, IconSearch, IconStar, IconWork } from "./Icons";
 
-export function NavSearch() {
+export function NavSearch({ variant = "map" }: { variant?: "map" | "parked" }) {
   const query = useVehicle((s) => s.searchQuery);
   const results = useVehicle((s) => s.searchResults);
   const busy = useVehicle((s) => s.searchBusy);
@@ -17,12 +17,12 @@ export function NavSearch() {
   if (phase === "fsd") return null;
 
   return (
-    <div className="search-panel">
+    <div className={`search-panel ${variant}`}>
       <label className="search-bar">
         <IconSearch />
         <input
           value={query}
-          placeholder="Navigate to"
+          placeholder={variant === "parked" ? "Navigate" : "Navigate to"}
           onFocus={() => patchUi({ searchOpen: true })}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -77,6 +77,17 @@ export function NavSearch() {
               </span>
             </button>
           ))}
+        </div>
+      ) : variant === "parked" ? (
+        <div className="parked-nav-shortcuts">
+          <button className="quick-row" onClick={() => void navigateTo(HOME_PLACE)}>
+            <IconHome width={18} height={18} />
+            <b>Home</b>
+          </button>
+          <button className="quick-row" onClick={() => void navigateTo(WORK_PLACE)}>
+            <IconWork width={18} height={18} />
+            <b>Work</b>
+          </button>
         </div>
       ) : null}
     </div>

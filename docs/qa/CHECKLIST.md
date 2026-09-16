@@ -19,27 +19,27 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 
 | Scene | Latest still | vs reference | Status | Notes (update me) |
 | --- | --- | --- | --- | --- |
-| Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | FAIL | Split viz+map. Not full-screen centered Highland Park. Map is the large pane, not a top-right snippet. |
-| Route set | `screenshots/route-set.png` | `manual-m3-maps-nav-p170.jpg`, `nata-trip-progress.jpg` | PARTIAL | Turn list + Start FSD exist. No traffic progress bar, no gray traveled path, no energy-to-destination. |
-| FSD engaged | `screenshots/fsd-engaged.png` | `manual-m3-driving-status-p16.jpg`, `nata-ui-v12-hero.jpg` | FAIL | Viz does not prove it sits on the same road the map drives. Cheap traffic/lanes. Media player is in the dock, not on the viz. |
+| Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | PARTIAL | Candy Ultra Red + C-pillar streak, pane-split glass, oval contact shadow, TRUNK card in empty studio (`parked-home.png` 2026-09-16). Still not Tesla viz-grade: front well cutout, side-glass openings. |
+| Route set | `screenshots/route-set.png` | `manual-m3-maps-nav-p170.jpg`, `nata-trip-progress.jpg` | PARTIAL | Turn list + Start FSD sit on the parked fullscreen (map snippet TR). No traffic progress bar, no gray traveled path, no energy-to-destination. |
+| FSD engaged | `screenshots/fsd-engaged.png` | `manual-m3-driving-status-p16.jpg`, `nata-ui-v12-hero.jpg` | FAIL | CC Model 3 now sits on the ribbon (this PR) but does not prove it is on the same road the map drives. Cheap traffic/lanes. Media player is in the dock, not on the viz. |
 | Controls open | `screenshots/controls.png` | `nata-quick-controls.jpg`, `nata-controls-search.jpg` | FAIL | Sheet covers the whole stage. Missing top Search, wrong categories (no Dynamics/Charging/Trips), tile layout ≠ Quick Controls. |
 | Climate open | `screenshots/climate.png` | `manual-m3-climate-popup-p160.jpg` | FAIL | Generic panel, not Tesla popup (seats / defrost / Split slider). |
-| Media open | `screenshots/media.png` | `nata-media-player-full.jpg` | FAIL | Small opaque dialog. v12 wants translucent player with scrubber, shuffle, repeat, search, EQ. |
+| Media open | `screenshots/media.png` | `nata-media-player-full.jpg` | FAIL | Parked has an on-viz strip (this PR). The open player is still a small opaque dialog. v12 wants translucent player with scrubber, shuffle, repeat, search, EQ. |
 | Viz expanded | `screenshots/viz-expanded.png` | `nata-park-assist-fullscreen.jpg` | FAIL | Mini-map exists only at extreme drag. No centered Navigate + media on the viz. Surroundings look sparse. |
 
 ## Layout / type / chrome (all scenes)
 
 | Check | Reference | Status | Notes |
 | --- | --- | --- | --- |
-| Typeface | Tesla UI is not Plus Jakarta Sans | FAIL | Use a licensed grotesque similar to Universal/Tesla Sans. Do not rip car fonts. |
-| Status bar order (Park) | `nata-status-bar.jpg` | FAIL | Profile / Sentry / Wi‑Fi should sit toward the driver; weather/temp missing. |
-| PRND / Auto Shift | `nata-auto-shift.jpg` | FAIL | Always-on full-height strip. Highland is compact. |
-| Dock: My Apps + climate cluster + volume | `manual-m3-touchscreen-p8.jpg` | FAIL | Extra app icons, climate not a Tesla cluster, media lives in the dock instead of on viz. |
+| Typeface | Tesla UI is not Plus Jakarta Sans | PARTIAL | Inter (OFL) via Google Fonts — licensed SF-like grotesque. Still not Tesla Sans / Universal. Do not rip car fonts. |
+| Status bar order (Park) | `nata-status-bar.jpg` | PARTIAL | Lock (now filled/darker) / profile / Sentry / Wi‑Fi toward the driver; clock + 72° center; passenger airbag + range on the right. Profile label is generic “Driver”; temp is a stub. |
+| PRND / Auto Shift | `nata-auto-shift.jpg` | PARTIAL | Parked is PRND header + D / top-down car / R with blue magnets (P lives in the header, not a full-height ladder). Missing nata chevron dots. Driving still uses the taller strip. |
+| Dock: My Apps + climate cluster + volume | `manual-m3-touchscreen-p8.jpg` | FAIL | Extra app icons, climate not a Tesla cluster. Parked media now overlays the viz (closer to v12); dock media card is hidden while Parked. |
 | Vertical power / regen meter | `nata-regen-speedometer.jpg` | missing | Should sit left of viz while driving. |
 | Larger speed readout | `nata-regen-speedometer.jpg`, driving-status PDF | PARTIAL | HUD exists; type/size/placement off. |
 | Map orientation + tracking chip | Maps PDF p.169 | PARTIAL | Compass toggle exists; no “Tracking Disabled” chip. |
 | FSD viz ↔ map polyline | Tone + driving-status PDF | FAIL | Other lane. Harness scene `fsd-engaged` is the regression still. |
-| Parked full-screen vehicle | UI v12 notes + `nata-parked-car-vis.jpg` | FAIL | Other lane. Scene `parked-home`. |
+| Parked full-screen vehicle | UI v12 notes + `nata-parked-car-vis.jpg` | PARTIAL | Scene `parked-home`: candy Ultra Red, C-pillar streak, pane glass, oval shadow, TRUNK leader in empty studio. Front well cutout remains. See `LICENSE-3D.md` + `MESH_REVIEW.md`. |
 | Controls overlay on **map only** | Touchscreen PDF + `nata-quick-controls.jpg` | FAIL | Other lane. Scene `controls`. |
 
 ## How to record a pass
