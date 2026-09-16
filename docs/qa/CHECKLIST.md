@@ -21,10 +21,10 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 | --- | --- | --- | --- | --- |
 | Parked home | `screenshots/parked-home.png` | `manual-m3-touchscreen-p8.jpg`, `nata-parked-car-vis.jpg` | PARTIAL | Full-screen CC-BY Model 3, light studio, faded map snippet TR, Navigate + media lower third (`parked-home.png` 2026-09-16). Remaining vs `nata-parked-car-vis.jpg`: mesh/PBR not Tesla-grade (dark gray 3/4 hero, not red rear-3/4), TRUNK Open is a chip not a callout card, PRND still full-height, status-bar order still FAIL. |
 | Route set | `screenshots/route-set.png` | `manual-m3-maps-nav-p170.jpg`, `nata-trip-progress.jpg` | PARTIAL | Turn list + Start FSD sit on the parked fullscreen (map snippet TR). No traffic progress bar, no gray traveled path, no energy-to-destination. |
-| FSD engaged | `screenshots/fsd-engaged.png` | `manual-m3-driving-status-p16.jpg`, `nata-ui-v12-hero.jpg` | FAIL | Viz does not prove it sits on the same road the map drives. Cheap traffic/lanes. Media player is in the dock, not on the viz. |
+| FSD engaged | `screenshots/fsd-engaged.png` | `manual-m3-driving-status-p16.jpg`, `nata-ui-v12-hero.jpg` | FAIL | CC Model 3 now sits on the ribbon (this PR) but does not prove it is on the same road the map drives. Cheap traffic/lanes. Media player is in the dock, not on the viz. |
 | Controls open | `screenshots/controls.png` | `nata-quick-controls.jpg`, `nata-controls-search.jpg` | FAIL | Sheet covers the whole stage. Missing top Search, wrong categories (no Dynamics/Charging/Trips), tile layout ≠ Quick Controls. |
 | Climate open | `screenshots/climate.png` | `manual-m3-climate-popup-p160.jpg` | FAIL | Generic panel, not Tesla popup (seats / defrost / Split slider). |
-| Media open | `screenshots/media.png` | `nata-media-player-full.jpg` | FAIL | Small opaque dialog. v12 wants translucent player with scrubber, shuffle, repeat, search, EQ. |
+| Media open | `screenshots/media.png` | `nata-media-player-full.jpg` | FAIL | Parked has an on-viz strip (this PR). The open player is still a small opaque dialog. v12 wants translucent player with scrubber, shuffle, repeat, search, EQ. |
 | Viz expanded | `screenshots/viz-expanded.png` | `nata-park-assist-fullscreen.jpg` | FAIL | Mini-map exists only at extreme drag. No centered Navigate + media on the viz. Surroundings look sparse. |
 
 ## Layout / type / chrome (all scenes)
