@@ -183,10 +183,10 @@ function physical(
     case "paint":
       return new MeshPhysicalMaterial({
         color: new Color(paintHex),
-        metalness: 0.34,
-        roughness: 0.062,
+        metalness: 0.36,
+        roughness: 0.048,
         clearcoat: 1,
-        clearcoatRoughness: 0.012,
+        clearcoatRoughness: 0.01,
         clearcoatNormalMap: getStreakNormal(),
         clearcoatNormalScale: new Vector2(0.022, 0.014),
         anisotropy: parked ? 0.55 : 0.22,

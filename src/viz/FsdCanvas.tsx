@@ -5,8 +5,10 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import type { Group } from "three";
-import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, SRGBColorSpace, Vector3 } from "three";
+import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3, type Group } from "three";
+import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
+
+RectAreaLightUniformsLib.init();
 import { useVehicle } from "../state/store";
 import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
@@ -57,6 +59,49 @@ function ParkedEnvironment() {
   return null;
 }
 
+function lookAtPoint(light: RectAreaLight | null, x: number, y: number, z: number): void {
+  if (light) light.lookAt(x, y, z);
+}
+
+function CPillarKeys() {
+  const pillar = useRef<RectAreaLight>(null);
+  const shoulder = useRef<RectAreaLight>(null);
+  const bounce = useRef<RectAreaLight>(null);
+  useLayoutEffect(() => {
+    lookAtPoint(pillar.current, 0.48, 0.94, -1.1);
+    lookAtPoint(shoulder.current, 0.1, 0.82, -0.2);
+    lookAtPoint(bounce.current, 0, 0.4, 0);
+  }, []);
+  return (
+    <>
+      <rectAreaLight
+        ref={pillar}
+        width={0.06}
+        height={2.7}
+        intensity={62}
+        color="#ffffff"
+        position={[2.15, 1.62, -0.42]}
+      />
+      <rectAreaLight
+        ref={shoulder}
+        width={3.8}
+        height={0.09}
+        intensity={22}
+        color="#f7f8fa"
+        position={[0.15, 3.35, -0.35]}
+      />
+      <rectAreaLight
+        ref={bounce}
+        width={6}
+        height={4}
+        intensity={4.5}
+        color="#e8edf2"
+        position={[-2.8, 1.8, 2.2]}
+      />
+    </>
+  );
+}
+
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   const floorMap = useMemo(() => studioFloorMap(), []);
@@ -72,10 +117,10 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.4} />
-      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.28]} />
-      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.4} color="#f6f5f2" />
-      <directionalLight position={[4.2, 4.6, -1.55]} intensity={1.15} color="#ffffff" />
+      <ambientLight intensity={0.36} />
+      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.24]} />
+      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.28} color="#f6f5f2" />
+      <CPillarKeys />
       <ParkedEnvironment />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />

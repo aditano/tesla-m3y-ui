@@ -125,6 +125,21 @@ Still: `parked-home.png` after swapping the HDRI for a static strip env via `<En
 
 **Worst FAIL:** env map not bound. Next: `PMREMGenerator.fromEquirectangular` on the painted studio, keep a fill light so we cannot regress to clay.
 
+## Iteration 8 — 2026-09-16 (PMREM bake, `9d099d6`)
+
+Still: `parked-home.png` after PMREM-baking the painted studio.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Sheen is back on the front quarter. Rear/C-pillar still a satin wrap, not a nata streak. |
+| Glass | PARTIAL | Roof is a dark slab; chrome beltline is faint. Side glass is a hole more than laminate. |
+| Wheels | PARTIAL | Unchanged. |
+| Proportions | PARTIAL | Same 3/4. |
+| Lighting | PARTIAL | Oval shadow is the strongest nata read. Floor gloss still subtle. |
+| Leaders | PARTIAL | TRUNK card in empty studio, long vertical, pin on decklid. |
+
+**Worst remaining:** C-pillar streak. Next: thin `RectAreaLight` keys (direct lobe on clearcoat, not only IBL).
+
 
 
 
