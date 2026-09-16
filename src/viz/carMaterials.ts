@@ -8,6 +8,7 @@ import {
   Object3D,
   RepeatWrapping,
   RGBAFormat,
+  Texture,
   UnsignedByteType,
   Vector2,
 } from "three";
@@ -27,7 +28,7 @@ export type CarMaterialKind =
   | "other";
 
 /** Ultra Red–like albedo. CC-BY allows material tint; mesh is still David_Holiday. */
-export const PAINT_NATA_RED = "#7a141c";
+export const PAINT_NATA_RED = "#8c1a22";
 const CHROME = new Color("#c4c9d0");
 const RUBBER = new Color("#08080a");
 const PLASTIC = new Color("#121316");
@@ -131,31 +132,35 @@ function physical(
   lit: boolean,
   parked: boolean,
   paintHex: string,
+  aoMap: Texture | null,
 ): MeshPhysicalMaterial {
   switch (kind) {
     case "paint":
       return new MeshPhysicalMaterial({
         color: new Color(paintHex),
-        metalness: 0.34,
-        roughness: 0.28,
+        metalness: 0.22,
+        roughness: 0.18,
         roughnessMap: getFlakeRoughness(),
         clearcoat: 1,
-        clearcoatRoughness: 0.06,
+        clearcoatRoughness: 0.045,
         clearcoatRoughnessMap: getFlakeRoughness(),
         clearcoatNormalMap: getFlakeNormal(),
-        clearcoatNormalScale: new Vector2(0.045, 0.045),
-        envMapIntensity: parked ? 0.92 : 1.05,
-        sheen: parked ? 0.38 : 0.14,
-        sheenColor: new Color("#5c1014"),
-        sheenRoughness: 0.55,
-        specularIntensity: 0.72,
+        clearcoatNormalScale: new Vector2(0.055, 0.055),
+        envMapIntensity: parked ? 1.12 : 1.05,
+        sheen: parked ? 0.22 : 0.14,
+        sheenColor: new Color("#6a1218"),
+        sheenRoughness: 0.48,
+        specularIntensity: 0.85,
+        ...(aoMap
+          ? { aoMap, aoMapIntensity: parked ? 0.62 : 0.45 }
+          : {}),
       });
     case "chrome":
       return new MeshPhysicalMaterial({
         color: CHROME,
-        metalness: 0.96,
-        roughness: 0.14,
-        envMapIntensity: 1.15,
+        metalness: 0.98,
+        roughness: parked ? 0.1 : 0.14,
+        envMapIntensity: parked ? 1.35 : 1.15,
       });
     case "rim":
       return new MeshPhysicalMaterial({
@@ -169,27 +174,28 @@ function physical(
     case "glass":
       return new MeshPhysicalMaterial({
         color: GLASS,
-        metalness: 0.02,
-        roughness: 0.04,
+        metalness: 0.04,
+        roughness: 0.028,
         transparent: true,
-        opacity: parked ? 0.72 : 0.55,
-        transmission: parked ? 0.08 : 0.32,
-        thickness: 0.55,
-        envMapIntensity: 0.85,
-        ior: 1.5,
-        attenuationColor: new Color("#07090c"),
-        attenuationDistance: 0.55,
+        opacity: parked ? 0.82 : 0.55,
+        transmission: parked ? 0.16 : 0.32,
+        thickness: 0.62,
+        envMapIntensity: parked ? 1.15 : 0.85,
+        ior: 1.48,
+        attenuationColor: new Color("#05070a"),
+        attenuationDistance: 0.42,
+        specularIntensity: 1,
       });
     case "roofGlass":
       return new MeshPhysicalMaterial({
         color: ROOF_GLASS,
-        metalness: 0.06,
-        roughness: 0.08,
+        metalness: 0.08,
+        roughness: 0.045,
         transparent: true,
-        opacity: parked ? 0.94 : 0.7,
-        transmission: parked ? 0.02 : 0.12,
-        thickness: 0.4,
-        envMapIntensity: 0.55,
+        opacity: parked ? 0.97 : 0.7,
+        transmission: parked ? 0.015 : 0.12,
+        thickness: 0.35,
+        envMapIntensity: parked ? 0.72 : 0.55,
         ior: 1.5,
       });
     case "headlight":
@@ -262,6 +268,7 @@ export function applyCarMaterials(
   lit: boolean,
   parked: boolean,
   paintHex: string = PAINT_NATA_RED,
+  aoMap: Texture | null = null,
 ): void {
   root.traverse((obj) => {
     if (!(obj instanceof Mesh)) return;
@@ -271,7 +278,8 @@ export function applyCarMaterials(
     const next = mats.map((mat) => {
       const name = (mat as MeshStandardMaterial).name || obj.name || "";
       const kind = classifyCarMaterial(name);
-      const upgraded = physical(kind, lit, parked, paintHex);
+      const paintAo = kind === "paint" ? aoMap : null;
+      const upgraded = physical(kind, lit, parked, paintHex, paintAo);
       upgraded.name = name;
       return upgraded;
     });

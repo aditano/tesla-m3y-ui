@@ -1403,8 +1403,8 @@ button {
 }
 
 .parked-callout.trunk {
-  --stem-h: min(24vh, 220px);
-  --pin-x: 64px;
+  --stem-h: min(36vh, 320px);
+  --pin-x: 72px;
 }
 
 .parked-callout.frunk {
