@@ -80,51 +80,21 @@ Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the
 
 **Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
 
-## Iteration 5 — 2026-09-16 (topology surgery: liners + side-glass split)
+## Iteration 5 — 2026-09-16 (hub-anchored 5-cover aero remesh, working tree)
 
-Blender GLB now carries original **wheel-well liner shells** (dark plastic cup + back-wall disc at each hub, parented under `RootNode`) and a **`SideGlass` material split** — the near-vertical greenhouse panes (side windows, windshield, backlight rake) get their own slot so the runtime can tint them independently of the panoramic roof. Stray `Cylinder012` studio prop dropped; AO bake gated off (never bound at runtime). Runtime derivative: `glass` kind → near-zero env dark laminate (kills the Fresnel blow-out), `roofGlass` → glossy dark roof only, `chrome` tamed (satin, not mirror), and the `AeroWheel` caliper moved off the hub center to the lower-rear rim.
-
-| Axis | Score | Notes |
-| --- | --- | --- |
-| Paint | PARTIAL | Smooth candy Ultra Red, no AO blotch, studio reflections. Unchanged from iter 4 — still a touch flatter than nata; C-pillar highlight is a broad wrap. |
-| Glass | PARTIAL | Big jump: side windows + backlight + roof now read as dark tinted laminate, not a chrome-bright opening. Near-side front pane keeps a nata-like reflection streak; the far-side panes still catch a brighter key-light smear. |
-| Wheels | PARTIAL | Front well is now a dark liner cavity — the red inner-well hole is gone. Rear-right 5-cover aero reads from overhead. The floating red caliper cube (aero-wheel caliper at the hub center) is fixed. |
-| Proportions | PARTIAL | Rear-right 3/4 matches nata. The front side-marker still reads as a dark socket with a bright rim; window corners, spoiler lip, and panel gaps are still the 27k-derived silhouette. |
-| Lighting | PARTIAL | White studio + contact shadow. Shadow still lighter than nata’s oval. |
-| Leaders | PARTIAL | TRUNK pin on the decklid; card kisses the backlight. FRUNK/CHARGE attached. |
-
-**Worst FAIL:** Proportions — the front side-marker socket artifact plus soft window-corner/panel-gap silhouette. Next (iter 6): reshape/close the side-marker so it stops reading as a hole, then bevel-tighten window corners and panel gaps.
-
-## Iteration 6 — 2026-09-16 (silhouette tighten: subdiv creases)
-
-`remesh_model3.py` now creases hard dihedrals (>30°, weight 1.0) on paint/chrome/glass before Catmull-Clark and bumps the paint bevel to 0.0018. Point of the pass: the earlier subdiv melted every character line into a blob; creasing keeps the window-cutout corners, panel gaps, hood/shoulder lines and the decklid/spoiler edge crisp toward Highland while the broad panels stay smooth (verified: no faceting).
-
-Investigated the front side-marker "socket": the clay render shows it is the low-poly **side-mirror base**, a concave non-manifold pocket in the door skin (not a clean open hole), so it is a mesh-ceiling artifact rather than a fillable gap — left as-is instead of risking a bad manual patch.
+Still: `parked-home.png` after replacing stock wheel meshes at each `wheel`/`wheel.N` parent with side-aware 5-cover aero groups, dark cavity blockers, and subtler calipers.
 
 | Axis | Score | Notes |
 | --- | --- | --- |
-| Paint | PARTIAL | Unchanged candy Ultra Red; the crisper creases give slightly sharper character-line highlights. |
-| Glass | PARTIAL | Unchanged from iter 5 — dark tinted side/rear/roof, near-side front pane keeps a nata-like reflection. |
-| Wheels | PARTIAL | Unchanged — dark liner wells, aero covers, no red caliper. |
-| Proportions | PARTIAL | Window corners, panel gaps and the decklid edge read tighter (creased through subdiv). Front side-mirror base still a dark pocket; front overhang still long vs nata — mesh ceiling. |
-| Lighting | PARTIAL | White studio + contact shadow. Out of this pass's mesh/GLB scope. |
-| Leaders | PARTIAL | Unchanged. |
+| Paint | PARTIAL | Candy coat and studio highlights remain stable vs iter 4; still flatter/darker than nata around the C-pillar streak. |
+| Glass | PARTIAL | Cabin blocker still prevents tunnel-through; side glass remains too open vs nata’s deeper laminate tint. |
+| Wheels | PARTIAL | All four hub parents now carry a stable aero wheel (no empty front-left hole, no red inner cavity). Rear-right reads closer to nata’s 5-cover look, but front-left still favors sidewall silhouette over visible cover at this camera. |
+| Proportions | PARTIAL | Rear-right 3/4 pose remains aligned; wheel-well/fender cutout topology still limits a true nata-like wrap around the front-left arch. |
+| Lighting | PARTIAL | White studio and contact shadow remain close enough for wheel validation; still lighter than nata’s denser rear shadow oval. |
+| Leaders | PARTIAL | TRUNK pin remains on decklid but card still intersects backlight space. |
 
-**Worst FAIL:** Glass uniformity + Paint — far-side panes and the lower body/rocker still catch a harder studio smear than nata's smooth dark gradient. Next (iter 7): even out the vertical-glass tint across both sides and calm the rocker/clearcoat blowout for a smoother nata-like body.
+**Ceiling (wheels):** hub parenting + bbox-centered placement is now stable across parked/route QA captures, but strict 1:1 aero read from this angle is constrained by the low-poly wheel-well/fender geometry. Without a higher-fidelity CC-BY wheel-arch mesh, further material-only tweaks are likely diminishing returns.
 
-## Iteration 7 — 2026-09-16 (paint/glass reflection polish)
 
-Parked candy paint now spreads its clearcoat (`clearcoatRoughness` 0.045 → 0.075, `envMapIntensity` 1.22 → 1.12) so the bright studio softbox reads as a smooth sweep down the rocker/shoulder instead of a hard white streak (side-by-side confirms the blown mirror line is gone). Vertical glass and chrome trim nudged a touch calmer (`glass` clearcoat/spec down, `chrome` env 0.5 → 0.42) so the door panes read as more uniform dark tint. GLB unchanged from iter 6 — this is pure runtime material.
-
-| Axis | Score | Notes |
-| --- | --- | --- |
-| Paint | PASS-ish | Smooth candy Ultra Red; the rocker/shoulder highlight is now a broad soft sweep like nata, not a blown streak. Closest to nata this campaign. |
-| Glass | PARTIAL | Side/rear/roof dark tinted; door panes read more uniform. Near-side front pane keeps a nata-like reflection; far panes acceptable. |
-| Wheels | PARTIAL | Dark liner wells, aero covers, no red caliper. |
-| Proportions | PARTIAL | Creased character lines/window corners hold. Side-mirror base pocket + front overhang are the standing mesh ceiling. |
-| Lighting | PARTIAL | White studio + contact shadow (out of mesh/GLB scope). |
-| Leaders | PARTIAL | Unchanged. |
-
-**Ceiling (honest):** across iters 5–7 parked-home gained closed dark wheel wells, dark tinted laminate glass (side windows no longer chrome-white), no floating red caliper, crisper creased silhouette, and smoother candy paint. Remaining gaps are true mesh-geometry limits of the 27k-derived David_Holiday base (low-poly side-mirror base pocket, long front overhang, soft one-piece greenhouse) that need a higher-poly Highland/737k mesh we cannot fetch without Sketchfab auth. Do not apply the overlapping paint AO atlas; floor stays blit-safe (no `MeshReflectorMaterial`).
 
 

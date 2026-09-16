@@ -1,4 +1,4 @@
-import { Mesh, Object3D, Vector3 } from "three";
+import { Box3, Mesh, Object3D, Vector3 } from "three";
 import { createAeroWheel } from "./AeroWheel";
 
 export type WheelHub = {
@@ -11,6 +11,10 @@ export type WheelHub = {
 
 const WHEEL_PARENT = /^wheel(?:\.\d+)?$/i;
 const CALIPER_PARENT = /^cal(?:\.\d+)?$/i;
+const AERO_RADIUS_M = 0.365;
+const AERO_WIDTH_M = 0.238;
+const HUB_OUTBOARD_X = 0.15;
+const HUB_LIFT_Y = 0.012;
 
 export function isStockWheelPart(name: string): boolean {
   return WHEEL_PARENT.test(name) || CALIPER_PARENT.test(name) || /^wheel/i.test(name) || /^cal(?:\.|_|\b)/i.test(name);
@@ -27,31 +31,34 @@ export function hideStockWheels(root: Object3D): void {
   });
 }
 
-/**
- * The GLB wheel-parent node sits exactly at the hub centre in the car's local
- * coordinate frame (after extractCar scaling + grounding). We average all four
- * hub Y positions to calibrate the aero wheel radius so the tire just kisses
- * the studio floor.
- *
- * Model3 wraps the car in <group scale={1.12}>, so geometry added here is
- * scaled again in the scene. We pre-divide to compensate.
- */
-const SCENE_EXTRA_SCALE = 1.12;
-
-function hubCentreHeight(root: Object3D): number {
-  let total = 0;
-  let count = 0;
-  root.traverse((obj) => {
-    if (!WHEEL_PARENT.test(obj.name)) return;
-    const world = new Vector3();
-    obj.getWorldPosition(world);
-    total += world.y;
-    count++;
+function localWheelBox(parent: Object3D): Box3 {
+  parent.updateWorldMatrix(true, true);
+  const box = new Box3();
+  const inv = parent.matrixWorld.clone().invert();
+  parent.traverse((obj) => {
+    if (!(obj instanceof Mesh) || obj.name === "aero-wheel") return;
+    obj.geometry.computeBoundingBox();
+    const geoBox = obj.geometry.boundingBox;
+    if (!geoBox) return;
+    const worldBox = geoBox.clone().applyMatrix4(obj.matrixWorld).applyMatrix4(inv);
+    box.union(worldBox);
   });
-  return count > 0 ? total / count : 0.36;
+  return box;
 }
 
-/** Hide stock discs/calipers and parent original aero wheels at the GLB hub nodes. */
+function localWheelSize(parent: Object3D): { radius: number; width: number; center: Vector3 } {
+  const box = localWheelBox(parent);
+  if (box.isEmpty()) {
+    return { radius: 0.34, width: 0.22, center: new Vector3() };
+  }
+  const size = box.getSize(new Vector3());
+  const center = box.getCenter(new Vector3());
+  const radius = Math.min(0.42, Math.max(0.32, Math.max(size.y, size.z) * 0.5));
+  const width = Math.min(0.3, Math.max(0.12, size.x));
+  return { radius, width, center };
+}
+
+/** Hide stock discs/calipers and parent 5-cover aero wheels at GLB hub nodes. */
 export function replaceStockWheels(root: Object3D): WheelHub[] {
   root.updateMatrixWorld(true);
   const parents: Object3D[] = [];
@@ -59,33 +66,34 @@ export function replaceStockWheels(root: Object3D): WheelHub[] {
     if (WHEEL_PARENT.test(obj.name)) parents.push(obj);
   });
 
-  const centreH = hubCentreHeight(root);
-  // The GLB hub centre height reflects the fan-model's oversized wheels.
-  // Hard-cap to a compact diameter that fits the 27k mesh fender opening.
-  // target outer in scene ≈ 0.24m (< real 0.33m; fender arch on this mesh is shallow)
-  const TARGET_OUTER_SCENE = 0.24;
-  const TYRE_EXPAND = 0.84 + 0.60 * 0.42;
-  void centreH; // checked for floor proximity — acceptable float at this scale
-  const tyreRadius = TARGET_OUTER_SCENE / (SCENE_EXTRA_SCALE * TYRE_EXPAND);
-  const rimWidth = tyreRadius * 0.60;
-
   const hubs: WheelHub[] = [];
   for (const parent of parents) {
     parent.traverse((obj) => {
       if (obj instanceof Mesh) obj.visible = false;
     });
+    const { center } = localWheelSize(parent);
     const world = new Vector3();
     parent.getWorldPosition(world);
-    const wheel = createAeroWheel(tyreRadius, rimWidth);
-    // Hub-parent IS the wheel centre — place at local origin.
-    wheel.position.set(0, 0, 0);
+    const side: "L" | "R" = center.x < 0 || (Math.abs(center.x) < 1e-4 && world.x < 0) ? "L" : "R";
+    const sideSign = side === "L" ? -1 : 1;
+    const wheel = createAeroWheel(AERO_RADIUS_M, AERO_WIDTH_M, side);
+    wheel.position.copy(center);
+    wheel.position.x = sideSign * HUB_OUTBOARD_X;
+    wheel.position.y += HUB_LIFT_Y;
+    wheel.rotation.x = sideSign * 0.24;
+    wheel.userData.hubAnchor = {
+      from: parent.name,
+      side,
+      bboxCenter: [center.x, center.y, center.z] as const,
+    };
     parent.add(wheel);
+    const wheelWorld = parent.localToWorld(wheel.position.clone());
     hubs.push({
       id: parent.name.toLowerCase(),
-      position: [world.x, world.y, world.z],
-      radius: tyreRadius,
-      width: rimWidth,
-      side: world.x < 0 ? "L" : "R",
+      position: [wheelWorld.x, wheelWorld.y, wheelWorld.z],
+      radius: AERO_RADIUS_M,
+      width: AERO_WIDTH_M,
+      side,
     });
   }
 
@@ -107,11 +115,12 @@ export function locateWheelHubs(root: Object3D): WheelHub[] {
     const world = new Vector3();
     obj.getWorldPosition(world);
     root.worldToLocal(world);
+    const { radius, width, center } = localWheelSize(obj);
     hubs.push({
       id: obj.name.toLowerCase(),
-      position: [world.x, world.y, world.z],
-      radius: 0.33,
-      width: 0.21,
+      position: [world.x + center.x, world.y + center.y, world.z + center.z],
+      radius,
+      width,
       side: world.x < 0 ? "L" : "R",
     });
   });
