@@ -291,9 +291,33 @@ function physical(
   }
 }
 
+/**
+ * A tangent attribute is only usable if every sampled tangent is finite and
+ * non-degenerate. The CC-BY remesh's subdivided body ships near-zero UV islands,
+ * so `computeTangents` yields NaN/zero tangents that collapse the clearcoat
+ * normal-map shading to black. Detecting that lets the caller drop the
+ * tangent-space paint features on just those meshes.
+ */
+function tangentsAreValid(geo: Mesh["geometry"]): boolean {
+  const t = geo.getAttribute("tangent");
+  if (!t) return false;
+  const step = Math.max(1, Math.floor(t.count / 128));
+  for (let i = 0; i < t.count; i += step) {
+    const x = t.getX(i);
+    const y = t.getY(i);
+    const z = t.getZ(i);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return false;
+    if (x * x + y * y + z * z < 1e-8) return false;
+  }
+  return true;
+}
+
 export function ensureMeshTangents(mesh: Mesh): boolean {
   const geo = mesh.geometry;
-  if (geo.getAttribute("tangent")) return true;
+  if (geo.getAttribute("tangent")) {
+    if (tangentsAreValid(geo)) return true;
+    geo.deleteAttribute("tangent");
+  }
   if (!geo.getAttribute("uv") || !geo.getIndex()) return false;
   if (!geo.getAttribute("normal")) geo.computeVertexNormals();
   try {
@@ -301,7 +325,11 @@ export function ensureMeshTangents(mesh: Mesh): boolean {
   } catch {
     return false;
   }
-  return Boolean(geo.getAttribute("tangent"));
+  if (!tangentsAreValid(geo)) {
+    geo.deleteAttribute("tangent");
+    return false;
+  }
+  return true;
 }
 
 export function applyCarMaterials(
