@@ -9,7 +9,7 @@ describe("wheelHubs", () => {
     expect(hubKey("cal.002_Material.014_0")).toBeNull();
   });
 
-  it("hides stock wheel and caliper parts", () => {
+  it("hides stock wheel and caliper meshes, not unnamed body parts", () => {
     expect(isStockWheelPart("wheel.003_Material.010_0")).toBe(true);
     expect(isStockWheelPart("cal_Material.014_0")).toBe(true);
     expect(isStockWheelPart("Capot.001_CAR PAINT_0")).toBe(false);
@@ -21,19 +21,20 @@ describe("wheelHubs", () => {
     expect(wheel.visible).toBe(false);
   });
 
-  it("locates a hub in local space from grouped wheel meshes", () => {
+  it("locates hub parents named wheel / wheel.N", () => {
     const root = new Group();
-    const a = new Mesh(new BoxGeometry(0.22, 0.66, 0.66));
-    a.name = "wheel_Material.009_0";
-    a.position.set(0.8, 0.33, -1.4);
-    const b = new Mesh(new BoxGeometry(0.18, 0.5, 0.5));
-    b.name = "wheel_Material.011_0";
-    b.position.set(0.8, 0.33, -1.4);
-    root.add(a, b);
+    const hub = new Group();
+    hub.name = "wheel.001";
+    hub.position.set(-0.8, 0.33, 1.4);
+    const mesh = new Mesh(new BoxGeometry(0.22, 0.66, 0.66));
+    mesh.name = "wheel.001_Material.009_0";
+    hub.add(mesh);
+    root.add(hub);
     const hubs = locateWheelHubs(root);
     expect(hubs).toHaveLength(1);
-    expect(hubs[0]?.side).toBe("R");
-    expect(hubs[0]?.position[0]).toBeCloseTo(0.8, 1);
+    expect(hubs[0]?.id).toBe("wheel.001");
+    expect(hubs[0]?.side).toBe("L");
+    expect(hubs[0]?.position[0]).toBeCloseTo(-0.8, 1);
     expect(hubs[0]?.radius).toBeGreaterThan(0.29);
   });
 });

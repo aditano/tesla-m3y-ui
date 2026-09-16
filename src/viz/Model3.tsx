@@ -5,11 +5,10 @@ import { Box3, Group, Object3D, Quaternion, Vector3 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
-import { createAeroWheel } from "./AeroWheel";
 import { applyCarMaterials } from "./carMaterials";
 import { HOTSPOT_PINS } from "./hotspots";
 import { ParkedHotspots } from "./ParkedHotspots";
-import { hideStockWheels, locateWheelHubs } from "./wheelHubs";
+import { replaceStockWheels } from "./wheelHubs";
 
 export const MODEL3_URL = `${import.meta.env.BASE_URL}models/tesla_model_3.glb`;
 const DRACO_PATH = `${import.meta.env.BASE_URL}draco/`;
@@ -46,14 +45,7 @@ function extractCar(scene: Object3D): Group {
   wrapper.traverse((obj) => {
     if (/debris|speaker/i.test(obj.name)) obj.visible = false;
   });
-  const hubs = locateWheelHubs(wrapper);
-  hideStockWheels(wrapper);
-  for (const hub of hubs) {
-    const wheel = createAeroWheel(hub.radius, Math.min(hub.width, hub.radius * 0.72));
-    wheel.position.set(hub.position[0], hub.position[1], hub.position[2]);
-    wheel.rotation.y = hub.side === "L" ? Math.PI : 0;
-    wrapper.add(wheel);
-  }
+  replaceStockWheels(wrapper);
   return wrapper;
 }
 
