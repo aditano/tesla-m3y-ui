@@ -96,6 +96,24 @@ def add_bevel(obj, width: float, segments: int) -> None:
     obj.select_set(False)
 
 
+def crease_sharp_edges(obj, sharp_deg: float, crease: float) -> None:
+    """Set subdivision creases on genuinely hard edges (panel gaps, window
+    cutout corners, spoiler lip) so Catmull-Clark keeps them crisp instead of
+    melting the low-poly silhouette into a blob."""
+    select_only(obj)
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="DESELECT")
+    bpy.ops.mesh.select_mode(type="EDGE")
+    try:
+        bpy.ops.mesh.edges_select_sharp(sharpness=math.radians(sharp_deg))
+        bpy.ops.transform.edge_crease(value=crease)
+    except Exception as exc:
+        log(f"crease skip {obj.name}: {exc}")
+    bpy.ops.mesh.select_all(action="DESELECT")
+    bpy.ops.object.mode_set(mode="OBJECT")
+    obj.select_set(False)
+
+
 def add_subdiv(obj, levels: int) -> None:
     if levels <= 0:
         return
@@ -388,9 +406,14 @@ def main() -> int:
             try_quads(obj)
         shade_smooth(obj, angle)
         if kind == "paint":
-            add_bevel(obj, 0.0014, 2)
+            add_bevel(obj, 0.0018, 2)
         elif kind == "chrome":
             add_bevel(obj, 0.0008, 1)
+        # Crease hard edges before subdiv so character lines, panel gaps, window
+        # corners and the decklid/spoiler lip stay tight instead of melting under
+        # Catmull-Clark. Full crease on the genuinely hard dihedrals.
+        if kind in {"paint", "chrome", "glass"} and level > 0:
+            crease_sharp_edges(obj, 30.0, 1.0)
         add_subdiv(obj, level)
         shade_smooth(obj, angle)
         add_weighted_normals(obj)

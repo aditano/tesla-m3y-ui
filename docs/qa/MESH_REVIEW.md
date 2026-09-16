@@ -95,4 +95,21 @@ Blender GLB now carries original **wheel-well liner shells** (dark plastic cup +
 
 **Worst FAIL:** Proportions — the front side-marker socket artifact plus soft window-corner/panel-gap silhouette. Next (iter 6): reshape/close the side-marker so it stops reading as a hole, then bevel-tighten window corners and panel gaps.
 
+## Iteration 6 — 2026-09-16 (silhouette tighten: subdiv creases)
+
+`remesh_model3.py` now creases hard dihedrals (>30°, weight 1.0) on paint/chrome/glass before Catmull-Clark and bumps the paint bevel to 0.0018. Point of the pass: the earlier subdiv melted every character line into a blob; creasing keeps the window-cutout corners, panel gaps, hood/shoulder lines and the decklid/spoiler edge crisp toward Highland while the broad panels stay smooth (verified: no faceting).
+
+Investigated the front side-marker "socket": the clay render shows it is the low-poly **side-mirror base**, a concave non-manifold pocket in the door skin (not a clean open hole), so it is a mesh-ceiling artifact rather than a fillable gap — left as-is instead of risking a bad manual patch.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Unchanged candy Ultra Red; the crisper creases give slightly sharper character-line highlights. |
+| Glass | PARTIAL | Unchanged from iter 5 — dark tinted side/rear/roof, near-side front pane keeps a nata-like reflection. |
+| Wheels | PARTIAL | Unchanged — dark liner wells, aero covers, no red caliper. |
+| Proportions | PARTIAL | Window corners, panel gaps and the decklid edge read tighter (creased through subdiv). Front side-mirror base still a dark pocket; front overhang still long vs nata — mesh ceiling. |
+| Lighting | PARTIAL | White studio + contact shadow. Out of this pass's mesh/GLB scope. |
+| Leaders | PARTIAL | Unchanged. |
+
+**Worst FAIL:** Glass uniformity + Paint — far-side panes and the lower body/rocker still catch a harder studio smear than nata's smooth dark gradient. Next (iter 7): even out the vertical-glass tint across both sides and calm the rocker/clearcoat blowout for a smoother nata-like body.
+
 
