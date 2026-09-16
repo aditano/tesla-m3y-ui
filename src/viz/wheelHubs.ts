@@ -47,7 +47,7 @@ export function locateWheelHubs(root: Object3D): WheelHub[] {
     root.worldToLocal(center);
     const size = box.getSize(new Vector3());
     const radius = Math.min(
-      0.4,
+      0.42,
       Math.max(0.3, Math.max(size.y / Math.max(worldScale.y, 1e-4), size.z / Math.max(worldScale.z, 1e-4)) * 0.5),
     );
     const width = Math.min(0.28, Math.max(0.18, size.x / Math.max(worldScale.x, 1e-4)));

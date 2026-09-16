@@ -44,7 +44,7 @@ function ParkedStudio() {
     <>
       <color attach="background" args={["#f3f4f6"]} />
       <fog attach="fog" args={["#f3f4f6", 18, 42]} />
-      <PerspectiveCamera makeDefault fov={28} position={[4.05, 5.62, -5.22]} near={0.1} far={80} />
+      <PerspectiveCamera makeDefault fov={28} position={[4.55, 5.85, -5.7]} near={0.1} far={80} />
       <ambientLight intensity={0.62} />
       <hemisphereLight args={["#f7f8fa", "#d5d8de", 0.48]} />
       <directionalLight position={[2.4, 7.4, -4.0]} intensity={0.7} color="#f8f7f4" />
@@ -61,18 +61,18 @@ function ParkedStudio() {
           envMapIntensity={0.22}
         />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.22, 0]} position={[-0.05, 0, 0.06]}>
-        <Model3 scale={1.3} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.2, 0]} position={[-0.04, 0, 0.04]}>
+        <Model3 scale={1.18} />
       </group>
-      <ContactShadows opacity={0.48} scale={12} blur={2.8} far={6} resolution={1024} color="#4a4648" />
+      <ContactShadows opacity={0.55} scale={12} blur={2.6} far={6} resolution={1024} color="#3f3c3e" />
       <OrbitControls
         enablePan={false}
-        minDistance={5.1}
-        maxDistance={8.6}
+        minDistance={5.6}
+        maxDistance={9.2}
         autoRotate={false}
-        minPolarAngle={0.8}
+        minPolarAngle={0.78}
         maxPolarAngle={1.02}
-        target={[0, 0.24, -0.18]}
+        target={[0, 0.22, -0.16]}
       />
     </>
   );

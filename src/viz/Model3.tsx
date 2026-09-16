@@ -1,18 +1,17 @@
 import { useLoader } from "@react-three/fiber";
-import { useCursor, useTexture } from "@react-three/drei";
+import { useCursor } from "@react-three/drei";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Box3, Group, NoColorSpace, Object3D, Quaternion, Vector3 } from "three";
+import { Box3, Group, Object3D, Quaternion, Vector3 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
-import { AeroWheel } from "./AeroWheel";
-import { applyCarMaterials, PAINT_NATA_RED } from "./carMaterials";
+import { createAeroWheel } from "./AeroWheel";
+import { applyCarMaterials } from "./carMaterials";
 import { HOTSPOT_PINS } from "./hotspots";
 import { ParkedHotspots } from "./ParkedHotspots";
 import { hideStockWheels, locateWheelHubs } from "./wheelHubs";
 
 export const MODEL3_URL = `${import.meta.env.BASE_URL}models/tesla_model_3.glb`;
-const PAINT_AO_URL = `${import.meta.env.BASE_URL}models/maps/paint_ao.png`;
 const DRACO_PATH = `${import.meta.env.BASE_URL}draco/`;
 
 function configureGltfLoader(loader: GLTFLoader): void {
@@ -43,10 +42,18 @@ function extractCar(scene: Object3D): Group {
   wrapper.updateMatrixWorld(true);
   const grounded = new Box3().setFromObject(wrapper);
   wrapper.position.y -= grounded.min.y;
+  wrapper.updateMatrixWorld(true);
   wrapper.traverse((obj) => {
     if (/debris|speaker/i.test(obj.name)) obj.visible = false;
   });
+  const hubs = locateWheelHubs(wrapper);
   hideStockWheels(wrapper);
+  for (const hub of hubs) {
+    const wheel = createAeroWheel(hub.radius, Math.min(hub.width, hub.radius * 0.72));
+    wheel.position.set(hub.position[0], hub.position[1], hub.position[2]);
+    wheel.rotation.y = hub.side === "L" ? Math.PI : 0;
+    wrapper.add(wheel);
+  }
   return wrapper;
 }
 
@@ -121,9 +128,6 @@ export function Model3({
   showHits?: boolean;
 }): ReactNode {
   const gltf = useLoader(GLTFLoader, MODEL3_URL, configureGltfLoader);
-  const paintAo = useTexture(PAINT_AO_URL);
-  paintAo.colorSpace = NoColorSpace;
-  paintAo.flipY = false;
   const headlights = useVehicle((s) => s.flags.headlights);
   const parked = useVehicle((s) => s.gear === "P");
   const frunk = useVehicle((s) => s.flags.frunkOpen);
@@ -134,11 +138,10 @@ export function Model3({
   const [doors, setDoors] = useState({ fl: false, fr: false, rl: false, rr: false });
 
   const car = useMemo(() => extractCar(gltf.scene), [gltf.scene]);
-  const hubs = useMemo(() => locateWheelHubs(car), [car]);
 
   useEffect(() => {
-    applyCarMaterials(car, lit, parked, PAINT_NATA_RED, paintAo);
-  }, [car, lit, parked, paintAo]);
+    applyCarMaterials(car, lit, parked);
+  }, [car, lit, parked]);
 
   useEffect(() => {
     const hinge = (name: string, axis: Vector3, openAngle: number, open: boolean) => {
@@ -154,17 +157,7 @@ export function Model3({
 
   return (
     <group scale={scale}>
-      <primitive object={car}>
-        {hubs.map((hub) => (
-          <group
-            key={hub.id}
-            position={hub.position}
-            rotation={[0, hub.side === "L" ? Math.PI : 0, 0]}
-          >
-            <AeroWheel radius={hub.radius} width={Math.min(hub.width, hub.radius * 0.72)} />
-          </group>
-        ))}
-      </primitive>
+      <primitive object={car} />
       {showHits && parked ? <ParkedHotspots /> : null}
       {showHits ? (
         <group>

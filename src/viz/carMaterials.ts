@@ -177,8 +177,8 @@ function physical(
         metalness: 0.04,
         roughness: 0.028,
         transparent: true,
-        opacity: parked ? 0.82 : 0.55,
-        transmission: parked ? 0.16 : 0.32,
+        opacity: parked ? 0.88 : 0.55,
+        transmission: parked ? 0.04 : 0.32,
         thickness: 0.62,
         envMapIntensity: parked ? 1.15 : 0.85,
         ior: 1.48,
@@ -272,6 +272,7 @@ export function applyCarMaterials(
 ): void {
   root.traverse((obj) => {
     if (!(obj instanceof Mesh)) return;
+    if (obj.name === "aero-wheel" || obj.parent?.name === "aero-wheel") return;
     obj.castShadow = true;
     obj.receiveShadow = true;
     const mats = Array.isArray(obj.material) ? obj.material : [obj.material];

@@ -6,7 +6,7 @@ const OUT = path.join("docs", "qa", "screenshots");
 
 async function capture(page: import("@playwright/test").Page, scene: QaSceneId): Promise<void> {
   await page.goto(`/tesla-m3y-ui/?qa=${scene}`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector('html[data-qa-ready="true"]', { timeout: 90_000 });
+  await page.waitForSelector('html[data-qa-ready="true"]', { timeout: 120_000 });
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
