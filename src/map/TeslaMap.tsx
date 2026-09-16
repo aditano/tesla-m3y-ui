@@ -93,7 +93,8 @@ function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: numb
   if (useVehicle.getState().phase === "fsd") return;
   const b = new maplibregl.LngLatBounds();
   route.coords.forEach((c) => b.extend(c));
-  map.fitBounds(b, { padding: { top: 56, left: 80, right: 48, bottom: 88 }, duration: 900, maxZoom: 14.8 });
+  const duration = useVehicle.getState().qa.frozen ? 0 : 900;
+  map.fitBounds(b, { padding: { top: 56, left: 80, right: 48, bottom: 88 }, duration, maxZoom: 14.8 });
 }
 
 export function TeslaMap() {
@@ -129,6 +130,9 @@ export function TeslaMap() {
       paintRoute(map, s.route, s.destination?.lng, s.destination?.lat);
     };
     map.on("load", onReady);
+    map.once("idle", () => {
+      window.dispatchEvent(new Event("tesla-qa-map-idle"));
+    });
     map.on("dragstart", () => patchUi({ tracking: false }));
     map.on("click", (e) => {
       if (useVehicle.getState().phase !== "idle") return;
@@ -153,7 +157,7 @@ export function TeslaMap() {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || useVehicle.getState().phase === "fsd") return;
-    map.easeTo({ center: [origin.lng, origin.lat], duration: 700 });
+    map.easeTo({ center: [origin.lng, origin.lat], duration: useVehicle.getState().qa.frozen ? 0 : 700 });
   }, [origin.lat, origin.lng]);
 
   useEffect(() => {
@@ -170,7 +174,7 @@ export function TeslaMap() {
         bearing: headingUp ? state.pose.heading : 0,
         pitch: state.phase === "fsd" ? 50 : 0,
         zoom: state.phase === "fsd" ? 16.5 : map.getZoom(),
-        duration: 280,
+        duration: state.qa.frozen ? 0 : 280,
         essential: true,
       });
     });

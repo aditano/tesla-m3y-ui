@@ -19,6 +19,7 @@ export function RouteCard() {
   const pose = useVehicle((s) => s.pose);
   const busy = useVehicle((s) => s.routeBusy);
   const err = useVehicle((s) => s.routeError);
+  const frozen = useVehicle((s) => s.qa.frozen);
   const startFsd = useVehicle((s) => s.startFsd);
   const cancelNav = useVehicle((s) => s.cancelNav);
   const disengageFsd = useVehicle((s) => s.disengageFsd);
@@ -66,13 +67,14 @@ export function RouteCard() {
       ? pose.remainingM / (pose.speedMph * 0.44704)
       : route.durationS * (pose.remainingM / Math.max(1, route.distanceM));
   const idx = upcomingManeuverIndex(pose.traveledM, route.maneuvers);
+  const etaNow = frozen ? new Date(2026, 8, 16, 16, 20, 0) : new Date();
 
   return (
     <aside className="route-card">
       <div className="route-head">
         <h3>{dest.name}</h3>
         <div className="eta-row">
-          <span>{etaClock(remainingS)}</span>
+          <span>{etaClock(remainingS, etaNow)}</span>
           <span>{formatDuration(remainingS)}</span>
           <span>{formatMiles(pose.remainingM || route.distanceM)}</span>
         </div>

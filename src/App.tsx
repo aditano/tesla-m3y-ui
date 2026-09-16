@@ -7,6 +7,7 @@ import { ControlsOverlay } from "./chrome/ControlsOverlay";
 import { ClimatePanel } from "./chrome/ClimatePanel";
 import { MediaPanel } from "./chrome/MediaPanel";
 import { AppLauncher } from "./chrome/AppLauncher";
+import { markQaReady } from "./qa/applyScene";
 
 const TeslaMap = lazy(() =>
   import("./map/TeslaMap").then((m) => ({ default: m.TeslaMap })),
@@ -83,12 +84,34 @@ function Disclaimer() {
   );
 }
 
+function QaReady() {
+  const scene = useVehicle((s) => s.qa.scene);
+  useEffect(() => {
+    if (!scene) return;
+    let cancelled = false;
+    const done = () => {
+      if (!cancelled) markQaReady();
+    };
+    const onMap = () => done();
+    window.addEventListener("tesla-qa-map-idle", onMap, { once: true });
+    const id = window.setTimeout(done, 4500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(id);
+      window.removeEventListener("tesla-qa-map-idle", onMap);
+    };
+  }, [scene]);
+  return null;
+}
+
 export default function App() {
   const vizRatio = useVehicle((s) => s.ui.vizRatio);
+  const scene = useVehicle((s) => s.qa.scene);
   const mini = vizRatio > 0.74;
 
   return (
-    <div className="shell">
+    <div className="shell" data-qa-scene={scene ?? undefined}>
+      <QaReady />
       <div className="bezel">
         <StatusBar />
         <div className="display-main">

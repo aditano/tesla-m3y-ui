@@ -77,6 +77,12 @@ const ui: UiState = {
   disclaimerDismissed: false,
 };
 
+const qa = {
+  frozen: false,
+  clock: null,
+  scene: null,
+};
+
 interface Actions {
   setGear: (gear: Gear) => void;
   patchFlags: (partial: Partial<VehicleFlags>) => void;
@@ -113,6 +119,7 @@ export const useVehicle = create<Store>((set, get) => ({
   climate,
   media,
   ui,
+  qa,
   origin: DEFAULT_ORIGIN,
   destination: null,
   route: null,
@@ -300,6 +307,7 @@ export const useVehicle = create<Store>((set, get) => ({
 
   tickDrive: (dt) => {
     const state = get();
+    if (state.qa.frozen) return;
     if (state.phase !== "fsd" || !state.route) return;
     const key = routeKey(state.route.coords);
     if (polylineCache.key !== key) {
