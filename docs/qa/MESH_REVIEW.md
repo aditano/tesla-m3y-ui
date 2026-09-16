@@ -35,3 +35,19 @@ Still: `parked-home.png` after CC-BY subdiv/bevel (~94k faces), baked paint AO, 
 
 **Worst FAIL:** wheels not in the wells, then AO-ruined paint. Next: attach original aero wheels inside `extractCar` (skip paint pass), drop the AO map, fix tire torus to stand in YZ, pull camera back so the TRUNK card can sit in empty studio.
 
+## Iteration 2 — 2026-09-16 (hub-parent aero wheels, `5fb0c63`)
+
+Still: `parked-home.png` after parenting aero wheels onto `wheel` / `wheel.N` nodes. AO not applied.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Candy coat is back (no AO blotch). Still darker and flatter than nata; C-pillar highlight is a broad wrap, not a streak. |
+| Glass | PARTIAL | Roof and backlight are dark and smoother; side glass is too transmissive — cabin blocks and a white void show through. |
+| Wheels | PARTIAL | Rear-right 5-cover aero reads from overhead (the first time this campaign does). Front-left well is still an empty red hole. |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata’s yaw; silhouette is smoother than 27k. Open front well and cheap window corners remain. |
+| Lighting | PARTIAL | White studio is closer; contact shadow still faint vs nata’s oval. |
+| Leaders | PARTIAL | TRUNK pin on decklid; card still sits on the backlight. FRUNK/CHARGE attached. |
+
+**Worst FAIL:** front-left wheel well is empty. Next: place each aero wheel on the stock mesh’s local bbox center (hub origin is not the geometric center), then darken side glass.
+
+

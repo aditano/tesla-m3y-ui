@@ -27,21 +27,28 @@ export function hideStockWheels(root: Object3D): void {
   });
 }
 
-function localWheelSize(parent: Object3D): { radius: number; width: number } {
+function localWheelBox(parent: Object3D): Box3 {
   parent.updateWorldMatrix(true, true);
   const box = new Box3();
+  const inv = parent.matrixWorld.clone().invert();
   parent.traverse((obj) => {
-    if (obj instanceof Mesh) box.expandByObject(obj, true);
+    if (!(obj instanceof Mesh) || obj.name === "aero-wheel") return;
+    obj.geometry.computeBoundingBox();
+    const geoBox = obj.geometry.boundingBox;
+    if (!geoBox) return;
+    const worldBox = geoBox.clone().applyMatrix4(obj.matrixWorld).applyMatrix4(inv);
+    box.union(worldBox);
   });
+  return box;
+}
+
+function localWheelSize(parent: Object3D): { radius: number; width: number; center: Vector3 } {
+  const box = localWheelBox(parent);
   const size = box.getSize(new Vector3());
-  const scale = new Vector3();
-  parent.getWorldScale(scale);
-  const sy = Math.max(scale.y, 1e-4);
-  const sz = Math.max(scale.z, 1e-4);
-  const sx = Math.max(scale.x, 1e-4);
-  const radius = Math.min(0.42, Math.max(0.32, Math.max(size.y / sy, size.z / sz) * 0.5));
-  const width = Math.min(0.28, Math.max(0.2, size.x / sx));
-  return { radius, width };
+  const center = box.getCenter(new Vector3());
+  const radius = Math.min(0.42, Math.max(0.32, Math.max(size.y, size.z) * 0.5));
+  const width = Math.min(0.3, Math.max(0.2, size.x));
+  return { radius, width, center };
 }
 
 /** Hide stock discs/calipers and parent original aero wheels at the GLB hub nodes. */
@@ -57,8 +64,9 @@ export function replaceStockWheels(root: Object3D): WheelHub[] {
     parent.traverse((obj) => {
       if (obj instanceof Mesh) obj.visible = false;
     });
-    const { radius, width } = localWheelSize(parent);
+    const { radius, width, center } = localWheelSize(parent);
     const wheel = createAeroWheel(radius, Math.min(width, radius * 0.72));
+    wheel.position.copy(center);
     parent.add(wheel);
     const world = new Vector3();
     parent.getWorldPosition(world);
@@ -89,10 +97,10 @@ export function locateWheelHubs(root: Object3D): WheelHub[] {
     const world = new Vector3();
     obj.getWorldPosition(world);
     root.worldToLocal(world);
-    const { radius, width } = localWheelSize(obj);
+    const { radius, width, center } = localWheelSize(obj);
     hubs.push({
       id: obj.name.toLowerCase(),
-      position: [world.x, world.y, world.z],
+      position: [world.x + center.x, world.y + center.y, world.z + center.z],
       radius,
       width,
       side: world.x < 0 ? "L" : "R",

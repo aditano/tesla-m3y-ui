@@ -32,7 +32,7 @@ export const PAINT_NATA_RED = "#8c1a22";
 const CHROME = new Color("#c4c9d0");
 const RUBBER = new Color("#08080a");
 const PLASTIC = new Color("#121316");
-const GLASS = new Color("#0e1218");
+const GLASS = new Color("#07090d");
 const ROOF_GLASS = new Color("#050608");
 const CALIPER = new Color("#b01018");
 const INTERIOR = new Color("#3a322c");
@@ -146,7 +146,7 @@ function physical(
         clearcoatRoughnessMap: getFlakeRoughness(),
         clearcoatNormalMap: getFlakeNormal(),
         clearcoatNormalScale: new Vector2(0.055, 0.055),
-        envMapIntensity: parked ? 1.12 : 1.05,
+        envMapIntensity: parked ? 1.22 : 1.05,
         sheen: parked ? 0.22 : 0.14,
         sheenColor: new Color("#6a1218"),
         sheenRoughness: 0.48,
@@ -177,8 +177,8 @@ function physical(
         metalness: 0.04,
         roughness: 0.028,
         transparent: true,
-        opacity: parked ? 0.88 : 0.55,
-        transmission: parked ? 0.04 : 0.32,
+        opacity: parked ? 0.92 : 0.55,
+        transmission: parked ? 0.02 : 0.32,
         thickness: 0.62,
         envMapIntensity: parked ? 1.15 : 0.85,
         ior: 1.48,
