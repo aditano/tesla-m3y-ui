@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { MAP_STYLE } from "../geo/constants";
+import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
 import { RouteCard } from "../chrome/RouteCard";
@@ -113,7 +113,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
     const start = useVehicle.getState();
     const map = new maplibregl.Map({
       container: host.current,
-      style: MAP_STYLE,
+      style: compact ? MAP_STYLE_PARKED : MAP_STYLE,
       center: [start.origin.lng, start.origin.lat],
       zoom: 14.2,
       pitch: 0,
@@ -144,7 +144,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
       map.remove();
       mapRef.current = null;
     };
-  }, [patchUi, setOriginFromMap]);
+  }, [compact, patchUi, setOriginFromMap]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -189,7 +189,8 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
           <NavSearch />
         </>
       )}
-      <div className={`map-tools ${compact ? "compact" : ""}`}>
+      {compact ? null : (
+        <div className="map-tools">
         <button
           className={orientation === "heading" ? "on" : ""}
           title="Heading / North up"
@@ -225,6 +226,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
           ◎
         </button>
       </div>
+      )}
       {dest || compact ? null : (
         <div
           style={{

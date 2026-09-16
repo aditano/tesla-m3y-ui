@@ -9,6 +9,7 @@ import { MediaPanel } from "./chrome/MediaPanel";
 import { AppLauncher } from "./chrome/AppLauncher";
 import { markQaReady } from "./qa/applyScene";
 import { NavSearch } from "./chrome/NavSearch";
+import { ParkedMedia } from "./chrome/ParkedMedia";
 import { RouteCard } from "./chrome/RouteCard";
 import { isParkedFullscreen, useMiniMap } from "./viz/layout";
 
@@ -145,6 +146,7 @@ export default function App() {
             )}
             {parked ? (
               <>
+                <ParkedMedia />
                 <NavSearch variant="parked" />
                 <RouteCard />
               </>

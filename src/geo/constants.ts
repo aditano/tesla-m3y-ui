@@ -38,6 +38,7 @@ export const OSRM_ENDPOINTS = [
 ];
 
 export const MAP_STYLE = "https://tiles.openfreemap.org/styles/dark";
+export const MAP_STYLE_PARKED = "https://tiles.openfreemap.org/styles/positron";
 
 export const APP_UA =
   "tesla-m3y-ui/1.0 (https://github.com/aditano/tesla-m3y-ui; educational fan recreation)";

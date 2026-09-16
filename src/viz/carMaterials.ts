@@ -13,7 +13,7 @@ export type CarMaterialKind =
   | "rim"
   | "other";
 
-const PAINT = new Color("#dfe4ec");
+const PAINT = new Color("#2a2d33");
 const CHROME = new Color("#c5ccd6");
 const RUBBER = new Color("#111114");
 const PLASTIC = new Color("#1a1b1e");
@@ -52,13 +52,13 @@ function physical(kind: CarMaterialKind, lit: boolean, parked: boolean): MeshPhy
     case "paint":
       return new MeshPhysicalMaterial({
         color: PAINT,
-        metalness: 0.72,
-        roughness: 0.22,
+        metalness: 0.86,
+        roughness: 0.28,
         clearcoat: 1,
-        clearcoatRoughness: 0.08,
-        envMapIntensity: 1.15,
-        sheen: 0.18,
-        sheenColor: new Color("#ffffff"),
+        clearcoatRoughness: 0.06,
+        envMapIntensity: 1.35,
+        sheen: 0.35,
+        sheenColor: new Color("#6a7a90"),
       });
     case "chrome":
     case "rim":

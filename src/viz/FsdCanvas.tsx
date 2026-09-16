@@ -20,45 +20,45 @@ function ParkedStudio() {
   const frozen = useVehicle((s) => s.qa.frozen);
   return (
     <>
-      <color attach="background" args={["#07080c"]} />
-      <fog attach="fog" args={["#07080c", 10, 26]} />
-      <PerspectiveCamera makeDefault fov={30} position={[5.15, 1.42, 6.35]} near={0.1} far={80} />
-      <ambientLight intensity={0.18} />
-      <hemisphereLight args={["#8ea0b8", "#08090d", 0.38]} />
+      <color attach="background" args={["#e7ebf0"]} />
+      <fog attach="fog" args={["#e7ebf0", 12, 28]} />
+      <PerspectiveCamera makeDefault fov={28} position={[-5.35, 1.48, 6.55]} near={0.1} far={80} />
+      <ambientLight intensity={0.62} />
+      <hemisphereLight args={["#f4f7fb", "#c5ccd4", 0.85]} />
       <spotLight
-        position={[4.2, 7.4, 5.2]}
-        angle={0.38}
-        penumbra={0.92}
-        intensity={90}
+        position={[-3.2, 8.2, 5.4]}
+        angle={0.42}
+        penumbra={0.95}
+        intensity={70}
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-bias={-0.0002}
+        shadow-bias={-0.00015}
       />
-      <spotLight position={[-5.2, 4.8, 2.4]} angle={0.55} penumbra={1} intensity={28} color="#9bb4d4" />
-      <directionalLight position={[0.6, 6.5, -5.5]} intensity={0.55} color="#d5deea" />
-      <Environment resolution={256} environmentIntensity={0.32}>
-        <Lightformer intensity={5.5} position={[0, 6, 2]} scale={[9, 1.15, 1]} form="rect" />
-        <Lightformer intensity={2.4} position={[-5, 2.2, 1]} scale={[4, 5, 1]} color="#8aa4c8" form="rect" />
-        <Lightformer intensity={3.2} position={[6, 1.4, -1.5]} scale={[2.4, 7, 1]} form="rect" />
-        <Lightformer intensity={1.4} position={[0, 2.8, -7]} scale={[12, 5, 1]} color="#c5d0e0" form="rect" />
+      <spotLight position={[6, 4.2, 2]} angle={0.6} penumbra={1} intensity={22} color="#dfe7f4" />
+      <directionalLight position={[2.2, 7, -4]} intensity={0.7} color="#ffffff" />
+      <Environment resolution={256} environmentIntensity={0.55}>
+        <Lightformer intensity={8} position={[0, 7, 1]} scale={[12, 1.4, 1]} form="rect" color="#ffffff" />
+        <Lightformer intensity={3} position={[-6, 2.4, 3]} scale={[5, 6, 1]} color="#cdd6e4" form="rect" />
+        <Lightformer intensity={2.6} position={[7, 1.2, -1]} scale={[3, 8, 1]} form="rect" color="#eef2f7" />
+        <Lightformer intensity={1.8} position={[0, 2, -8]} scale={[14, 6, 1]} color="#f7f9fc" form="rect" />
       </Environment>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <circleGeometry args={[22, 72]} />
-        <meshStandardMaterial color="#0a0b10" roughness={0.88} metalness={0.18} />
+        <circleGeometry args={[24, 80]} />
+        <meshStandardMaterial color="#dfe3ea" roughness={0.42} metalness={0.22} />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, 0.52, 0]} position={[0, 0, 0.15]}>
-        <Model3 scale={1.05} />
+      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.42, 0]} position={[0, 0, 0.1]}>
+        <Model3 scale={1.08} />
       </group>
-      <ContactShadows opacity={0.62} scale={18} blur={2.6} far={9} resolution={1024} color="#000" />
+      <ContactShadows opacity={0.38} scale={18} blur={2.8} far={9} resolution={1024} color="#7a818c" />
       <OrbitControls
         enablePan={false}
-        minDistance={5.6}
-        maxDistance={10.5}
+        minDistance={5.4}
+        maxDistance={10.2}
         autoRotate={!frozen}
-        autoRotateSpeed={0.28}
-        minPolarAngle={0.92}
-        maxPolarAngle={1.22}
-        target={[0, 0.58, 0]}
+        autoRotateSpeed={0.22}
+        minPolarAngle={0.95}
+        maxPolarAngle={1.2}
+        target={[0, 0.52, 0]}
       />
     </>
   );
@@ -127,23 +127,29 @@ function DrivingWorld() {
   );
 }
 
-function OpenCallout({ label }: { label: string }) {
-  return <span className="parked-chip">{label}</span>;
-}
-
 function ParkedHud() {
   const flags = useVehicle((s) => s.flags);
-  const items = [
-    flags.frunkOpen ? "Frunk" : null,
-    flags.trunkOpen ? "Trunk" : null,
-    flags.chargePortOpen ? "Charge port" : null,
-  ].filter((v): v is string => Boolean(v));
-  if (!items.length) return null;
+  const patchFlags = useVehicle((s) => s.patchFlags);
   return (
     <div className="parked-callouts">
-      {items.map((label) => (
-        <OpenCallout key={label} label={label} />
-      ))}
+      <button
+        className={`parked-chip ${flags.frunkOpen ? "on" : ""}`}
+        onClick={() => patchFlags({ frunkOpen: !flags.frunkOpen })}
+      >
+        {flags.frunkOpen ? "Frunk open" : "Open Frunk"}
+      </button>
+      <button
+        className={`parked-chip ${flags.trunkOpen ? "on" : ""}`}
+        onClick={() => patchFlags({ trunkOpen: !flags.trunkOpen })}
+      >
+        {flags.trunkOpen ? "Trunk open" : "Open Trunk"}
+      </button>
+      <button
+        className={`parked-chip ${flags.chargePortOpen ? "on" : ""}`}
+        onClick={() => patchFlags({ chargePortOpen: !flags.chargePortOpen })}
+      >
+        {flags.chargePortOpen ? "Charge port" : "Charge"}
+      </button>
     </div>
   );
 }

@@ -2,11 +2,19 @@ import { useLoader } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Box3, Group, Object3D, Vector3 } from "three";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
 import { applyCarMaterials } from "./carMaterials";
 
 export const MODEL3_URL = `${import.meta.env.BASE_URL}models/tesla_model_3.glb`;
+const DRACO_PATH = `${import.meta.env.BASE_URL}draco/`;
+
+function configureGltfLoader(loader: GLTFLoader): void {
+  const draco = new DRACOLoader();
+  draco.setDecoderPath(DRACO_PATH);
+  loader.setDRACOLoader(draco);
+}
 
 /** Model 3 overall length (m) — used to normalize the Sketchfab FBX scale. */
 const MODEL3_LENGTH_M = 4.694;
@@ -96,11 +104,11 @@ function DoorCard({
         <mesh position={[side === "L" ? -0.04 : 0.04, 0, 0]} castShadow>
           <boxGeometry args={[0.05, 0.74, 1.02]} />
           <meshPhysicalMaterial
-            color="#dfe4ec"
-            metalness={0.72}
-            roughness={0.22}
+            color="#2a2d33"
+            metalness={0.86}
+            roughness={0.28}
             clearcoat={1}
-            clearcoatRoughness={0.1}
+            clearcoatRoughness={0.08}
           />
         </mesh>
       ) : null}
@@ -115,7 +123,7 @@ export function Model3({
   scale?: number;
   showHits?: boolean;
 }): ReactNode {
-  const gltf = useLoader(GLTFLoader, MODEL3_URL);
+  const gltf = useLoader(GLTFLoader, MODEL3_URL, configureGltfLoader);
   const headlights = useVehicle((s) => s.flags.headlights);
   const parked = useVehicle((s) => s.gear === "P");
   const frunk = useVehicle((s) => s.flags.frunkOpen);
@@ -191,4 +199,4 @@ export function Model3({
   );
 }
 
-useLoader.preload(GLTFLoader, MODEL3_URL);
+useLoader.preload(GLTFLoader, MODEL3_URL, configureGltfLoader);

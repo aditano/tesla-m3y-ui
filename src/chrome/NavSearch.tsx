@@ -78,6 +78,17 @@ export function NavSearch({ variant = "map" }: { variant?: "map" | "parked" }) {
             </button>
           ))}
         </div>
+      ) : variant === "parked" ? (
+        <div className="parked-nav-shortcuts">
+          <button className="quick-row" onClick={() => void navigateTo(HOME_PLACE)}>
+            <IconHome width={18} height={18} />
+            <b>Home</b>
+          </button>
+          <button className="quick-row" onClick={() => void navigateTo(WORK_PLACE)}>
+            <IconWork width={18} height={18} />
+            <b>Work</b>
+          </button>
+        </div>
       ) : null}
     </div>
   );

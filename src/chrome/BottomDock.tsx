@@ -89,37 +89,34 @@ export function BottomDock() {
         </button>
       </div>
 
-      <button
-        className={`media-card ${parked ? "parked" : ""}`}
-        onClick={() => patchUi({ mediaOpen: !ui.mediaOpen, climateOpen: false, appsOpen: false })}
-      >
-        <div className="media-art" />
-        <div className="media-meta">
-          <strong>{media.track}</strong>
-          <span>
-            {media.artist} · {media.source}
-          </span>
-        </div>
-        {parked ? (
-          <div className="media-progress" aria-hidden="true">
-            <i style={{ width: `${Math.round(media.progress * 100)}%` }} />
+      {parked ? null : (
+        <button
+          className="media-card"
+          onClick={() => patchUi({ mediaOpen: !ui.mediaOpen, climateOpen: false, appsOpen: false })}
+        >
+          <div className="media-art" />
+          <div className="media-meta">
+            <strong>{media.track}</strong>
+            <span>
+              {media.artist} · {media.source}
+            </span>
           </div>
-        ) : null}
-        <div className="media-controls">
-          <span
-            role="presentation"
-            onClick={(e) => {
-              e.stopPropagation();
-              patchMedia({ playing: !media.playing });
-            }}
-          >
-            {media.playing ? <IconPause /> : <IconPlay />}
-          </span>
-          <span role="presentation">
-            <IconSkip />
-          </span>
-        </div>
-      </button>
+          <div className="media-controls">
+            <span
+              role="presentation"
+              onClick={(e) => {
+                e.stopPropagation();
+                patchMedia({ playing: !media.playing });
+              }}
+            >
+              {media.playing ? <IconPause /> : <IconPlay />}
+            </span>
+            <span role="presentation">
+              <IconSkip />
+            </span>
+          </div>
+        </button>
+      )}
 
       <div className="volume-wrap">
         <IconVolume />
