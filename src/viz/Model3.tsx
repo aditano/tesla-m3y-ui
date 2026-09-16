@@ -6,6 +6,8 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
 import { applyCarMaterials } from "./carMaterials";
+import { HOTSPOT_PINS } from "./hotspots";
+import { ParkedHotspots } from "./ParkedHotspots";
 
 export const MODEL3_URL = `${import.meta.env.BASE_URL}models/tesla_model_3.glb`;
 const DRACO_PATH = `${import.meta.env.BASE_URL}draco/`;
@@ -38,6 +40,9 @@ function extractCar(scene: Object3D): Group {
   wrapper.updateMatrixWorld(true);
   const grounded = new Box3().setFromObject(wrapper);
   wrapper.position.y -= grounded.min.y;
+  wrapper.traverse((obj) => {
+    if (/debris|speaker/i.test(obj.name)) obj.visible = false;
+  });
   return wrapper;
 }
 
@@ -142,26 +147,34 @@ export function Model3({
   return (
     <group scale={scale}>
       <primitive object={car} />
+      {showHits && parked ? <ParkedHotspots /> : null}
       {showHits ? (
         <group>
-          <Hit
-            position={[0, 0.92, 1.72]}
-            args={[1.55, 0.22, 0.95]}
-            label="Frunk"
-            onToggle={() => patchFlags({ frunkOpen: !frunk })}
-          />
-          <Hit
-            position={[0, 0.95, -2.05]}
-            args={[1.5, 0.28, 0.7]}
-            label="Trunk"
-            onToggle={() => patchFlags({ trunkOpen: !trunk })}
-          />
-          <Hit
-            position={[-0.95, 0.72, -1.35]}
-            args={[0.18, 0.28, 0.32]}
-            label="Charge port"
-            onToggle={() => patchFlags({ chargePortOpen: !charge })}
-          />
+          {HOTSPOT_PINS.map((pin) => (
+            <Hit
+              key={pin.id}
+              position={[pin.position[0], pin.position[1], pin.position[2]]}
+              args={[pin.hit[0], pin.hit[1], pin.hit[2]]}
+              label={pin.kicker}
+              onToggle={() => {
+                switch (pin.id) {
+                  case "frunk":
+                    patchFlags({ frunkOpen: !frunk });
+                    break;
+                  case "trunk":
+                    patchFlags({ trunkOpen: !trunk });
+                    break;
+                  case "charge":
+                    patchFlags({ chargePortOpen: !charge });
+                    break;
+                  default: {
+                    const _exhaustive: never = pin.id;
+                    throw new Error(`Unhandled hotspot: ${String(_exhaustive)}`);
+                  }
+                }
+              }}
+            />
+          ))}
           <DoorCard
             side="L"
             z={0.42}

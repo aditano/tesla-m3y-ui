@@ -57,11 +57,11 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 ## Current verdict (this pass)
 
-Parked viz polish (red rear-3/4 + Highland chrome):
+Parked viz polish (mesh squeeze + projected leaders):
 
-- Parked home is a **full-screen rear-3/4 Model 3** with nata-style Open cards, a compact Auto Shift, Park status-bar order, a small map chip TR, and Navigate + media in the lower third. Score: **better PARTIAL** vs `nata-parked-car-vis.jpg`. The David_Holiday CC-BY mesh is the fidelity ceiling (not Tesla viz-grade).
+- Parked home is a **full-screen overhead rear-3/4 Model 3** with nata-style Open cards whose leaders project onto the decklid / hood / charge-port, a compact Auto Shift, Park status-bar order, a blurred map snippet TR, and Navigate + media in the lower third. Score: **better PARTIAL** vs `nata-parked-car-vis.jpg`. The 27k David_Holiday CC-BY mesh remains the ceiling (a 737k same-author CC-BY model exists on Sketchfab but is not downloadable here; see `LICENSE-3D.md`).
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
-- Park status-bar order and parked PRND moved off FAIL to **PARTIAL**.
+- Park status-bar order and parked PRND remain **PARTIAL**.
 - FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
 - Dock climate cluster and Controls chrome still FAIL (other lanes).
 

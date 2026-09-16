@@ -13,6 +13,7 @@ describe("classifyCarMaterial", () => {
     expect(classifyCarMaterial("Material.009")).toBe("rubber");
     expect(classifyCarMaterial("Material.011")).toBe("rim");
     expect(classifyCarMaterial("PLASTIC")).toBe("plastic");
+    expect(classifyCarMaterial("Material.005")).toBe("chrome");
     expect(classifyCarMaterial("unknown-part")).toBe("other");
   });
 
