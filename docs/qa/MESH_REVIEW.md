@@ -80,20 +80,97 @@ Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the
 
 **Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
 
-## Iteration 5 — 2026-09-16 (hub-anchored 5-cover aero remesh, working tree)
+## Iteration 5 — 2026-09-16 (paint/glass/studio pass, `03a9d96`)
 
-Still: `parked-home.png` after replacing stock wheel meshes at each `wheel`/`wheel.N` parent with side-aware 5-cover aero groups, dark cavity blockers, and subtler calipers.
+Still: `parked-home.png` after candy-coat materials, greenhouse split, Lightformer studio, longer TRUNK stem, camera pulled back.
 
 | Axis | Score | Notes |
 | --- | --- | --- |
-| Paint | PARTIAL | Candy coat and studio highlights remain stable vs iter 4; still flatter/darker than nata around the C-pillar streak. |
-| Glass | PARTIAL | Cabin blocker still prevents tunnel-through; side glass remains too open vs nata’s deeper laminate tint. |
-| Wheels | PARTIAL | All four hub parents now carry a stable aero wheel (no empty front-left hole, no red inner cavity). Rear-right reads closer to nata’s 5-cover look, but front-left still favors sidewall silhouette over visible cover at this camera. |
-| Proportions | PARTIAL | Rear-right 3/4 pose remains aligned; wheel-well/fender cutout topology still limits a true nata-like wrap around the front-left arch. |
-| Lighting | PARTIAL | White studio and contact shadow remain close enough for wheel validation; still lighter than nata’s denser rear shadow oval. |
-| Leaders | PARTIAL | TRUNK pin remains on decklid but card still intersects backlight space. |
+| Paint | FAIL | Clay / toy-matte Ultra Red. `Environment frames={1}` never ran a useFrame capture, so the Lightformer cubemap stayed empty; anisotropy + streak clearcoat had nothing to reflect. No C-pillar streak. |
+| Glass | PARTIAL | White cabin tunnel is gone. Roof reads as gray primer, not nata’s glossy black laminate — same empty env. Side/back IOR split is in code, not visible as glass. |
+| Wheels | PARTIAL | Rear aero still reads. Front-left well cutout unchanged (mesh ceiling). |
+| Proportions | PARTIAL | More rear-on than nata’s 3/4; C-pillar is edge-on so a streak could not land. |
+| Lighting | PARTIAL | Deeper oval contact shadow is the first honest nata-like puddle. Floor gloss and white multi-bounce did not show (empty env + lights pulled too far down). |
+| Leaders | PARTIAL | TRUNK card now floats in empty studio with a long vertical to the decklid (no longer kissing the backlight). FRUNK still sits on the roof glass. |
 
-**Ceiling (wheels):** hub parenting + bbox-centered placement is now stable across parked/route QA captures, but strict 1:1 aero read from this angle is constrained by the low-poly wheel-well/fender geometry. Without a higher-fidelity CC-BY wheel-arch mesh, further material-only tweaks are likely diminishing returns.
+**Worst FAIL:** empty Lightformer cubemap flattened paint and glass. Next: `preset="studio"` + a few startup env frames, compute tangents, restore 3/4 so the C-pillar can catch a streak.
+
+## Iteration 6 — 2026-09-16 (env capture + 3/4, `af406c4`)
+
+Still: `parked-home.png` after studio-preset Lightformers (8 frames) and rear-right camera.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Gloss is back (no longer clay). Still a broad satin wrap; C-pillar highlight is not a nata streak. Studio HDRI lights are too soft. |
+| Glass | PARTIAL | Roof is darker and reads as glass. Side openings no longer tunnel to white. Still missing chrome-belt laminate sparkle. |
+| Wheels | PARTIAL | Unchanged mesh ceiling. |
+| Proportions | PARTIAL | 3/4 is closer to nata than iter 5. |
+| Lighting | PARTIAL | Oval contact shadow holds. Floor gloss still weak. Soft studio wrap remains. |
+| Leaders | PARTIAL | TRUNK still floats in empty studio with a long vertical to the decklid. |
+
+**Worst remaining:** C-pillar streak. Next: drop the HDRI wrap and paint a static equirect with a thin overhead strip.
+
+## Iteration 7 — 2026-09-16 (painted equirect, `50010cc`)
+
+Still: `parked-home.png` after swapping the HDRI for a static strip env via `<Environment map={dataTex} />`.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | FAIL | Flat again. The DataTexture never became a working PMREM env, so candy clearcoat had nothing to reflect. |
+| Glass | PARTIAL | Roof stays dark; still no laminate sparkle. |
+| Wheels | PARTIAL | Unchanged. |
+| Proportions | PARTIAL | Same 3/4 as iter 6. |
+| Lighting | PARTIAL | Oval shadow holds. Floor gloss gone with the missing env. |
+| Leaders | PARTIAL | TRUNK still floats with a long vertical. |
+
+**Worst FAIL:** env map not bound. Next: `PMREMGenerator.fromEquirectangular` on the painted studio, keep a fill light so we cannot regress to clay.
+
+## Iteration 8 — 2026-09-16 (PMREM bake, `9d099d6`)
+
+Still: `parked-home.png` after PMREM-baking the painted studio.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Sheen is back on the front quarter. Rear/C-pillar still a satin wrap, not a nata streak. |
+| Glass | PARTIAL | Roof is a dark slab; chrome beltline is faint. Side glass is a hole more than laminate. |
+| Wheels | PARTIAL | Unchanged. |
+| Proportions | PARTIAL | Same 3/4. |
+| Lighting | PARTIAL | Oval shadow is the strongest nata read. Floor gloss still subtle. |
+| Leaders | PARTIAL | TRUNK card in empty studio, long vertical, pin on decklid. |
+
+**Worst remaining:** C-pillar streak. Next: thin `RectAreaLight` keys (direct lobe on clearcoat, not only IBL).
+
+## Iteration 9 — 2026-09-16 (RectAreaLights, `986afc4`)
+
+Still: `parked-home.png` after a 6cm C-pillar key + overhead strip.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | First honest candy streak on the camera-side C-pillar / rear shoulder. Midtones still a bit toy-bright vs nata Ultra Red. |
+| Glass | PARTIAL | Roof is a dark slab; chrome beltline now reads. Side glass still a cheap tinted hole. |
+| Wheels | PARTIAL | Unchanged mesh ceiling. |
+| Proportions | PARTIAL | Rear-right 3/4 holds. |
+| Lighting | PARTIAL | Oval contact shadow is close to nata. Floor picked up a left-side area-light hotspot — next pass damps it. |
+| Leaders | PARTIAL | TRUNK floats in empty studio with a long vertical to the decklid. FRUNK still on the roof. |
+
+**Next:** deepen candy midtones, thin the pillar key, kill the floor bloom.
+
+## Iteration 10 — 2026-09-16 (streak polish, `4bbc07a`)
+
+Still: `parked-home.png` after deeper Ultra Red, thinner C-pillar key, damped floor gloss.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Candy Ultra Red with a visible C-pillar / rear-shoulder streak (not a plastic wrap). Midtones still flatter than nata; mesh normals cannot hold a razor highlight. |
+| Glass | PARTIAL | Roof is a dark laminate slab; chrome beltline reads. Side/back IOR split is live; side glass still a cheap opening vs nata’s tinted pane. |
+| Wheels | PARTIAL | Unchanged mesh ceiling (front well cutout). |
+| Proportions | PARTIAL | Rear-right 3/4 matches nata’s yaw. Panel gaps remain 27k-derived. |
+| Lighting | PARTIAL | White studio + deeper oval contact shadow. Floor gloss is present and blit-safe (no reflector RT). Mild left fill remains. |
+| Leaders | PARTIAL | TRUNK Open card floats in empty studio with a long vertical to a decklid pin — no longer kissing the backlight. FRUNK still sits on the roof. |
+
+**Ceiling (this lane):** paint/glass/lighting/leaders are as close as this CC-BY remesh + runtime PBR can get without a new mesh. Remaining FAILs that need a different mesh: fender-well wrap, side-glass laminate, panel gaps. Floor stays blit-safe.
+
+
 
 
 

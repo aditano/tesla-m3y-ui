@@ -1,18 +1,20 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   ContactShadows,
-  Environment,
   OrbitControls,
   PerspectiveCamera,
 } from "@react-three/drei";
-import { useMemo, useRef } from "react";
-import type { Group } from "three";
-import { ACESFilmicToneMapping, CanvasTexture, SRGBColorSpace, Vector3 } from "three";
+import { useLayoutEffect, useMemo, useRef } from "react";
+import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3, type Group } from "three";
+import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
+
+RectAreaLightUniformsLib.init();
 import { useVehicle } from "../state/store";
 import { lngLatToLocal } from "../geo/polyline";
 import { Model3 } from "./Model3";
 import { LaneMarks, RoadRibbon, SignalProps, TrafficPack, headingQuat, toWorld } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
+import { createCandyStudioEnv, PARKED_STUDIO } from "./parkedStudio";
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -24,11 +26,11 @@ function studioFloorMap(): CanvasTexture {
     tex.colorSpace = SRGBColorSpace;
     return tex;
   }
-  const g = ctx.createRadialGradient(256, 256, 18, 256, 256, 250);
-  g.addColorStop(0, "#d8dce2");
-  g.addColorStop(0.28, "#e8eaee");
-  g.addColorStop(0.58, "#f0f1f4");
-  g.addColorStop(1, "#f4f5f7");
+  const g = ctx.createRadialGradient(256, 256, 22, 256, 256, 248);
+  g.addColorStop(0, "#c4c7cd");
+  g.addColorStop(0.2, "#e2e4e8");
+  g.addColorStop(0.52, "#eef0f3");
+  g.addColorStop(1, "#f3f4f6");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 512, 512);
   const tex = new CanvasTexture(c);
@@ -37,49 +39,124 @@ function studioFloorMap(): CanvasTexture {
   return tex;
 }
 
+function ParkedEnvironment() {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  useLayoutEffect(() => {
+    const source = createCandyStudioEnv();
+    const pmrem = new PMREMGenerator(gl);
+    pmrem.compileEquirectangularShader();
+    const rt = pmrem.fromEquirectangular(source);
+    scene.environment = rt.texture;
+    scene.environmentIntensity = PARKED_STUDIO.envIntensity;
+    source.dispose();
+    return () => {
+      if (scene.environment === rt.texture) scene.environment = null;
+      rt.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+  return null;
+}
+
+function lookAtPoint(light: RectAreaLight | null, x: number, y: number, z: number): void {
+  if (light) light.lookAt(x, y, z);
+}
+
+function CPillarKeys() {
+  const pillar = useRef<RectAreaLight>(null);
+  const shoulder = useRef<RectAreaLight>(null);
+  const bounce = useRef<RectAreaLight>(null);
+  useLayoutEffect(() => {
+    lookAtPoint(pillar.current, 0.48, 0.94, -1.1);
+    lookAtPoint(shoulder.current, 0.1, 0.82, -0.2);
+    lookAtPoint(bounce.current, 0, 0.4, 0);
+  }, []);
+  return (
+    <>
+      <rectAreaLight
+        ref={pillar}
+        width={0.045}
+        height={2.85}
+        intensity={78}
+        color="#ffffff"
+        position={[2.05, 1.58, -0.55]}
+      />
+      <rectAreaLight
+        ref={shoulder}
+        width={3.6}
+        height={0.07}
+        intensity={16}
+        color="#f7f8fa"
+        position={[0.15, 3.35, -0.35]}
+      />
+      <rectAreaLight
+        ref={bounce}
+        width={6}
+        height={4}
+        intensity={2.1}
+        color="#e8edf2"
+        position={[-2.8, 1.8, 2.2]}
+      />
+    </>
+  );
+}
+
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
   const floorMap = useMemo(() => studioFloorMap(), []);
+  const { camera, car, shadow, floor, background } = PARKED_STUDIO;
   return (
     <>
-      <color attach="background" args={["#f3f4f6"]} />
-      <fog attach="fog" args={["#f3f4f6", 18, 42]} />
-      <PerspectiveCamera makeDefault fov={28} position={[4.85, 6.05, -6.0]} near={0.1} far={80} />
-      <ambientLight intensity={0.62} />
-      <hemisphereLight args={["#f7f8fa", "#d5d8de", 0.48]} />
-      <directionalLight position={[2.4, 7.4, -4.0]} intensity={0.7} color="#f8f7f4" />
-      <directionalLight position={[-4.6, 2.8, 2.2]} intensity={0.32} color="#d7e3f0" />
-      <directionalLight position={[5.4, 2.2, 1.8]} intensity={0.36} color="#c5d2e2" />
-      <Environment preset="studio" environmentIntensity={0.72} />
+      <color attach="background" args={[background]} />
+      <fog attach="fog" args={[background, 22, 48]} />
+      <PerspectiveCamera
+        makeDefault
+        fov={camera.fov}
+        position={[...camera.position]}
+        near={camera.near}
+        far={camera.far}
+      />
+      <ambientLight intensity={0.36} />
+      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.24]} />
+      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.28} color="#f6f5f2" />
+      <CPillarKeys />
+      <ParkedEnvironment />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[40, 40]} />
         <meshPhysicalMaterial
           map={floorMap}
           color="#eef0f3"
-          roughness={0.72}
-          metalness={0.04}
-          envMapIntensity={0.22}
+          roughness={floor.roughness}
+          metalness={floor.metalness}
+          envMapIntensity={floor.envMapIntensity}
+          clearcoat={floor.clearcoat}
+          clearcoatRoughness={floor.clearcoatRoughness}
         />
       </mesh>
-      <group rotation={gear === "R" ? [0, Math.PI, 0] : [0, -0.2, 0]} position={[-0.04, 0, 0.04]}>
-        <Model3 scale={1.12} />
+      <group
+        rotation={gear === "R" ? [0, Math.PI, 0] : [0, car.rotationY, 0]}
+        position={[...car.position]}
+      >
+        <Model3 scale={car.scale} />
       </group>
       <ContactShadows
-        opacity={0.74}
-        scale={9}
-        blur={1.2}
-        far={4.5}
-        resolution={1024}
-        color="#28242a"
+        opacity={shadow.opacity}
+        scale={[...shadow.scale]}
+        blur={shadow.blur}
+        far={shadow.far}
+        resolution={shadow.resolution}
+        color={shadow.color}
+        frames={shadow.frames}
       />
       <OrbitControls
         enablePan={false}
-        minDistance={5.6}
-        maxDistance={9.2}
+        minDistance={camera.minDistance}
+        maxDistance={camera.maxDistance}
         autoRotate={false}
-        minPolarAngle={0.78}
-        maxPolarAngle={1.02}
-        target={[0, 0.22, -0.16]}
+        minPolarAngle={camera.minPolar}
+        maxPolarAngle={camera.maxPolar}
+        target={[...camera.target]}
       />
     </>
   );
@@ -198,7 +275,7 @@ export function FsdCanvas() {
           antialias: true,
           preserveDrawingBuffer: frozen,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: 1.08,
+          toneMappingExposure: parked ? 1.02 : 1.08,
           outputColorSpace: SRGBColorSpace,
         }}
         camera={{ fov: 32, position: [5.2, 1.55, 6.4], near: 0.1, far: 500 }}

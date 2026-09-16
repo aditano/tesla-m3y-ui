@@ -61,9 +61,10 @@ mesh). **It is not in this tree** because:
 - Paid / editorial archives (CGTrader, iMeshh) are out of policy.
 
 The source 27k-face GLB has **no** `normalTexture` / `occlusionTexture` /
-`emissiveTexture` in its glTF materials. Runtime PBR (clearcoat flake normal in
-linear/`NoColorSpace`, glass IOR/transmission, rubber bump, rim metal, glossy
-studio floor that picks up the environment) is an adaptation under CC-BY-4.0.
+`emissiveTexture` in its glTF materials. Runtime PBR (streaky clearcoat normal in
+linear/`NoColorSpace`, roof/side/backlight IOR+transmission, rubber bump, rim
+metal, Lightformer studio + one-shot contact shadow, glossy floor that picks
+up the environment) is an adaptation under CC-BY-4.0.
 It is not Tesla’s viz-grade Highland mesh. A true `MeshReflectorMaterial` ground
 was tried and dropped: extra render targets blew the parked blit and hung
 Chromium QA.
