@@ -54,17 +54,18 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.28} />
-      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.22]} />
-      <directionalLight position={[2.8, 6.6, -3.2]} intensity={0.34} color="#f6f5f2" />
+      <ambientLight intensity={0.4} />
+      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.3]} />
+      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.48} color="#f6f5f2" />
       <Environment
+        preset="studio"
         frames={PARKED_STUDIO.envFrames}
         resolution={PARKED_STUDIO.envResolution}
         environmentIntensity={PARKED_STUDIO.envIntensity}
       >
         <Lightformer
           form="rect"
-          intensity={1.4}
+          intensity={1.05}
           color="#ffffff"
           position={[0, 9.2, 0]}
           scale={[20, 20, 1]}
@@ -72,11 +73,11 @@ function ParkedStudio() {
         />
         <Lightformer
           form="rect"
-          intensity={10.2}
+          intensity={11.5}
           color="#ffffff"
-          position={[3.35, 5.7, -2.55]}
-          scale={[0.15, 7.6, 1]}
-          target={[0.18, 0.92, -1.12]}
+          position={[4.1, 5.4, -2.2]}
+          scale={[0.12, 8.2, 1]}
+          target={[0.22, 0.88, -1.05]}
         />
         <Lightformer
           form="rect"

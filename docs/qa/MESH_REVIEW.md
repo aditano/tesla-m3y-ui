@@ -80,6 +80,21 @@ Still: `parked-home.png` after parenting a sized cabin blocker to the clone (the
 
 **Ceiling (honest):** parked-home no longer reads as the toy 27k disc-wheel car, but it is not a Tesla viz one-to-one. Remaining FAILs that need a different mesh (Highland / the 737k David_Holiday we cannot download without Sketchfab auth): fender-well wrap, panel gaps, glass laminate, aero face from every hub. Do not apply the overlapping paint AO atlas. Floor stays blit-safe (no `MeshReflectorMaterial`).
 
+## Iteration 5 — 2026-09-16 (paint/glass/studio pass, `03a9d96`)
+
+Still: `parked-home.png` after candy-coat materials, greenhouse split, Lightformer studio, longer TRUNK stem, camera pulled back.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | FAIL | Clay / toy-matte Ultra Red. `Environment frames={1}` never ran a useFrame capture, so the Lightformer cubemap stayed empty; anisotropy + streak clearcoat had nothing to reflect. No C-pillar streak. |
+| Glass | PARTIAL | White cabin tunnel is gone. Roof reads as gray primer, not nata’s glossy black laminate — same empty env. Side/back IOR split is in code, not visible as glass. |
+| Wheels | PARTIAL | Rear aero still reads. Front-left well cutout unchanged (mesh ceiling). |
+| Proportions | PARTIAL | More rear-on than nata’s 3/4; C-pillar is edge-on so a streak could not land. |
+| Lighting | PARTIAL | Deeper oval contact shadow is the first honest nata-like puddle. Floor gloss and white multi-bounce did not show (empty env + lights pulled too far down). |
+| Leaders | PARTIAL | TRUNK card now floats in empty studio with a long vertical to the decklid (no longer kissing the backlight). FRUNK still sits on the roof glass. |
+
+**Worst FAIL:** empty Lightformer cubemap flattened paint and glass. Next: `preset="studio"` + a few startup env frames, compute tangents, restore 3/4 so the C-pillar can catch a streak.
+
 
 
 

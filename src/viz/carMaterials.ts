@@ -44,7 +44,7 @@ const RUBBER = new Color("#08080a");
 const PLASTIC = new Color("#121316");
 const GLASS = new Color("#0a0c10");
 const SIDE_GLASS = new Color("#080a0e");
-const ROOF_GLASS = new Color("#050608");
+const ROOF_GLASS = new Color("#030405");
 const BACK_GLASS = new Color("#07080b");
 const CALIPER = new Color("#b01018");
 const INTERIOR = new Color("#0c0b0a");
@@ -183,8 +183,8 @@ function physical(
     case "paint":
       return new MeshPhysicalMaterial({
         color: new Color(paintHex),
-        metalness: 0.28,
-        roughness: 0.11,
+        metalness: 0.3,
+        roughness: 0.095,
         clearcoat: 1,
         clearcoatRoughness: 0.018,
         clearcoatNormalMap: getStreakNormal(),
@@ -225,7 +225,7 @@ function physical(
     case "backGlass":
       return glassPhysical(BACK_GLASS, parked, GLASS_OPTICS.back, parked ? 1.18 : 0.88);
     case "roofGlass":
-      return glassPhysical(ROOF_GLASS, parked, GLASS_OPTICS.roof, parked ? 0.62 : 0.5);
+      return glassPhysical(ROOF_GLASS, parked, GLASS_OPTICS.roof, parked ? 0.9 : 0.55);
     case "headlight":
       return new MeshPhysicalMaterial({
         color: lit && !parked ? "#f7fbff" : "#9aa3ac",
@@ -291,6 +291,19 @@ function physical(
   }
 }
 
+export function ensureMeshTangents(mesh: Mesh): boolean {
+  const geo = mesh.geometry;
+  if (geo.getAttribute("tangent")) return true;
+  if (!geo.getAttribute("uv") || !geo.getIndex()) return false;
+  if (!geo.getAttribute("normal")) geo.computeVertexNormals();
+  try {
+    geo.computeTangents();
+  } catch {
+    return false;
+  }
+  return Boolean(geo.getAttribute("tangent"));
+}
+
 export function applyCarMaterials(
   root: Object3D,
   lit: boolean,
@@ -303,6 +316,7 @@ export function applyCarMaterials(
     if (obj.name.startsWith("orig-") || obj.parent?.name === "aero-wheel" || obj.parent?.name.startsWith("orig-")) return;
     obj.castShadow = true;
     obj.receiveShadow = true;
+    const tangents = ensureMeshTangents(obj);
     const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
     const next = mats.map((mat) => {
       const name = (mat as MeshStandardMaterial).name || obj.name || "";
@@ -310,6 +324,10 @@ export function applyCarMaterials(
       const kind = fromUser ?? classifyCarMaterial(obj.name.startsWith("glass-") ? obj.name : name);
       const paintAo = kind === "paint" ? aoMap : null;
       const upgraded = physical(kind, lit, parked, paintHex, paintAo);
+      if (kind === "paint" && !tangents) {
+        upgraded.anisotropy = 0;
+        upgraded.clearcoatNormalMap = null;
+      }
       upgraded.name = name;
       return upgraded;
     });

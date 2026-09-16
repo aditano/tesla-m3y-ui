@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { classifyCarMaterial, GLASS_OPTICS, PAINT_NATA_RED } from "./carMaterials";
+import { BufferAttribute, BufferGeometry, Mesh } from "three";
+import { classifyCarMaterial, ensureMeshTangents, GLASS_OPTICS, PAINT_NATA_RED } from "./carMaterials";
 
 describe("classifyCarMaterial", () => {
   it("maps Sketchfab names to PBR roles", () => {
@@ -23,6 +24,19 @@ describe("classifyCarMaterial", () => {
 
   it("keeps the nata red paint hex as a licensed tint, not a ripped asset", () => {
     expect(PAINT_NATA_RED).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
+  it("computes tangents when the mesh has UVs and an index", () => {
+    const geo = new BufferGeometry();
+    geo.setAttribute(
+      "position",
+      new BufferAttribute(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), 3),
+    );
+    geo.setAttribute("normal", new BufferAttribute(new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]), 3));
+    geo.setAttribute("uv", new BufferAttribute(new Float32Array([0, 0, 1, 0, 0, 1]), 2));
+    geo.setIndex([0, 1, 2]);
+    expect(ensureMeshTangents(new Mesh(geo))).toBe(true);
+    expect(geo.getAttribute("tangent")).toBeTruthy();
   });
 
   it("gives roof, side, backlight, and windshield distinct IOR", () => {

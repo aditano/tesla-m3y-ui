@@ -4,24 +4,24 @@
  */
 export const PARKED_STUDIO = {
   background: "#f3f4f6",
-  envFrames: 1,
+  envFrames: 8,
   envResolution: 256,
-  envIntensity: 1.02,
+  envIntensity: 0.9,
   camera: {
     fov: 26,
-    position: [3.48, 4.95, -7.55] as const,
-    target: [0.02, 0.3, -0.22] as const,
+    position: [4.62, 5.12, -6.88] as const,
+    target: [0.04, 0.28, -0.2] as const,
     near: 0.1,
     far: 80,
-    minDistance: 6.4,
+    minDistance: 6.2,
     maxDistance: 10.2,
-    minPolar: 0.86,
+    minPolar: 0.84,
     maxPolar: 1.08,
   },
   car: {
-    position: [-0.48, 0, 0.18] as const,
-    rotationY: -0.28,
-    scale: 1.06,
+    position: [-0.3, 0, 0.1] as const,
+    rotationY: -0.22,
+    scale: 1.08,
   },
   shadow: {
     opacity: 0.9,
@@ -43,7 +43,8 @@ export const PARKED_STUDIO = {
 
 export function parkedStudioIsBlitSafe(): boolean {
   return (
-    PARKED_STUDIO.envFrames === 1 &&
+    PARKED_STUDIO.envFrames !== Number.POSITIVE_INFINITY &&
+    PARKED_STUDIO.envFrames <= 12 &&
     PARKED_STUDIO.shadow.frames === 1 &&
     PARKED_STUDIO.envResolution <= 384
   );
