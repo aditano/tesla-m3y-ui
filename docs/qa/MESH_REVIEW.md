@@ -112,4 +112,19 @@ Investigated the front side-marker "socket": the clay render shows it is the low
 
 **Worst FAIL:** Glass uniformity + Paint — far-side panes and the lower body/rocker still catch a harder studio smear than nata's smooth dark gradient. Next (iter 7): even out the vertical-glass tint across both sides and calm the rocker/clearcoat blowout for a smoother nata-like body.
 
+## Iteration 7 — 2026-09-16 (paint/glass reflection polish)
+
+Parked candy paint now spreads its clearcoat (`clearcoatRoughness` 0.045 → 0.075, `envMapIntensity` 1.22 → 1.12) so the bright studio softbox reads as a smooth sweep down the rocker/shoulder instead of a hard white streak (side-by-side confirms the blown mirror line is gone). Vertical glass and chrome trim nudged a touch calmer (`glass` clearcoat/spec down, `chrome` env 0.5 → 0.42) so the door panes read as more uniform dark tint. GLB unchanged from iter 6 — this is pure runtime material.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PASS-ish | Smooth candy Ultra Red; the rocker/shoulder highlight is now a broad soft sweep like nata, not a blown streak. Closest to nata this campaign. |
+| Glass | PARTIAL | Side/rear/roof dark tinted; door panes read more uniform. Near-side front pane keeps a nata-like reflection; far panes acceptable. |
+| Wheels | PARTIAL | Dark liner wells, aero covers, no red caliper. |
+| Proportions | PARTIAL | Creased character lines/window corners hold. Side-mirror base pocket + front overhang are the standing mesh ceiling. |
+| Lighting | PARTIAL | White studio + contact shadow (out of mesh/GLB scope). |
+| Leaders | PARTIAL | Unchanged. |
+
+**Ceiling (honest):** across iters 5–7 parked-home gained closed dark wheel wells, dark tinted laminate glass (side windows no longer chrome-white), no floating red caliper, crisper creased silhouette, and smoother candy paint. Remaining gaps are true mesh-geometry limits of the 27k-derived David_Holiday base (low-poly side-mirror base pocket, long front overhang, soft one-piece greenhouse) that need a higher-poly Highland/737k mesh we cannot fetch without Sketchfab auth. Do not apply the overlapping paint AO atlas; floor stays blit-safe (no `MeshReflectorMaterial`).
+
 

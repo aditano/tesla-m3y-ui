@@ -142,11 +142,14 @@ function physical(
         roughness: 0.18,
         roughnessMap: getFlakeRoughness(),
         clearcoat: 1,
-        clearcoatRoughness: 0.045,
+        // Parked spreads the clearcoat a touch so the bright studio softbox
+        // reads as a smooth candy sweep down the body instead of a hard white
+        // streak on the rocker/shoulder.
+        clearcoatRoughness: parked ? 0.075 : 0.045,
         clearcoatRoughnessMap: getFlakeRoughness(),
         clearcoatNormalMap: getFlakeNormal(),
         clearcoatNormalScale: new Vector2(0.055, 0.055),
-        envMapIntensity: parked ? 1.22 : 1.05,
+        envMapIntensity: parked ? 1.12 : 1.05,
         sheen: parked ? 0.22 : 0.14,
         sheenColor: new Color("#6a1218"),
         sheenRoughness: 0.48,
@@ -162,7 +165,7 @@ function physical(
         color: CHROME,
         metalness: 0.98,
         roughness: parked ? 0.34 : 0.14,
-        envMapIntensity: parked ? 0.5 : 1.15,
+        envMapIntensity: parked ? 0.42 : 1.15,
       });
     case "rim":
       return new MeshPhysicalMaterial({
@@ -187,12 +190,12 @@ function physical(
         transmission: parked ? 0 : 0.32,
         thickness: 0.62,
         envMapIntensity: parked ? 0.08 : 0.85,
-        clearcoat: parked ? 0.14 : 0,
-        clearcoatRoughness: 0.34,
+        clearcoat: parked ? 0.1 : 0,
+        clearcoatRoughness: 0.36,
         ior: 1.5,
         attenuationColor: new Color("#05070a"),
         attenuationDistance: 0.42,
-        specularIntensity: parked ? 0.24 : 1,
+        specularIntensity: parked ? 0.18 : 1,
       });
     case "roofGlass":
       // The near-horizontal panoramic roof panel (and the fastback backlight)
