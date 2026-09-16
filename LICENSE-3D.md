@@ -15,7 +15,7 @@ Tesla, Inc. The mesh below is an independent fan-created model.
 | Title | Tesla Model 3 |
 | License | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | Source | https://sketchfab.com/3d-models/tesla-model-3-123c10f376ec4f18b93c73afc382808b |
-| Face count | 27,012 (source archive); published derivative ≈ 93,781 faces |
+| Face count | 27,012 (source archive); published derivative ≈ 92,913 faces |
 
 You must retain this attribution if you copy the GLB.
 
@@ -25,12 +25,26 @@ the same Model 3 glTF used by [wass08/r3f-3d-slideshow](https://github.com/wass0
 that may exist in that packaging (speakers, tire debris) are **not rendered**.
 
 The unmodified download is archived at `tools/mesh/tesla_model_3.src.glb`.
-`public/models/tesla_model_3.glb` is a **CC-BY-4.0 derivative** of that file:
-Blender subdivision, angle-limited bevels, weighted normals, and a baked paint
-AO map (`public/models/maps/paint_ao.png`), produced by `tools/mesh/remesh_model3.py`.
-Authorship of the underlying mesh remains David_Holiday. Runtime 5-cover aero
-wheels (`src/viz/AeroWheel.tsx`) are original geometry, not Tesla assets, and
-replace the stock wheel/caliper primitives at load time.
+`public/models/tesla_model_3.glb` is a **CC-BY-4.0 derivative** of that file,
+produced by `tools/mesh/remesh_model3.py`: Blender subdivision, angle-limited
+bevels, and weighted normals. Authorship of the underlying David_Holiday mesh is
+unchanged, but the derivative now carries a few materially new pieces, all
+**original geometry / material work, not Tesla assets**:
+
+- **Wheel-well liner shells** — a dark plastic cup (open tube + back-wall disc)
+  added at each hub so the fender opening never shows a red interior cavity
+  above the tire.
+- **`SideGlass` material split** — the near-vertical greenhouse panes are
+  reassigned to a separate `SideGlass` slot (the roof panel keeps `Material.017`),
+  so the runtime can tint the side/rear/windshield glass as dark laminate
+  independently of the panoramic roof.
+- The stray `Cylinder012` studio prop from the source archive is removed.
+
+The paint AO bake (`public/models/maps/paint_ao.png`) is retained for reference
+but is **gated off by default** (`M3_BAKE_AO`) and is not bound at runtime — the
+overlapping smart-UV atlas chalked the candy coat. Runtime 5-cover aero wheels
+(`src/viz/AeroWheel.tsx`) are original geometry and replace the stock
+wheel/caliper primitives at load time.
 
 ### Mesh ceiling (2026-09-16 re-eval)
 

@@ -142,11 +142,14 @@ function physical(
         roughness: 0.18,
         roughnessMap: getFlakeRoughness(),
         clearcoat: 1,
-        clearcoatRoughness: 0.045,
+        // Parked spreads the clearcoat a touch so the bright studio softbox
+        // reads as a smooth candy sweep down the body instead of a hard white
+        // streak on the rocker/shoulder.
+        clearcoatRoughness: parked ? 0.075 : 0.045,
         clearcoatRoughnessMap: getFlakeRoughness(),
         clearcoatNormalMap: getFlakeNormal(),
         clearcoatNormalScale: new Vector2(0.055, 0.055),
-        envMapIntensity: parked ? 1.22 : 1.05,
+        envMapIntensity: parked ? 1.12 : 1.05,
         sheen: parked ? 0.22 : 0.14,
         sheenColor: new Color("#6a1218"),
         sheenRoughness: 0.48,
@@ -156,11 +159,13 @@ function physical(
           : {}),
       });
     case "chrome":
+      // Satin window/beltline trim. Parked keeps a little roughness and less
+      // env so it does not blow to a white mirror against the studio.
       return new MeshPhysicalMaterial({
         color: CHROME,
         metalness: 0.98,
-        roughness: parked ? 0.1 : 0.14,
-        envMapIntensity: parked ? 1.35 : 1.15,
+        roughness: parked ? 0.34 : 0.14,
+        envMapIntensity: parked ? 0.42 : 1.15,
       });
     case "rim":
       return new MeshPhysicalMaterial({
@@ -172,30 +177,41 @@ function physical(
         clearcoatRoughness: 0.28,
       });
     case "glass":
+      // Side/front/rear vertical panes (the `SideGlass` split off the greenhouse
+      // plus the windshield bits). Near-vertical to the overhead studio camera,
+      // so a mirror finish blows them to white via Fresnel. Near-zero env + a
+      // faint clearcoat off the key light reads as dark tinted laminate.
       return new MeshPhysicalMaterial({
         color: GLASS,
-        metalness: 0.04,
-        roughness: 0.028,
+        metalness: 0.0,
+        roughness: parked ? 0.16 : 0.028,
         transparent: true,
-        opacity: parked ? 0.96 : 0.55,
+        opacity: parked ? 0.99 : 0.55,
         transmission: parked ? 0 : 0.32,
         thickness: 0.62,
-        envMapIntensity: parked ? 1.15 : 0.85,
-        ior: 1.48,
+        envMapIntensity: parked ? 0.08 : 0.85,
+        clearcoat: parked ? 0.1 : 0,
+        clearcoatRoughness: 0.36,
+        ior: 1.5,
         attenuationColor: new Color("#05070a"),
         attenuationDistance: 0.42,
-        specularIntensity: 1,
+        specularIntensity: parked ? 0.18 : 1,
       });
     case "roofGlass":
+      // The near-horizontal panoramic roof panel (and the fastback backlight)
+      // only — the side panes now split out as `glass`. This faces the camera,
+      // so it keeps a glossy dark reflection without blowing out.
       return new MeshPhysicalMaterial({
         color: ROOF_GLASS,
-        metalness: 0.08,
-        roughness: 0.045,
+        metalness: 0.05,
+        roughness: parked ? 0.1 : 0.045,
         transparent: true,
-        opacity: parked ? 0.97 : 0.7,
-        transmission: parked ? 0.015 : 0.12,
+        opacity: parked ? 0.99 : 0.7,
+        transmission: parked ? 0 : 0.12,
         thickness: 0.35,
-        envMapIntensity: parked ? 0.72 : 0.55,
+        envMapIntensity: parked ? 0.22 : 0.55,
+        clearcoat: parked ? 0.42 : 0,
+        clearcoatRoughness: 0.22,
         ior: 1.5,
       });
     case "headlight":
