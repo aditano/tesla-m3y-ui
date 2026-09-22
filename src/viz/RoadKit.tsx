@@ -260,23 +260,23 @@ function TrafficCar({ color, signal }: { color: string; signal: TurnLamp }) {
         <boxGeometry args={[1.58, 0.46, 2.05]} />
         <meshStandardMaterial color="#141920" metalness={0.15} roughness={0.08} />
       </mesh>
-      <mesh position={[0, 0.58, 2.16]}>
-        <boxGeometry args={[1.42, 0.1, 0.05]} />
+      <mesh position={[0, 0.52, 2.4]}>
+        <boxGeometry args={[1.2, 0.1, 0.06]} />
         <meshStandardMaterial color="#f4f7ff" emissive="#f4f7ff" emissiveIntensity={1.4} />
       </mesh>
-      <mesh position={[0, 0.56, -2.16]}>
-        <boxGeometry args={[1.46, 0.09, 0.05]} />
+      <mesh position={[0, 0.5, -2.4]}>
+        <boxGeometry args={[1.2, 0.09, 0.06]} />
         <meshStandardMaterial color="#ff3b3b" emissive="#ff2a2a" emissiveIntensity={1.1} />
       </mesh>
       {signal === "off" ? null : (
         <group>
-          <mesh position={[lampX, 0.58, 2.12]}>
-            <boxGeometry args={[0.22, 0.08, 0.04]} />
-            <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={4} />
+          <mesh position={[lampX, 0.62, 2.46]}>
+            <boxGeometry args={[0.46, 0.16, 0.1]} />
+            <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={6} toneMapped={false} />
           </mesh>
-          <mesh position={[lampX, 0.56, -2.12]}>
-            <boxGeometry args={[0.22, 0.08, 0.04]} />
-            <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={3.2} />
+          <mesh position={[lampX, 0.58, -2.46]}>
+            <boxGeometry args={[0.46, 0.16, 0.1]} />
+            <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={5} toneMapped={false} />
           </mesh>
         </group>
       )}

@@ -2165,7 +2165,7 @@ button {
 
 .scrub-input {
   width: 100%;
-  height: 6px;
+  height: 10px;
   border-radius: 99px;
   appearance: none;
   -webkit-appearance: none;
@@ -2174,30 +2174,30 @@ button {
 
 .scrub-input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #fff;
   border: none;
-  margin-top: -5px;
+  margin-top: -4px;
 }
 
 .scrub-input::-webkit-slider-runnable-track {
-  height: 6px;
+  height: 10px;
   border-radius: 99px;
   background: transparent;
 }
 
 .scrub-input::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #fff;
   border: none;
 }
 
 .scrub-input::-moz-range-track {
-  height: 6px;
+  height: 10px;
   border-radius: 99px;
   background: transparent;
 }
