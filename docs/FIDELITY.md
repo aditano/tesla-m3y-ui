@@ -59,10 +59,10 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 Target is the center display in customer cars on software **2026.14** (Highland Model 3 / Juniper Model Y, AI4): studio park scene, the same car model while driving, amber turn lamps in the viz, and the folder-style All Apps glyph. Layout stills in `docs/references/` remain the 2024.14 / UI v12 chrome set. Tesla’s Unreal mesh is not used.
 
-- Parked home is a **full-screen rear-right Model 3** on a light studio with cool close fog and an overhead key, CC-BY mesh (~94k faces), candy Ultra Red, C-pillar streak, pane glass, oval shadow, light dock. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — lighting moved toward the 2026 studio notes; front well cutout and side-glass openings remain a mesh ceiling. See `docs/qa/MESH_REVIEW.md`.
+- Parked home is a **high rear view** of the Model 3 on a light floor, CC-BY mesh (~94k faces), candy Ultra Red, light dock, TRUNK card. Score: **PARTIAL** vs `nata-parked-car-vis.jpg`. Front well cutout and side-glass openings remain. See `docs/qa/MESH_REVIEW.md`.
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - Park status-bar order and parked Auto Shift remain **PARTIAL**. All Apps is a folder of four glyphs.
-- FSD viz shares the map pose. Chase camera is closer, the world is overcast gray, buildings have window grids, traffic shows amber turn lamps. Huge speed readout with a hairline power bar. Not an occupancy mesh.
+- FSD viz shares the map pose. The driving frame is a chase view down the asphalt: blue lane, white markings, traffic with amber lamps, speed and a hairline power bar, media card on the viz. Not an occupancy mesh.
 - Media player puts the title left and art right, with a thick scrubber. Dock climate and Controls are still not pixel matches.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

@@ -16,11 +16,11 @@ import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio"
 
 RectAreaLightUniformsLib.init();
 
-/** Overcast driving world — matches the gray FSD stills, not a white studio. */
-const WORLD = "#55606b";
-const DRIVE_FOV = 34;
-const CAM_POS = new Vector3(0, 3.35, -6.15);
-const CAM_LOOK = new Vector3(0, 0.42, 14);
+/** Flat gray driving world from the published FSD stills. */
+const WORLD = "#8d959e";
+const DRIVE_FOV = 30;
+const CAM_POS = new Vector3(0, 5.05, -9.4);
+const CAM_LOOK = new Vector3(0, 0.32, 18);
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -123,18 +123,10 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.18} />
-      <hemisphereLight args={["#e8eef6", "#b7c3ce", 0.16]} />
-      <spotLight
-        position={[0.15, 8.6, -0.7]}
-        angle={0.72}
-        penumbra={0.85}
-        intensity={120}
-        color="#f4f8ff"
-        distance={18}
-        decay={2}
-      />
-      <directionalLight position={[-2.4, 3.6, 2.8]} intensity={0.35} color="#d5e4f4" />
+      <ambientLight intensity={0.55} />
+      <hemisphereLight args={["#f4f7fb", "#c5ccd4", 0.38]} />
+      <directionalLight position={[1.2, 12, -2.4]} intensity={1.35} color="#f7f8fa" />
+      <directionalLight position={[-3.2, 4.2, 3.4]} intensity={0.28} color="#d5e0ea" />
       <CPillarKeys />
       <ParkedEnvironment />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
@@ -201,11 +193,11 @@ function DrivingWorld() {
   return (
     <>
       <color attach="background" args={[WORLD]} />
-      <fog attach="fog" args={[WORLD, 28, 132]} />
+      <fog attach="fog" args={[WORLD, 24, 96]} />
       <EgoCamera />
-      <hemisphereLight args={["#e7edf4", "#5c6672", 0.85]} />
-      <ambientLight intensity={0.62} />
-      <directionalLight position={[10, 18, 6]} intensity={0.85} castShadow={false} />
+      <hemisphereLight args={["#eef2f6", "#6a737c", 0.72]} />
+      <ambientLight intensity={0.48} />
+      <directionalLight position={[8, 16, 4]} intensity={0.7} castShadow={false} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 20]} receiveShadow>
         <circleGeometry args={[360, 48]} />
         <meshStandardMaterial color={WORLD} roughness={1} />

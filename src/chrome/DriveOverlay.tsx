@@ -66,11 +66,11 @@ export function DriveOverlay({ expanded }: { expanded: boolean }) {
             className="drive-media-main"
             onClick={() => patchUi({ mediaOpen: true, climateOpen: false, appsOpen: false, tempPopup: null })}
           >
-            <div className="media-art" />
             <span>
               <strong>{media.track}</strong>
               <span>{media.artist}</span>
             </span>
+            <div className="media-art" />
           </button>
           <div className="drive-media-actions">
             <button

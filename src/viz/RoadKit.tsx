@@ -1,52 +1,20 @@
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
-import type { Group, InstancedMesh } from "three";
-import {
-  BoxGeometry,
-  CanvasTexture,
-  Color,
-  DoubleSide,
-  Matrix4,
-  MeshStandardMaterial,
-  Quaternion,
-  SRGBColorSpace,
-  Vector3,
-} from "three";
+import type { Group } from "three";
+import { Color, DoubleSide } from "three";
 import { LANE_WIDTH_M } from "../geo/constants";
 import { densifyRoute, egoWorldShift, isTurnManeuver, offsetAlongHeading } from "../geo/ego";
 import { closestTraveledM, indexFor, interpolate, lngLatToLocal } from "../geo/polyline";
 import { useVehicle } from "../state/store";
 import type { RoutePlan } from "../state/types";
-import { cityBlocksAlong, type CityBlock } from "./cityDressing";
 import { Model3 } from "./Model3";
 import { dashedRibbonArrays, mergeRibbons, offsetSides, ribbonArrays, type XZ } from "./roadGeometry";
 
-const ROAD = new Color("#2a313b");
-const SHOULDER = new Color("#353d49");
-const PATH = new Color("#3b82f6");
-const LINE = new Color("#f7f9fc");
-const BUILDING = ["#e7edf2", "#d5dde6", "#c5ced8"] as const;
+const ROAD = new Color("#2a3038");
+const SHOULDER = new Color("#3a424c");
+const PATH = new Color("#3a78e0");
+const LINE = new Color("#f4f7fb");
 const AMBER = "#ff9f1a";
-
-function buildingFacadeMap(): CanvasTexture {
-  const c = document.createElement("canvas");
-  c.width = 64;
-  c.height = 128;
-  const ctx = c.getContext("2d");
-  const tex = new CanvasTexture(c);
-  tex.colorSpace = SRGBColorSpace;
-  if (!ctx) return tex;
-  ctx.fillStyle = "#d5dde6";
-  ctx.fillRect(0, 0, 64, 128);
-  ctx.fillStyle = "#1a2128";
-  for (let y = 8; y < 122; y += 16) {
-    for (let x = 5; x < 60; x += 12) {
-      ctx.fillRect(x, y, 7, 10);
-    }
-  }
-  tex.needsUpdate = true;
-  return tex;
-}
 
 export type TurnLamp = "left" | "right" | "off";
 
@@ -55,43 +23,6 @@ export function trafficTurnLamp(slot: number): TurnLamp {
   if (slot % 4 === 0) return "right";
   if (slot % 4 === 1) return "left";
   return "off";
-}
-
-function CityBlocks({ blocks }: { blocks: CityBlock[] }) {
-  const ref = useRef<InstancedMesh>(null);
-  const geom = useMemo(() => new BoxGeometry(1, 1, 1), []);
-  const materials = useMemo(() => {
-    const facade = new MeshStandardMaterial({ map: buildingFacadeMap(), roughness: 0.88, metalness: 0.02 });
-    const roof = new MeshStandardMaterial({ color: "#8e98a3", roughness: 0.94, metalness: 0.02 });
-    const underside = new MeshStandardMaterial({ color: "#3a414a", roughness: 1 });
-    return [facade, facade, roof, underside, facade, facade];
-  }, []);
-  useLayoutEffect(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
-    const matrix = new Matrix4();
-    const position = new Vector3();
-    const quaternion = new Quaternion();
-    const scale = new Vector3();
-    const color = new Color();
-    const up = new Vector3(0, 1, 0);
-    blocks.forEach((block, i) => {
-      position.set(block.x, block.h / 2, block.z);
-      quaternion.setFromAxisAngle(up, block.yaw);
-      scale.set(block.w, block.h, block.d);
-      matrix.compose(position, quaternion, scale);
-      mesh.setMatrixAt(i, matrix);
-      color.set(BUILDING[Math.min(BUILDING.length - 1, Math.floor(block.shade * BUILDING.length))]);
-      mesh.setColorAt(i, color);
-    });
-    mesh.count = blocks.length;
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  }, [blocks]);
-  if (blocks.length === 0) return null;
-  return (
-    <instancedMesh ref={ref} args={[geom, materials, blocks.length]} frustumCulled={false} castShadow receiveShadow />
-  );
 }
 
 function MeshRibbon({
@@ -169,13 +100,10 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
         dashedRibbonArrays(outerLane.left, 0.07, 0.06, 2.4, 4.8),
         dashedRibbonArrays(outerLane.right, 0.07, 0.06, 2.4, 4.8),
       ]),
-      blocks: cityBlocksAlong(pts),
     };
   }, [route, traveledBucket]);
 
   if (!geom) return null;
-
-  const rich = useVehicle((s) => s.flags.visualizationPreview);
 
   return (
     <group>
@@ -185,11 +113,10 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
         positions={geom.path.positions}
         normals={geom.path.normals}
         color={PATH}
-        opacity={0.92}
+        opacity={0.88}
         emissive={PATH}
-        emissiveIntensity={0.72}
+        emissiveIntensity={0.12}
       />
-      {rich ? <CityBlocks blocks={geom.blocks} /> : null}
       <MeshRibbon
         positions={geom.edges.positions}
         normals={geom.edges.normals}

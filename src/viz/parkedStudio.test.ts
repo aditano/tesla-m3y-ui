@@ -16,10 +16,10 @@ describe("PARKED_STUDIO", () => {
     expect(PARKED_STUDIO.floor.roughness).toBeLessThan(0.7);
   });
 
-  it("keeps the 2026 studio haze close enough to fall across the glass", () => {
-    expect(PARKED_FOG.near).toBeLessThan(12);
+  it("keeps studio haze behind the car so the body stays sharp", () => {
+    expect(PARKED_FOG.near).toBeGreaterThan(10);
     expect(PARKED_FOG.far).toBeGreaterThan(PARKED_FOG.near);
-    expect(PARKED_FOG.far).toBeLessThan(40);
+    expect(PARKED_FOG.far).toBeLessThan(60);
   });
 
   it("paints a thin bright streak into a static equirect env", () => {

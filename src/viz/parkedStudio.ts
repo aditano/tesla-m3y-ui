@@ -4,11 +4,11 @@ import { DataTexture, EquirectangularReflectionMapping, RGBAFormat, SRGBColorSpa
  * Parked Highland studio. Keep this blit-safe: static painted env + one-shot
  * contact shadows. No MeshReflectorMaterial / AccumulativeShadows / SoftShadows.
  */
-/** Cool close fog — 2026.14 park scene reads as studio haze over the glass, not a gray void. */
+/** Light studio. The car stays sharp; haze only starts past the body. */
 export const PARKED_FOG = {
-  color: "#c9d6e4",
-  near: 8,
-  far: 28,
+  color: "#e7ebf0",
+  near: 16,
+  far: 42,
 } as const;
 
 export const PARKED_STUDIO = {
@@ -17,15 +17,15 @@ export const PARKED_STUDIO = {
   envMapSize: 1024,
   envIntensity: 1.38,
   camera: {
-    fov: 26,
-    position: [4.62, 5.12, -6.88] as const,
-    target: [0.04, 0.28, -0.2] as const,
+    fov: 20,
+    position: [0.55, 8.9, -6.4] as const,
+    target: [0.02, 0.32, 0.05] as const,
     near: 0.1,
     far: 80,
-    minDistance: 6.2,
-    maxDistance: 10.2,
-    minPolar: 0.84,
-    maxPolar: 1.08,
+    minDistance: 7,
+    maxDistance: 16,
+    minPolar: 0.42,
+    maxPolar: 0.95,
   },
   car: {
     position: [-0.3, 0, 0.1] as const,

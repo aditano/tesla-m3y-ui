@@ -41,10 +41,10 @@ export function cityBlocksAlong(center: XZ[]): CityBlock[] {
       for (const side of [-1, 1] as const) {
         const seed = next * 0.17 + side * 3.1;
         if (hash01(seed) < 0.14) continue;
-        const w = 9 + hash01(seed + 1) * 12;
-        const depth = 8 + hash01(seed + 2) * 14;
-        const h = 9 + hash01(seed + 4) * 26;
-        const innerFace = 9.05 + hash01(seed + 5) * 1.4;
+        const w = 10 + hash01(seed + 1) * 14;
+        const depth = 8 + hash01(seed + 2) * 12;
+        const h = 4.5 + hash01(seed + 4) * 10;
+        const innerFace = 14.5 + hash01(seed + 5) * 3;
         const off = innerFace + w * 0.5;
         blocks.push({
           x: x + rx * side * off,
