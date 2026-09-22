@@ -4,11 +4,18 @@ import { DataTexture, EquirectangularReflectionMapping, RGBAFormat, SRGBColorSpa
  * Parked Highland studio. Keep this blit-safe: static painted env + one-shot
  * contact shadows. No MeshReflectorMaterial / AccumulativeShadows / SoftShadows.
  */
+/** Cool close fog — 2026.14 park scene reads as studio haze over the glass, not a gray void. */
+export const PARKED_FOG = {
+  color: "#c9d6e4",
+  near: 8,
+  far: 28,
+} as const;
+
 export const PARKED_STUDIO = {
-  background: "#f3f4f6",
+  background: "#eef1f4",
   envFrames: 1,
   envMapSize: 1024,
-  envIntensity: 1.22,
+  envIntensity: 1.38,
   camera: {
     fov: 26,
     position: [4.62, 5.12, -6.88] as const,
@@ -35,11 +42,11 @@ export const PARKED_STUDIO = {
     resolution: 1024,
   },
   floor: {
-    roughness: 0.46,
-    metalness: 0.07,
-    envMapIntensity: 0.32,
-    clearcoat: 0.1,
-    clearcoatRoughness: 0.48,
+    roughness: 0.34,
+    metalness: 0.12,
+    envMapIntensity: 0.55,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.36,
   },
 } as const;
 
@@ -52,19 +59,19 @@ export function parkedStudioIsBlitSafe(): boolean {
 }
 
 function sampleStudioPixel(u: number, v: number): [number, number, number] {
-  let r = 176;
-  let g = 178;
-  let b = 184;
+  let r = 168;
+  let g = 176;
+  let b = 190;
   if (v > 0.7) {
     const t = (v - 0.7) / 0.3;
-    r = 176 + t * 36;
-    g = 178 + t * 34;
-    b = 184 + t * 28;
+    r = 168 + t * 22;
+    g = 176 + t * 30;
+    b = 190 + t * 38;
   } else if (v < 0.26) {
     const t = 1 - v / 0.26;
-    r = 176 - t * 22;
-    g = 178 - t * 22;
-    b = 184 - t * 20;
+    r = 168 - t * 18;
+    g = 176 - t * 16;
+    b = 190 - t * 12;
   }
 
   const strip = Math.exp(-(((v - 0.8) * 58) ** 2));

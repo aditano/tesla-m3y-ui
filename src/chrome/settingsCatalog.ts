@@ -31,6 +31,12 @@ export const SETTINGS_CATALOG: SettingHit[] = [
   { id: "wiperservice", label: "Wiper service mode", tab: "service", keywords: "wiper service" },
   { id: "jack", label: "Jack mode", tab: "service", keywords: "jack air suspension" },
   { id: "name", label: "Name your vehicle", tab: "software", keywords: "name software version" },
+  {
+    id: "autoupdate",
+    label: "Automatically Install Updates",
+    tab: "software",
+    keywords: "software update install automatic 2026.14",
+  },
   { id: "wifi", label: "Wi-Fi", tab: "wifi", keywords: "wifi wireless network bluetooth" },
 ];
 

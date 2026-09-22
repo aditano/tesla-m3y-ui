@@ -12,11 +12,15 @@ import { Model3 } from "./Model3";
 import { powerNorm } from "./driveHud";
 import { EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
-import { createCandyStudioEnv, PARKED_STUDIO } from "./parkedStudio";
+import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio";
 
 RectAreaLightUniformsLib.init();
 
-const WORLD = "#7b858f";
+/** Overcast driving world — matches the gray FSD stills, not a white studio. */
+const WORLD = "#55606b";
+const DRIVE_FOV = 34;
+const CAM_POS = new Vector3(0, 3.35, -6.15);
+const CAM_LOOK = new Vector3(0, 0.42, 14);
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -111,7 +115,7 @@ function ParkedStudio() {
   return (
     <>
       <color attach="background" args={[background]} />
-      <fog attach="fog" args={[background, 22, 48]} />
+      <fog attach="fog" args={[PARKED_FOG.color, PARKED_FOG.near, PARKED_FOG.far]} />
       <PerspectiveCamera
         makeDefault
         fov={camera.fov}
@@ -119,9 +123,18 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.36} />
-      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.24]} />
-      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.28} color="#f6f5f2" />
+      <ambientLight intensity={0.18} />
+      <hemisphereLight args={["#e8eef6", "#b7c3ce", 0.16]} />
+      <spotLight
+        position={[0.15, 8.6, -0.7]}
+        angle={0.72}
+        penumbra={0.85}
+        intensity={120}
+        color="#f4f8ff"
+        distance={18}
+        decay={2}
+      />
+      <directionalLight position={[-2.4, 3.6, 2.8]} intensity={0.35} color="#d5e4f4" />
       <CPillarKeys />
       <ParkedEnvironment />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
@@ -164,9 +177,6 @@ function ParkedStudio() {
   );
 }
 
-const CAM_POS = new Vector3(0, 6.15, -10.4);
-const CAM_LOOK = new Vector3(0, 0.45, 16);
-
 /** Chase camera for the driving world; snaps immediately when frozen for QA stills. */
 function EgoCamera() {
   const snapped = useRef(false);
@@ -191,7 +201,7 @@ function DrivingWorld() {
   return (
     <>
       <color attach="background" args={[WORLD]} />
-      <fog attach="fog" args={[WORLD, 90, 240]} />
+      <fog attach="fog" args={[WORLD, 28, 132]} />
       <EgoCamera />
       <hemisphereLight args={["#e7edf4", "#5c6672", 0.85]} />
       <ambientLight intensity={0.62} />
@@ -281,10 +291,10 @@ export function FsdCanvas() {
           preserveDrawingBuffer: frozen,
           failIfMajorPerformanceCaveat: false,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: parked ? 1.02 : 1.08,
+          toneMappingExposure: parked ? 1.06 : 1.14,
           outputColorSpace: SRGBColorSpace,
         }}
-        camera={{ fov: 36, position: [0, 6.15, -10.4], near: 0.1, far: 500 }}
+        camera={{ fov: DRIVE_FOV, position: [CAM_POS.x, CAM_POS.y, CAM_POS.z], near: 0.1, far: 420 }}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (event) => {
             event.preventDefault();

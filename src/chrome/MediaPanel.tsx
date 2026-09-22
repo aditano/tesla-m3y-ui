@@ -99,6 +99,9 @@ export function MediaPanel() {
             value={Math.round(media.progress * 1000)}
             onChange={(e) => patchMedia({ progress: Number(e.target.value) / 1000 })}
             aria-label="Scrub"
+            style={{
+              background: `linear-gradient(90deg, #fff ${media.progress * 100}%, rgba(255,255,255,0.28) ${media.progress * 100}%)`,
+            }}
           />
           <span>−{formatClock(duration - elapsed)}</span>
         </div>

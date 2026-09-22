@@ -16,7 +16,7 @@ function hash01(n: number): number {
 }
 
 /**
- * Pale block buildings along a centerline, kept off the asphalt.
+ * Block buildings along a centerline, kept just off the shoulder so the road reads as a street.
  * Deterministic so a frozen QA pose does not shimmer.
  */
 export function cityBlocksAlong(center: XZ[]): CityBlock[] {
@@ -41,10 +41,10 @@ export function cityBlocksAlong(center: XZ[]): CityBlock[] {
       for (const side of [-1, 1] as const) {
         const seed = next * 0.17 + side * 3.1;
         if (hash01(seed) < 0.14) continue;
-        const w = 8 + hash01(seed + 1) * 11;
-        const depth = 8 + hash01(seed + 2) * 12;
-        const h = 6 + hash01(seed + 4) * 22;
-        const innerFace = 10.6 + hash01(seed + 5) * 2.2;
+        const w = 9 + hash01(seed + 1) * 12;
+        const depth = 8 + hash01(seed + 2) * 14;
+        const h = 9 + hash01(seed + 4) * 26;
+        const innerFace = 9.05 + hash01(seed + 5) * 1.4;
         const off = innerFace + w * 0.5;
         blocks.push({
           x: x + rx * side * off,

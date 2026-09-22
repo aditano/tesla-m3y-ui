@@ -726,12 +726,20 @@ export function ControlsOverlay() {
                 <b>{flags.vehicleName}</b>
               </p>
               <p>
-                <b>Model 3 / Y Display</b> — fan recreation
+                <b>Model 3 / Y Display</b> — fan recreation of the 2026.14 center display
               </p>
               <p>
-                Version 2026.9.16 · UI v12-inspired · <code>tesla-m3y-ui</code>
+                Version 2026.14.3 · <code>tesla-m3y-ui</code>
               </p>
               <p>Not affiliated with Tesla, Inc. Original art. OpenStreetMap data.</p>
+            </div>
+            <div className="row-list">
+              <ToggleRow
+                on={flags.autoInstallUpdates}
+                label="Automatically Install Updates"
+                hint="2026.14 software control"
+                onClick={() => patchFlags({ autoInstallUpdates: !flags.autoInstallUpdates })}
+              />
             </div>
           </>
         );

@@ -55,14 +55,14 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 - Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Inter OFL — PARTIAL vs Tesla’s UI type; still not Tesla Sans).
 - Reference images are fair-use stills for offline comparison, attributed in [`REFERENCES.md`](references/REFERENCES.md). They are **not** to be bundled into the shipped UI.
 
-## Current verdict (this pass)
+## Current verdict (2026.14 pass)
 
-Parked viz hyper-real campaign (CC-BY David_Holiday derivative, not a new Sketchfab download):
+Target is the center display in customer cars on software **2026.14** (Highland Model 3 / Juniper Model Y, AI4): studio park scene, the same car model while driving, amber turn lamps in the viz, and the folder-style All Apps glyph. Layout stills in `docs/references/` remain the 2024.14 / UI v12 chrome set. Tesla’s Unreal mesh is not used.
 
-- Parked home is a **full-screen rear-right Model 3** on a white studio, with a subdivided/bevelled CC-BY mesh (~94k faces), candy Ultra Red clearcoat + C-pillar streak, pane-split glass IOR, oval contact shadow, original 5-cover aero wheels, and a TRUNK Open card on a long vertical in empty studio. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — materials/leaders moved; front well cutout and side-glass openings remain a mesh ceiling. See `docs/qa/MESH_REVIEW.md`.
+- Parked home is a **full-screen rear-right Model 3** on a light studio with cool close fog and an overhead key, CC-BY mesh (~94k faces), candy Ultra Red, C-pillar streak, pane glass, oval shadow, light dock. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — lighting moved toward the 2026 studio notes; front well cutout and side-glass openings remain a mesh ceiling. See `docs/qa/MESH_REVIEW.md`.
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
-- Park status-bar order and parked PRND remain **PARTIAL**.
-- FSD viz shares the map pose. The driving world is a gray studio road with a blue lane, pale block buildings, and car-shaped traffic — simulated, not an occupancy mesh. Speed, a vertical power/regen bar, and an on-viz media strip are on the visualization; expanded viz keeps Navigate + media centered.
-- Dock climate cluster and Controls chrome are still not pixel matches (other lanes).
+- Park status-bar order and parked Auto Shift remain **PARTIAL**. All Apps is a folder of four glyphs.
+- FSD viz shares the map pose. Chase camera is closer, the world is overcast gray, buildings have window grids, traffic shows amber turn lamps. Huge speed readout with a hairline power bar. Not an occupancy mesh.
+- Media player puts the title left and art right, with a thick scrubber. Dock climate and Controls are still not pixel matches.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

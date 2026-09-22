@@ -197,6 +197,7 @@ const flags: VehicleFlags = {
   autosteer: true,
   trafficControl: true,
   visualizationPreview: true,
+  autoInstallUpdates: true,
   wiperService: false,
   jackMode: false,
   cameraCalibrating: false,

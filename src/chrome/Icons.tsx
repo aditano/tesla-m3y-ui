@@ -159,23 +159,29 @@ export function IconAutoShiftCar(props: IconProps) {
   return (
     <I {...props}>
       <path
-        d="M9.1 3.6h5.8l2.3 3.5v9.8l-1.5 3.4H8.3L6.8 16.9V7.1L9.1 3.6Z"
+        d="M8.7 4.1h6.6c.4 0 .8.2 1 .6l1.5 2.9c.2.4.3.8.3 1.2v7.4c0 .6-.3 1.1-.9 1.4l-.8 1.6c-.2.4-.6.6-1 .6H8.6c-.4 0-.8-.2-1-.6l-.8-1.6c-.6-.3-.9-.8-.9-1.4V8.8c0-.4.1-.8.3-1.2l1.5-2.9c.2-.4.6-.6 1-.6Z"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="1.35"
         strokeLinejoin="round"
+        fill="currentColor"
+        fillOpacity="0.14"
       />
-      <path d="M8.1 9.4h7.8" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M8.2 9.2h7.6" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M8.7 12.6h6.6" stroke="currentColor" strokeWidth="1.05" opacity="0.65" />
     </I>
   );
 }
 
+/** 2026.14 All Apps: a folder of live glyphs, not four identical squares. */
 export function IconApps(props: IconProps) {
   return (
     <I {...props}>
-      <rect x="4" y="4" width="6.2" height="6.2" rx="1.4" fill="currentColor" />
-      <rect x="13.8" y="4" width="6.2" height="6.2" rx="1.4" fill="currentColor" />
-      <rect x="4" y="13.8" width="6.2" height="6.2" rx="1.4" fill="currentColor" />
-      <rect x="13.8" y="13.8" width="6.2" height="6.2" rx="1.4" fill="currentColor" />
+      <rect x="3.1" y="4.4" width="17.8" height="15.4" rx="3.6" fill="currentColor" fillOpacity="0.14" />
+      <rect x="3.1" y="4.4" width="17.8" height="15.4" rx="3.6" stroke="currentColor" strokeWidth="1.35" />
+      <path d="M6.7 9.15 7.7 7.35h1.55L8.35 9.15 9.45 12.05H5.55L6.7 9.15Z" fill="#4dabf7" />
+      <rect x="13.15" y="6.85" width="4.15" height="3.15" rx="0.7" fill="#ffd43b" />
+      <circle cx="8.15" cy="15.35" r="1.85" fill="#ff6b6b" />
+      <path d="M14.55 13.15h2.15l-1.25 2.55h1.45L13.9 18.7l.55-2.15h-1.35l1.45-3.4Z" fill="#69db7c" />
     </I>
   );
 }

@@ -1,7 +1,17 @@
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import type { Group, InstancedMesh } from "three";
-import { BoxGeometry, Color, DoubleSide, Matrix4, MeshStandardMaterial, Quaternion, Vector3 } from "three";
+import {
+  BoxGeometry,
+  CanvasTexture,
+  Color,
+  DoubleSide,
+  Matrix4,
+  MeshStandardMaterial,
+  Quaternion,
+  SRGBColorSpace,
+  Vector3,
+} from "three";
 import { LANE_WIDTH_M } from "../geo/constants";
 import { densifyRoute, egoWorldShift, isTurnManeuver, offsetAlongHeading } from "../geo/ego";
 import { closestTraveledM, indexFor, interpolate, lngLatToLocal } from "../geo/polyline";
@@ -15,12 +25,47 @@ const ROAD = new Color("#2a313b");
 const SHOULDER = new Color("#353d49");
 const PATH = new Color("#3b82f6");
 const LINE = new Color("#f7f9fc");
-const BUILDING = ["#f4f7fb", "#e4ebf3", "#d3dce6"] as const;
+const BUILDING = ["#e7edf2", "#d5dde6", "#c5ced8"] as const;
+const AMBER = "#ff9f1a";
+
+function buildingFacadeMap(): CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 64;
+  c.height = 128;
+  const ctx = c.getContext("2d");
+  const tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  if (!ctx) return tex;
+  ctx.fillStyle = "#d5dde6";
+  ctx.fillRect(0, 0, 64, 128);
+  ctx.fillStyle = "#1a2128";
+  for (let y = 8; y < 122; y += 16) {
+    for (let x = 5; x < 60; x += 12) {
+      ctx.fillRect(x, y, 7, 10);
+    }
+  }
+  tex.needsUpdate = true;
+  return tex;
+}
+
+export type TurnLamp = "left" | "right" | "off";
+
+/** Deterministic amber lamps so a frozen still shows 2026.14 turn signals. */
+export function trafficTurnLamp(slot: number): TurnLamp {
+  if (slot % 4 === 0) return "right";
+  if (slot % 4 === 1) return "left";
+  return "off";
+}
 
 function CityBlocks({ blocks }: { blocks: CityBlock[] }) {
   const ref = useRef<InstancedMesh>(null);
   const geom = useMemo(() => new BoxGeometry(1, 1, 1), []);
-  const mat = useMemo(() => new MeshStandardMaterial({ roughness: 0.92, metalness: 0.02 }), []);
+  const materials = useMemo(() => {
+    const facade = new MeshStandardMaterial({ map: buildingFacadeMap(), roughness: 0.88, metalness: 0.02 });
+    const roof = new MeshStandardMaterial({ color: "#8e98a3", roughness: 0.94, metalness: 0.02 });
+    const underside = new MeshStandardMaterial({ color: "#3a414a", roughness: 1 });
+    return [facade, facade, roof, underside, facade, facade];
+  }, []);
   useLayoutEffect(() => {
     const mesh = ref.current;
     if (!mesh) return;
@@ -45,7 +90,7 @@ function CityBlocks({ blocks }: { blocks: CityBlock[] }) {
   }, [blocks]);
   if (blocks.length === 0) return null;
   return (
-    <instancedMesh ref={ref} args={[geom, mat, blocks.length]} frustumCulled={false} castShadow receiveShadow />
+    <instancedMesh ref={ref} args={[geom, materials, blocks.length]} frustumCulled={false} castShadow receiveShadow />
   );
 }
 
@@ -192,36 +237,49 @@ function placeTraffic(route: RoutePlan, car: Group, slot: { offsetM: number; lan
   car.rotation.set(0, (geo.heading * Math.PI) / 180 + (oncoming ? Math.PI : 0), 0);
 }
 
-function TrafficCar({ color }: { color: string }) {
+function TrafficCar({ color, signal }: { color: string; signal: TurnLamp }) {
+  const lampX = signal === "left" ? -0.72 : 0.72;
   return (
     <group>
       {[
-        [-0.78, 1.28],
-        [0.78, 1.28],
-        [-0.78, -1.28],
-        [0.78, -1.28],
+        [-0.78, 1.35],
+        [0.78, 1.35],
+        [-0.78, -1.35],
+        [0.78, -1.35],
       ].map(([x, z]) => (
-        <mesh key={`${x}-${z}`} position={[x, 0.3, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.3, 0.3, 0.24, 12]} />
+        <mesh key={`${x}-${z}`} position={[x, 0.28, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.32, 0.32, 0.22, 12]} />
           <meshStandardMaterial color="#14161a" roughness={0.92} />
         </mesh>
       ))}
-      <mesh position={[0, 0.62, 0.05]} castShadow>
-        <boxGeometry args={[1.72, 0.52, 4.15]} />
-        <meshStandardMaterial color={color} metalness={0.42} roughness={0.38} />
+      <mesh position={[0, 0.48, 0.15]} castShadow>
+        <boxGeometry args={[1.78, 0.42, 4.35]} />
+        <meshStandardMaterial color={color} metalness={0.55} roughness={0.32} />
       </mesh>
-      <mesh position={[0, 1.05, -0.15]} castShadow>
-        <boxGeometry args={[1.52, 0.42, 1.85]} />
-        <meshStandardMaterial color="#1b212b" metalness={0.2} roughness={0.12} />
+      <mesh position={[0, 0.92, -0.2]} castShadow>
+        <boxGeometry args={[1.58, 0.46, 2.05]} />
+        <meshStandardMaterial color="#141920" metalness={0.15} roughness={0.08} />
       </mesh>
-      <mesh position={[0, 0.72, 2.08]}>
-        <boxGeometry args={[1.35, 0.12, 0.06]} />
-        <meshStandardMaterial color="#f4f7ff" emissive="#f4f7ff" emissiveIntensity={0.8} />
+      <mesh position={[0, 0.58, 2.16]}>
+        <boxGeometry args={[1.42, 0.1, 0.05]} />
+        <meshStandardMaterial color="#f4f7ff" emissive="#f4f7ff" emissiveIntensity={1.4} />
       </mesh>
-      <mesh position={[0, 0.7, -2.08]}>
-        <boxGeometry args={[1.4, 0.1, 0.05]} />
-        <meshStandardMaterial color="#ff3b3b" emissive="#ff2a2a" emissiveIntensity={0.7} />
+      <mesh position={[0, 0.56, -2.16]}>
+        <boxGeometry args={[1.46, 0.09, 0.05]} />
+        <meshStandardMaterial color="#ff3b3b" emissive="#ff2a2a" emissiveIntensity={1.1} />
       </mesh>
+      {signal === "off" ? null : (
+        <group>
+          <mesh position={[lampX, 0.58, 2.12]}>
+            <boxGeometry args={[0.22, 0.08, 0.04]} />
+            <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={4} />
+          </mesh>
+          <mesh position={[lampX, 0.56, -2.12]}>
+            <boxGeometry args={[0.22, 0.08, 0.04]} />
+            <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={3.2} />
+          </mesh>
+        </group>
+      )}
     </group>
   );
 }
@@ -253,7 +311,7 @@ export function TrafficPack({ route }: { route: RoutePlan }) {
             refs.current[i] = el;
           }}
         >
-          <TrafficCar color={TRAFFIC[i % TRAFFIC.length]} />
+          <TrafficCar color={TRAFFIC[i % TRAFFIC.length]} signal={trafficTurnLamp(i)} />
         </group>
       ))}
     </group>
