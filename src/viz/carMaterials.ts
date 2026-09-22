@@ -46,7 +46,7 @@ const GLASS = new Color("#0a0c10");
 const SIDE_GLASS = new Color("#080a0e");
 const ROOF_GLASS = new Color("#030405");
 const BACK_GLASS = new Color("#07080b");
-const CALIPER = new Color("#b01018");
+const CALIPER = new Color("#3a3e44");
 const INTERIOR = new Color("#0c0b0a");
 const RIM = new Color("#16181c");
 
@@ -205,9 +205,9 @@ function physical(
     case "chrome":
       return new MeshPhysicalMaterial({
         color: CHROME,
-        metalness: 0.98,
-        roughness: parked ? 0.08 : 0.14,
-        envMapIntensity: parked ? 1.4 : 1.15,
+        metalness: 0.86,
+        roughness: parked ? 0.28 : 0.22,
+        envMapIntensity: parked ? 0.48 : 0.7,
       });
     case "rim":
       return new MeshPhysicalMaterial({
@@ -350,6 +350,7 @@ export function applyCarMaterials(
       const name = (mat as MeshStandardMaterial).name || obj.name || "";
       const fromUser = obj.userData.glassKind as CarMaterialKind | undefined;
       const kind = fromUser ?? classifyCarMaterial(obj.name.startsWith("glass-") ? obj.name : name);
+      if (kind === "caliper") obj.visible = false;
       const paintAo = kind === "paint" ? aoMap : null;
       const upgraded = physical(kind, lit, parked, paintHex, paintAo);
       if (kind === "paint" && !tangents) {

@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   bearingDegrees,
   buildIndex,
+  etaSeconds,
   formatDuration,
   haversineMeters,
   interpolate,
   lerpHeading,
   lngLatToLocal,
+  splitAtMeters,
 } from "./polyline";
 
 describe("polyline", () => {
@@ -27,6 +29,28 @@ describe("polyline", () => {
     const mid = interpolate(idx, idx.totalMeters / 2);
     expect(mid.position[1]).toBeCloseTo(40.005, 3);
     expect(mid.heading).toBeCloseTo(0, 0);
+  });
+
+  it("splits a line into the driven gray portion and the blue remainder", () => {
+    const coords: [number, number][] = [
+      [-80, 40],
+      [-80, 40.01],
+      [-80, 40.02],
+    ];
+    const idx = buildIndex(coords);
+    const parts = splitAtMeters(idx, idx.totalMeters / 2);
+    expect(parts.traveled.length).toBeGreaterThan(1);
+    expect(parts.remaining.length).toBeGreaterThan(1);
+    expect(parts.traveled[0]).toEqual(coords[0]);
+    expect(parts.remaining[0][1]).toBeCloseTo(40.01, 2);
+    expect(parts.remaining[parts.remaining.length - 1]).toEqual(coords[2]);
+    expect(splitAtMeters(idx, 0).traveled).toEqual([]);
+    expect(splitAtMeters(idx, 0).remaining).toEqual(coords);
+  });
+
+  it("estimates arrival from speed once the car is moving", () => {
+    expect(etaSeconds(1000, 100, 500, 0)).toBeCloseTo(50, 5);
+    expect(etaSeconds(1000, 100, 500, 30)).toBeLessThan(50);
   });
 
   it("wraps heading lerp across 0°", () => {

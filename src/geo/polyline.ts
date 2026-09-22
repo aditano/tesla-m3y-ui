@@ -133,6 +133,29 @@ export function interpolate(index: PolylineIndex, meters: number): SampledPose {
   };
 }
 
+/** Driven portion (renders gray) and the rest of the route (renders blue). */
+export function splitAtMeters(index: PolylineIndex, meters: number): { traveled: LngLat[]; remaining: LngLat[] } {
+  const { coords, cumMeters, totalMeters } = index;
+  if (coords.length === 0) return { traveled: [], remaining: [] };
+  if (coords.length === 1) return { traveled: [], remaining: [coords[0]] };
+  const clamped = Math.max(0, Math.min(totalMeters, meters));
+  if (clamped <= 1) return { traveled: [], remaining: coords.slice() };
+  if (clamped >= totalMeters - 1) return { traveled: coords.slice(), remaining: [] };
+  const here = interpolate(index, clamped).position;
+  const traveled: LngLat[] = [];
+  for (let i = 0; i < coords.length; i++) {
+    if (cumMeters[i] <= clamped) traveled.push(coords[i]);
+    else break;
+  }
+  const last = traveled[traveled.length - 1];
+  if (!last || last[0] !== here[0] || last[1] !== here[1]) traveled.push(here);
+  const remaining: LngLat[] = [here];
+  for (let i = 0; i < coords.length; i++) {
+    if (cumMeters[i] > clamped) remaining.push(coords[i]);
+  }
+  return { traveled, remaining };
+}
+
 export interface LocalPoint {
   x: number;
   z: number;
@@ -156,6 +179,12 @@ export function offsetLngLat(origin: LngLat, eastM: number, northM: number): Lng
 
 export function mphToMps(mph: number): number {
   return mph * 0.44704;
+}
+
+/** ETA from remaining distance. Uses live speed once the car is actually moving. */
+export function etaSeconds(routeDistanceM: number, routeDurationS: number, remainingM: number, speedMph: number): number {
+  if (speedMph > 4) return remainingM / Math.max(0.2, mphToMps(speedMph));
+  return routeDurationS * (remainingM / Math.max(1, routeDistanceM));
 }
 
 export function mpsToMph(mps: number): number {

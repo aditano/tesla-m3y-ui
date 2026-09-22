@@ -1,9 +1,7 @@
 import { useVehicle } from "../state/store";
 import type { MediaSourceId } from "../state/types";
-import { isParkedFullscreen } from "../viz/layout";
 import {
   IconEq,
-  IconMusic,
   IconPause,
   IconPlay,
   IconRepeat,
@@ -30,9 +28,6 @@ function formatClock(seconds: number): string {
 
 export function MediaPanel() {
   const open = useVehicle((s) => s.ui.mediaOpen);
-  const controlsOpen = useVehicle((s) => s.ui.controlsOpen);
-  const climateOpen = useVehicle((s) => s.ui.climateOpen);
-  const parked = useVehicle((s) => isParkedFullscreen(s.gear, s.phase));
   const media = useVehicle((s) => s.media);
   const patchMedia = useVehicle((s) => s.patchMedia);
   const patchUi = useVehicle((s) => s.patchUi);
@@ -42,21 +37,7 @@ export function MediaPanel() {
   const elapsed = media.progress * duration;
   const sourceLabel = media.source[0].toUpperCase() + media.source.slice(1);
 
-  if (!open) {
-    if (controlsOpen || climateOpen || parked) return null;
-    return (
-      <button
-        type="button"
-        className="media-min"
-        onClick={() => patchUi({ mediaOpen: true, climateOpen: false, appsOpen: false, tempPopup: null })}
-      >
-        <IconMusic width={16} height={16} />
-        <span>
-          {media.track} · {media.artist}
-        </span>
-      </button>
-    );
-  }
+  if (!open) return null;
 
   return (
     <>

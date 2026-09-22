@@ -1,18 +1,53 @@
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type ReactNode } from "react";
-import type { Group, Mesh } from "three";
-import { Color, DoubleSide } from "three";
+import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
+import type { Group, InstancedMesh } from "three";
+import { BoxGeometry, Color, DoubleSide, Matrix4, MeshStandardMaterial, Quaternion, Vector3 } from "three";
 import { LANE_WIDTH_M } from "../geo/constants";
 import { densifyRoute, egoWorldShift, isTurnManeuver, offsetAlongHeading } from "../geo/ego";
 import { closestTraveledM, indexFor, interpolate, lngLatToLocal } from "../geo/polyline";
 import { useVehicle } from "../state/store";
 import type { RoutePlan } from "../state/types";
+import { cityBlocksAlong, type CityBlock } from "./cityDressing";
 import { Model3 } from "./Model3";
 import { dashedRibbonArrays, mergeRibbons, offsetSides, ribbonArrays, type XZ } from "./roadGeometry";
 
-const ROAD = new Color("#2a303c");
-const PATH = new Color("#2f74ea");
-const LINE = new Color("#e8edf6");
+const ROAD = new Color("#2a313b");
+const SHOULDER = new Color("#353d49");
+const PATH = new Color("#3b82f6");
+const LINE = new Color("#f7f9fc");
+const BUILDING = ["#f4f7fb", "#e4ebf3", "#d3dce6"] as const;
+
+function CityBlocks({ blocks }: { blocks: CityBlock[] }) {
+  const ref = useRef<InstancedMesh>(null);
+  const geom = useMemo(() => new BoxGeometry(1, 1, 1), []);
+  const mat = useMemo(() => new MeshStandardMaterial({ roughness: 0.92, metalness: 0.02 }), []);
+  useLayoutEffect(() => {
+    const mesh = ref.current;
+    if (!mesh) return;
+    const matrix = new Matrix4();
+    const position = new Vector3();
+    const quaternion = new Quaternion();
+    const scale = new Vector3();
+    const color = new Color();
+    const up = new Vector3(0, 1, 0);
+    blocks.forEach((block, i) => {
+      position.set(block.x, block.h / 2, block.z);
+      quaternion.setFromAxisAngle(up, block.yaw);
+      scale.set(block.w, block.h, block.d);
+      matrix.compose(position, quaternion, scale);
+      mesh.setMatrixAt(i, matrix);
+      color.set(BUILDING[Math.min(BUILDING.length - 1, Math.floor(block.shade * BUILDING.length))]);
+      mesh.setColorAt(i, color);
+    });
+    mesh.count = blocks.length;
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }, [blocks]);
+  if (blocks.length === 0) return null;
+  return (
+    <instancedMesh ref={ref} args={[geom, mat, blocks.length]} frustumCulled={false} castShadow receiveShadow />
+  );
+}
 
 function MeshRibbon({
   positions,
@@ -55,8 +90,8 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
   const geom = useMemo(() => {
     const origin: [number, number] = route.coords[0];
     const index = indexFor(route.coords);
-    const lo = traveledBucket - 40;
-    const hi = traveledBucket + 220;
+    const lo = traveledBucket - 90;
+    const hi = traveledBucket + 260;
     const pts: XZ[] = densifyRoute(index)
       .filter((s) => s.traveledM >= lo && s.traveledM <= hi)
       .map((s) => {
@@ -64,41 +99,52 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
         return { x: p.x, z: p.z };
       });
     if (pts.length < 2) return null;
-    const asphalt = offsetSides(pts, LANE_WIDTH_M * 1.55);
-    const path = offsetSides(pts, 1.18);
-    const leftCurb = offsetSides(asphalt.left, 0.08);
-    const rightCurb = offsetSides(asphalt.right, 0.08);
+    const asphalt = offsetSides(pts, LANE_WIDTH_M * 2.05);
+    const path = offsetSides(pts, 1.45);
+    const leftShoulder = offsetSides(asphalt.left, 1.15);
+    const rightShoulder = offsetSides(asphalt.right, 1.15);
+    const leftCurb = offsetSides(asphalt.left, 0.07);
+    const rightCurb = offsetSides(asphalt.right, 0.07);
     const laneSep = offsetSides(pts, LANE_WIDTH_M * 0.5);
     const outerLane = offsetSides(pts, LANE_WIDTH_M * 1.5);
     return {
-      road: ribbonArrays(asphalt.left, asphalt.right, 0.012),
-      path: ribbonArrays(path.left, path.right, 0.028),
+      road: ribbonArrays(asphalt.left, asphalt.right, 0.02),
+      shoulders: mergeRibbons([
+        ribbonArrays(leftShoulder.left, leftShoulder.right, 0.012),
+        ribbonArrays(rightShoulder.left, rightShoulder.right, 0.012),
+      ]),
+      path: ribbonArrays(path.left, path.right, 0.045),
       edges: mergeRibbons([
-        ribbonArrays(leftCurb.left, leftCurb.right, 0.04),
-        ribbonArrays(rightCurb.left, rightCurb.right, 0.04),
+        ribbonArrays(leftCurb.left, leftCurb.right, 0.055),
+        ribbonArrays(rightCurb.left, rightCurb.right, 0.055),
       ]),
       dashes: mergeRibbons([
-        dashedRibbonArrays(laneSep.left, 0.075, 0.046),
-        dashedRibbonArrays(laneSep.right, 0.075, 0.046),
-        dashedRibbonArrays(outerLane.left, 0.07, 0.046, 2.2, 5.2),
-        dashedRibbonArrays(outerLane.right, 0.07, 0.046, 2.2, 5.2),
+        dashedRibbonArrays(laneSep.left, 0.08, 0.06),
+        dashedRibbonArrays(laneSep.right, 0.08, 0.06),
+        dashedRibbonArrays(outerLane.left, 0.07, 0.06, 2.4, 4.8),
+        dashedRibbonArrays(outerLane.right, 0.07, 0.06, 2.4, 4.8),
       ]),
+      blocks: cityBlocksAlong(pts),
     };
   }, [route, traveledBucket]);
 
   if (!geom) return null;
 
+  const rich = useVehicle((s) => s.flags.visualizationPreview);
+
   return (
     <group>
+      <MeshRibbon positions={geom.shoulders.positions} normals={geom.shoulders.normals} color={SHOULDER} />
       <MeshRibbon positions={geom.road.positions} normals={geom.road.normals} color={ROAD} />
       <MeshRibbon
         positions={geom.path.positions}
         normals={geom.path.normals}
         color={PATH}
-        opacity={0.88}
+        opacity={0.92}
         emissive={PATH}
-        emissiveIntensity={0.55}
+        emissiveIntensity={0.72}
       />
+      {rich ? <CityBlocks blocks={geom.blocks} /> : null}
       <MeshRibbon
         positions={geom.edges.positions}
         normals={geom.edges.normals}
@@ -117,54 +163,98 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
   );
 }
 
-const TRAFFIC = ["#c0392b", "#1f6feb", "#27ae60", "#f1c40f", "#7f8c8d", "#8e44ad", "#d35400"];
+const TRAFFIC = ["#c0392b", "#1f6feb", "#f4f6f8", "#1a1d22", "#d8dde4", "#7f8c8d", "#b9c0c8"];
 const TRAFFIC_SLOTS = [
-  { offsetM: 22, lane: 0 },
-  { offsetM: 48, lane: LANE_WIDTH_M },
-  { offsetM: 76, lane: 0 },
-  { offsetM: 108, lane: LANE_WIDTH_M },
-  { offsetM: 142, lane: -LANE_WIDTH_M * 1.05 },
-  { offsetM: 175, lane: -LANE_WIDTH_M * 1.05 },
-  { offsetM: -16, lane: LANE_WIDTH_M },
+  { offsetM: 18, lane: LANE_WIDTH_M },
+  { offsetM: 36, lane: 0 },
+  { offsetM: 58, lane: LANE_WIDTH_M },
+  { offsetM: 84, lane: -LANE_WIDTH_M },
+  { offsetM: 112, lane: LANE_WIDTH_M * 2 },
+  { offsetM: 146, lane: 0 },
+  { offsetM: 178, lane: -LANE_WIDTH_M },
+  { offsetM: -22, lane: LANE_WIDTH_M },
 ];
 
+function placeTraffic(route: RoutePlan, car: Group, slot: { offsetM: number; lane: number }): void {
+  const pose = useVehicle.getState().pose;
+  const index = indexFor(route.coords);
+  const meters = pose.traveledM + slot.offsetM;
+  if (meters < 8 || meters > route.distanceM - 8) {
+    car.visible = false;
+    return;
+  }
+  const geo = interpolate(index, meters);
+  const placed = offsetAlongHeading(geo.position, geo.heading, slot.lane, 0);
+  const loc = lngLatToLocal(placed, route.coords[0]);
+  const oncoming = slot.lane < -1;
+  car.visible = true;
+  car.position.set(loc.x, 0, loc.z);
+  car.rotation.set(0, (geo.heading * Math.PI) / 180 + (oncoming ? Math.PI : 0), 0);
+}
+
+function TrafficCar({ color }: { color: string }) {
+  return (
+    <group>
+      {[
+        [-0.78, 1.28],
+        [0.78, 1.28],
+        [-0.78, -1.28],
+        [0.78, -1.28],
+      ].map(([x, z]) => (
+        <mesh key={`${x}-${z}`} position={[x, 0.3, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.3, 0.3, 0.24, 12]} />
+          <meshStandardMaterial color="#14161a" roughness={0.92} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.62, 0.05]} castShadow>
+        <boxGeometry args={[1.72, 0.52, 4.15]} />
+        <meshStandardMaterial color={color} metalness={0.42} roughness={0.38} />
+      </mesh>
+      <mesh position={[0, 1.05, -0.15]} castShadow>
+        <boxGeometry args={[1.52, 0.42, 1.85]} />
+        <meshStandardMaterial color="#1b212b" metalness={0.2} roughness={0.12} />
+      </mesh>
+      <mesh position={[0, 0.72, 2.08]}>
+        <boxGeometry args={[1.35, 0.12, 0.06]} />
+        <meshStandardMaterial color="#f4f7ff" emissive="#f4f7ff" emissiveIntensity={0.8} />
+      </mesh>
+      <mesh position={[0, 0.7, -2.08]}>
+        <boxGeometry args={[1.4, 0.1, 0.05]} />
+        <meshStandardMaterial color="#ff3b3b" emissive="#ff2a2a" emissiveIntensity={0.7} />
+      </mesh>
+    </group>
+  );
+}
+
 export function TrafficPack({ route }: { route: RoutePlan }) {
-  const refs = useRef<Array<Mesh | null>>([]);
-  const origin: [number, number] = route.coords[0];
+  const refs = useRef<Array<Group | null>>([]);
+
+  const placeAll = () => {
+    TRAFFIC_SLOTS.forEach((slot, i) => {
+      const car = refs.current[i];
+      if (car) placeTraffic(route, car, slot);
+    });
+  };
+
+  useLayoutEffect(() => {
+    placeAll();
+  }, [route]);
 
   useFrame(() => {
-    const pose = useVehicle.getState().pose;
-    const index = indexFor(route.coords);
-    TRAFFIC_SLOTS.forEach((slot, i) => {
-      const mesh = refs.current[i];
-      if (!mesh) return;
-      const meters = pose.traveledM + slot.offsetM;
-      if (meters < 8 || meters > route.distanceM - 8) {
-        mesh.visible = false;
-        return;
-      }
-      const geo = interpolate(index, meters);
-      const placed = offsetAlongHeading(geo.position, geo.heading, slot.lane, 0);
-      const loc = lngLatToLocal(placed, origin);
-      mesh.visible = true;
-      mesh.position.set(loc.x, 0.48, loc.z);
-      mesh.rotation.set(0, (geo.heading * Math.PI) / 180, 0);
-    });
+    placeAll();
   });
 
   return (
     <group>
       {TRAFFIC_SLOTS.map((slot, i) => (
-        <mesh
+        <group
           key={`${slot.offsetM}-${slot.lane}`}
           ref={(el) => {
             refs.current[i] = el;
           }}
-          castShadow
         >
-          <boxGeometry args={[1.7, 0.62, 4.15]} />
-          <meshStandardMaterial color={TRAFFIC[i % TRAFFIC.length]} metalness={0.38} roughness={0.44} />
-        </mesh>
+          <TrafficCar color={TRAFFIC[i % TRAFFIC.length]} />
+        </group>
       ))}
     </group>
   );

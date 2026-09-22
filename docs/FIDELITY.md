@@ -62,7 +62,7 @@ Parked viz hyper-real campaign (CC-BY David_Holiday derivative, not a new Sketch
 - Parked home is a **full-screen rear-right Model 3** on a white studio, with a subdivided/bevelled CC-BY mesh (~94k faces), candy Ultra Red clearcoat + C-pillar streak, pane-split glass IOR, oval contact shadow, original 5-cover aero wheels, and a TRUNK Open card on a long vertical in empty studio. Score: **PARTIAL** vs `nata-parked-car-vis.jpg` — materials/leaders moved; front well cutout and side-glass openings remain a mesh ceiling. See `docs/qa/MESH_REVIEW.md`.
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - Park status-bar order and parked PRND remain **PARTIAL**.
-- FSD viz is a stylized ribbon, not camera/occupancy grounded, and is not proven to sit on the same road the map is driving.
-- Dock climate cluster and Controls chrome still FAIL (other lanes).
+- FSD viz shares the map pose. The driving world is a gray studio road with a blue lane, pale block buildings, and car-shaped traffic — simulated, not an occupancy mesh. Speed, a vertical power/regen bar, and an on-viz media strip are on the visualization; expanded viz keeps Navigate + media centered.
+- Dock climate cluster and Controls chrome are still not pixel matches (other lanes).
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.
