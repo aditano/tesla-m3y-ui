@@ -2021,9 +2021,15 @@ button {
   width: min(760px, calc((100% - var(--prnd-w)) * var(--viz-ratio, 0.42) - 16px));
   transform: none;
   background: rgba(16, 16, 16, 0.78);
+  color: #f4f4f4;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.bezel.parked .media-sheet .media-artist,
+.bezel.parked .media-sheet .scrub-row {
+  color: #c8c8c8;
 }
 
 .media-min {
