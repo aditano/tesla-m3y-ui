@@ -238,9 +238,9 @@ function physical(
       });
     case "tail":
       return new MeshPhysicalMaterial({
-        color: "#3a080c",
-        emissive: new Color(parked ? "#7a1016" : "#5a0008"),
-        emissiveIntensity: parked ? 0.18 : 0.45,
+        color: parked ? "#3a080c" : "#ff3b30",
+        emissive: new Color(parked ? "#7a1016" : "#ff2a22"),
+        emissiveIntensity: parked ? 0.18 : 1.1,
         metalness: 0.22,
         roughness: 0.42,
       });

@@ -5,7 +5,16 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { ACESFilmicToneMapping, BackSide, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3 } from "three";
+import {
+  ACESFilmicToneMapping,
+  BackSide,
+  CanvasTexture,
+  NoToneMapping,
+  PMREMGenerator,
+  RectAreaLight,
+  SRGBColorSpace,
+  Vector3,
+} from "three";
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import { useVehicle } from "../state/store";
 import { Model3 } from "./Model3";
@@ -16,12 +25,12 @@ import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio"
 
 RectAreaLightUniformsLib.init();
 
-/** Horizon gray. Asphalt is the road; the verge is everything beside it. */
-const WORLD = "#7d868f";
-const VERGE = "#3e4744";
-const DRIVE_FOV = 42;
-const CAM_POS = new Vector3(0, 2.35, -5.35);
-const CAM_LOOK = new Vector3(0, 0.62, 16);
+/** Flat FSD grade. The road, lanes, and blocks are unlit so they stay in this gray. */
+const WORLD = "#97a0a8";
+const VERGE = "#667068";
+const DRIVE_FOV = 36;
+const CAM_POS = new Vector3(0, 3.55, -7.6);
+const CAM_LOOK = new Vector3(0, 0.28, 24);
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -75,10 +84,10 @@ function skyMap(): CanvasTexture {
   tex.colorSpace = SRGBColorSpace;
   if (!ctx) return tex;
   const g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0, "#59636c");
-  g.addColorStop(0.42, "#6d7780");
-  g.addColorStop(0.62, "#8e979f");
-  g.addColorStop(1, "#6a736c");
+  g.addColorStop(0, "#7e8892");
+  g.addColorStop(0.46, "#8d969f");
+  g.addColorStop(0.7, "#a3abb3");
+  g.addColorStop(1, "#8a938c");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 8, 256);
   tex.needsUpdate = true;
@@ -199,6 +208,22 @@ function ParkedStudio() {
   );
 }
 
+/** Unlit diorama colors. ACES would crush the gray road back to black. */
+function DrivingGrade() {
+  const gl = useThree((s) => s.gl);
+  useLayoutEffect(() => {
+    const prevMapping = gl.toneMapping;
+    const prevExposure = gl.toneMappingExposure;
+    gl.toneMapping = NoToneMapping;
+    gl.toneMappingExposure = 1;
+    return () => {
+      gl.toneMapping = prevMapping;
+      gl.toneMappingExposure = prevExposure;
+    };
+  }, [gl]);
+  return null;
+}
+
 /** Chase camera for the driving world; snaps immediately when frozen for QA stills. */
 function EgoCamera() {
   const snapped = useRef(false);
@@ -222,16 +247,18 @@ function DrivingWorld() {
 
   return (
     <>
+      <DrivingGrade />
       <color attach="background" args={[WORLD]} />
-      <fog attach="fog" args={[WORLD, 48, 190]} />
+      <fog attach="fog" args={[WORLD, 70, 220]} />
       <SkyDome />
       <EgoCamera />
-      <hemisphereLight args={["#f7f8fa", "#8a928c", 0.9]} />
-      <ambientLight intensity={0.72} />
-      <directionalLight position={[6, 18, 8]} intensity={1.05} castShadow={false} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 20]} receiveShadow>
+      <hemisphereLight args={["#ffffff", "#c5ccd4", 0.55]} />
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[0, 8, -14]} intensity={1.8} color="#fff5f2" />
+      <directionalLight position={[5, 6, 8]} intensity={0.55} color="#d5e2ee" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 20]}>
         <circleGeometry args={[360, 48]} />
-        <meshStandardMaterial color={VERGE} roughness={0.96} />
+        <meshBasicMaterial color={VERGE} />
       </mesh>
       {route ? (
         <EgoFrame>

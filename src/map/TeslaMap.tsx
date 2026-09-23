@@ -32,6 +32,34 @@ function emptyPoint() {
   };
 }
 
+/** OpenFreeMap dark is near-black. Tesla nav is charcoal with a visible street grid. */
+function paintNavChrome(map: maplibregl.Map): void {
+  const set = (id: string, prop: string, value: string | number) => {
+    if (map.getLayer(id)) map.setPaintProperty(id, prop, value);
+  };
+  set("background", "background-color", "#232a33");
+  set("water", "fill-color", "#1a2836");
+  set("waterway", "line-color", "#1a2836");
+  set("landuse_residential", "fill-color", "#2a313b");
+  set("landuse_residential", "fill-opacity", 0.85);
+  set("landuse_park", "fill-color", "#2a3830");
+  set("landcover_wood", "fill-color", "#24312a");
+  set("building", "fill-color", "#343c48");
+  set("building", "fill-outline-color", "#46505c");
+  set("highway_path", "line-color", "#4a5562");
+  set("highway_minor", "line-color", "#7d8796");
+  set("highway_major_casing", "line-color", "#1e2630");
+  set("highway_major_inner", "line-color", "#c5ced8");
+  set("highway_major_subtle", "line-color", "#8b97a6");
+  set("highway_motorway_casing", "line-color", "#1c2838");
+  set("highway_motorway_inner", "line-color", "#e4ebf3");
+  set("highway_motorway_subtle", "line-color", "#9aa6b6");
+  set("highway_name_other", "text-color", "#d5dde6");
+  set("highway_name_other", "text-halo-color", "#232a33");
+  set("highway_name_motorway", "text-color", "#f2f5f8");
+  set("highway_name_motorway", "text-halo-color", "#232a33");
+}
+
 function ensureLayers(map: maplibregl.Map): void {
   if (!map.getSource("route")) {
     map.addSource("route", { type: "geojson", data: EMPTY });
@@ -190,6 +218,7 @@ export function TeslaMap({ compact = false, bare = false }: { compact?: boolean;
       .addTo(map);
     markerRef.current = marker;
     const onReady = () => {
+      if (!compact) paintNavChrome(map);
       const s = useVehicle.getState();
       paintRoute(map, s.route, s.destination?.lng, s.destination?.lat);
       if (s.ui.tracking) {

@@ -5,7 +5,7 @@ import { Box3, BoxGeometry, Group, Mesh, MeshPhysicalMaterial, Object3D, Quatern
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
-import { applyCarMaterials } from "./carMaterials";
+import { applyCarMaterials, PAINT_NATA_RED } from "./carMaterials";
 import { splitGreenhouseGlass } from "./glassPanes";
 import { HOTSPOT_PINS } from "./hotspots";
 import { ParkedHotspots } from "./ParkedHotspots";
@@ -158,7 +158,7 @@ export function Model3({
   const car = useMemo(() => extractCar(gltf.scene), [gltf.scene]);
 
   useEffect(() => {
-    applyCarMaterials(car, lit, parked);
+    applyCarMaterials(car, lit, parked, parked ? PAINT_NATA_RED : "#e1252e");
   }, [car, lit, parked]);
 
   useEffect(() => {

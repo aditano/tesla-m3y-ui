@@ -62,7 +62,7 @@ Target is the center display in customer cars on software **2026.14** (Highland 
 - Parked home is a **rear three-quarter** of the Model 3 on a light floor, whole car in frame, CC-BY mesh (~94k faces), candy Ultra Red, light dock, TRUNK card. Score: **PARTIAL** vs `nata-parked-car-vis.jpg`. Front well cutout and side-glass openings remain. See `docs/qa/MESH_REVIEW.md`.
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - Park status-bar order and parked Auto Shift remain **PARTIAL**. All Apps is a folder of four glyphs.
-- FSD viz shares the map pose. The driving frame is a low chase down a street: gray building masses, dark asphalt, white lane lines, a blue ego lane, traffic with amber lamps, speed and a hairline power bar, and a full-width media player (title left, art right) on the viz. Not an occupancy mesh.
+- FSD viz shares the map pose. The driving frame is an unlit gray street: building masses, mid-gray asphalt, white lane lines, a blue ego lane, traffic with amber lamps, speed and a hairline power bar, and a translucent media player (title left, art right) on the viz. The nav map is charcoal with the street grid visible. Not an occupancy mesh.
 - Media player puts the title left and art right, with a thick scrubber. Dock climate and Controls are still not pixel matches.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.
