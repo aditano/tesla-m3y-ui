@@ -1,20 +1,56 @@
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import type { Group } from "three";
-import { Color, DoubleSide } from "three";
+import { CanvasTexture, Color, DoubleSide, SRGBColorSpace } from "three";
 import { LANE_WIDTH_M } from "../geo/constants";
 import { densifyRoute, egoWorldShift, isTurnManeuver, offsetAlongHeading } from "../geo/ego";
 import { closestTraveledM, indexFor, interpolate, lngLatToLocal } from "../geo/polyline";
 import { useVehicle } from "../state/store";
 import type { RoutePlan } from "../state/types";
+import { cityBlocksAlong } from "./cityDressing";
 import { Model3 } from "./Model3";
 import { dashedRibbonArrays, mergeRibbons, offsetSides, ribbonArrays, type XZ } from "./roadGeometry";
 
-const ROAD = new Color("#2a3038");
-const SHOULDER = new Color("#3a424c");
-const PATH = new Color("#3a78e0");
-const LINE = new Color("#f4f7fb");
+const ROAD = new Color("#3a424c");
+const SHOULDER = new Color("#4a524c");
+const VERGE = new Color("#3c4640");
+const PATH = new Color("#3d7fe8");
+const LINE = new Color("#f7f8fa");
 const AMBER = "#ff9f1a";
+/** Three-and-a-bit lanes. Wider than this and a chase camera never sees the curb. */
+const ROAD_HALF_M = LANE_WIDTH_M * 2.05;
+
+let facadeTex: CanvasTexture | null = null;
+
+function buildingFacade(): CanvasTexture {
+  if (facadeTex) return facadeTex;
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  const tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  if (!ctx) {
+    facadeTex = tex;
+    return tex;
+  }
+  ctx.fillStyle = "#c5ced6";
+  ctx.fillRect(0, 0, 128, 256);
+  ctx.fillStyle = "#aeb8c0";
+  ctx.fillRect(0, 0, 128, 10);
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 4; col++) {
+      const n = (row * 5 + col * 3) % 13;
+      ctx.fillStyle = n === 0 ? "#efe2c4" : "#8b97a2";
+      ctx.fillRect(12 + col * 28, 18 + row * 24, 16, 11);
+    }
+  }
+  ctx.fillStyle = "#8d98a2";
+  ctx.fillRect(0, 228, 128, 28);
+  tex.needsUpdate = true;
+  facadeTex = tex;
+  return tex;
+}
 
 export type TurnLamp = "left" | "right" | "off";
 
@@ -68,17 +104,24 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
     const index = indexFor(route.coords);
     const lo = traveledBucket - 90;
     const hi = traveledBucket + 260;
-    const pts: XZ[] = densifyRoute(index)
-      .filter((s) => s.traveledM >= lo && s.traveledM <= hi)
+    const samples = densifyRoute(index).filter((s) => s.traveledM >= lo && s.traveledM <= hi);
+    const pts: XZ[] = samples.map((s) => {
+      const p = lngLatToLocal(s.position, origin);
+      return { x: p.x, z: p.z };
+    });
+    if (pts.length < 2) return null;
+    const ahead = samples
+      .filter((s) => s.traveledM >= traveledBucket + 6)
       .map((s) => {
         const p = lngLatToLocal(s.position, origin);
         return { x: p.x, z: p.z };
       });
-    if (pts.length < 2) return null;
-    const asphalt = offsetSides(pts, LANE_WIDTH_M * 2.05);
-    const path = offsetSides(pts, 1.45);
-    const leftShoulder = offsetSides(asphalt.left, 1.15);
-    const rightShoulder = offsetSides(asphalt.right, 1.15);
+    const asphalt = offsetSides(pts, ROAD_HALF_M);
+    const path = offsetSides(ahead.length > 2 ? ahead : pts, 1.55);
+    const leftShoulder = offsetSides(asphalt.left, 1.7);
+    const rightShoulder = offsetSides(asphalt.right, 1.7);
+    const leftVerge = offsetSides(leftShoulder.left, 2.4);
+    const rightVerge = offsetSides(rightShoulder.right, 2.4);
     const leftCurb = offsetSides(asphalt.left, 0.07);
     const rightCurb = offsetSides(asphalt.right, 0.07);
     const laneSep = offsetSides(pts, LANE_WIDTH_M * 0.5);
@@ -89,16 +132,20 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
         ribbonArrays(leftShoulder.left, leftShoulder.right, 0.012),
         ribbonArrays(rightShoulder.left, rightShoulder.right, 0.012),
       ]),
+      verge: mergeRibbons([
+        ribbonArrays(leftVerge.left, leftVerge.right, 0.006),
+        ribbonArrays(rightVerge.left, rightVerge.right, 0.006),
+      ]),
       path: ribbonArrays(path.left, path.right, 0.045),
       edges: mergeRibbons([
         ribbonArrays(leftCurb.left, leftCurb.right, 0.055),
         ribbonArrays(rightCurb.left, rightCurb.right, 0.055),
       ]),
       dashes: mergeRibbons([
-        dashedRibbonArrays(laneSep.left, 0.08, 0.06),
-        dashedRibbonArrays(laneSep.right, 0.08, 0.06),
-        dashedRibbonArrays(outerLane.left, 0.07, 0.06, 2.4, 4.8),
-        dashedRibbonArrays(outerLane.right, 0.07, 0.06, 2.4, 4.8),
+        dashedRibbonArrays(laneSep.left, 0.14, 0.07, 3.2, 5.2),
+        dashedRibbonArrays(laneSep.right, 0.14, 0.07, 3.2, 5.2),
+        dashedRibbonArrays(outerLane.left, 0.12, 0.065, 3.2, 5.6),
+        dashedRibbonArrays(outerLane.right, 0.12, 0.065, 3.2, 5.6),
       ]),
     };
   }, [route, traveledBucket]);
@@ -107,15 +154,16 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
 
   return (
     <group>
+      <MeshRibbon positions={geom.verge.positions} normals={geom.verge.normals} color={VERGE} />
       <MeshRibbon positions={geom.shoulders.positions} normals={geom.shoulders.normals} color={SHOULDER} />
       <MeshRibbon positions={geom.road.positions} normals={geom.road.normals} color={ROAD} />
       <MeshRibbon
         positions={geom.path.positions}
         normals={geom.path.normals}
         color={PATH}
-        opacity={0.88}
+        opacity={0.78}
         emissive={PATH}
-        emissiveIntensity={0.12}
+        emissiveIntensity={0.28}
       />
       <MeshRibbon
         positions={geom.edges.positions}
@@ -131,6 +179,42 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
         emissive={LINE}
         emissiveIntensity={0.22}
       />
+    </group>
+  );
+}
+
+const FACADE = ["#e6ebef", "#f2f4f6", "#d5dbe0", "#eceff2", "#dde3e8"];
+
+export function CityBlocks({ route }: { route: RoutePlan }) {
+  const traveledBucket = useVehicle((s) => Math.round(s.pose.traveledM / 40) * 40);
+  const blocks = useMemo(() => {
+    const origin: [number, number] = route.coords[0];
+    const index = indexFor(route.coords);
+    const pts = densifyRoute(index)
+      .filter((s) => s.traveledM >= traveledBucket - 30 && s.traveledM <= traveledBucket + 240)
+      .map((s) => {
+        const p = lngLatToLocal(s.position, origin);
+        return { x: p.x, z: p.z };
+      });
+    return cityBlocksAlong(pts);
+  }, [route, traveledBucket]);
+  const map = useMemo(() => buildingFacade(), []);
+
+  return (
+    <group>
+      {blocks.map((b, i) => (
+        <mesh key={`${b.x.toFixed(1)}-${b.z.toFixed(1)}-${i}`} position={[b.x, b.h / 2, b.z]} rotation={[0, b.yaw, 0]}>
+          <boxGeometry args={[b.w, b.h, b.d]} />
+          <meshStandardMaterial
+            map={map}
+            color={FACADE[i % FACADE.length]}
+            emissive="#9aa3ab"
+            emissiveIntensity={0.35}
+            roughness={0.92}
+            metalness={0}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -166,43 +250,60 @@ function placeTraffic(route: RoutePlan, car: Group, slot: { offsetM: number; lan
 
 function TrafficCar({ color, signal }: { color: string; signal: TurnLamp }) {
   const lampX = signal === "left" ? -0.72 : 0.72;
+  const paint = { color, metalness: 0.45, roughness: 0.38 };
   return (
     <group>
       {[
-        [-0.78, 1.35],
-        [0.78, 1.35],
-        [-0.78, -1.35],
-        [0.78, -1.35],
+        [-0.78, 1.45],
+        [0.78, 1.45],
+        [-0.78, -1.45],
+        [0.78, -1.45],
       ].map(([x, z]) => (
-        <mesh key={`${x}-${z}`} position={[x, 0.28, z]} rotation={[0, 0, Math.PI / 2]} castShadow>
-          <cylinderGeometry args={[0.32, 0.32, 0.22, 12]} />
+        <mesh key={`${x}-${z}`} position={[x, 0.28, z]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.32, 0.32, 0.24, 12]} />
           <meshStandardMaterial color="#14161a" roughness={0.92} />
         </mesh>
       ))}
-      <mesh position={[0, 0.48, 0.15]} castShadow>
-        <boxGeometry args={[1.78, 0.42, 4.35]} />
-        <meshStandardMaterial color={color} metalness={0.55} roughness={0.32} />
+      <mesh position={[0, 0.46, 0.05]}>
+        <boxGeometry args={[1.76, 0.38, 4.2]} />
+        <meshStandardMaterial {...paint} />
       </mesh>
-      <mesh position={[0, 0.92, -0.2]} castShadow>
-        <boxGeometry args={[1.58, 0.46, 2.05]} />
-        <meshStandardMaterial color="#141920" metalness={0.15} roughness={0.08} />
+      <mesh position={[0, 0.72, 1.15]}>
+        <boxGeometry args={[1.68, 0.22, 1.35]} />
+        <meshStandardMaterial {...paint} />
       </mesh>
-      <mesh position={[0, 0.52, 2.4]}>
-        <boxGeometry args={[1.2, 0.1, 0.06]} />
-        <meshStandardMaterial color="#f4f7ff" emissive="#f4f7ff" emissiveIntensity={1.4} />
+      <mesh position={[0, 0.78, -1.35]}>
+        <boxGeometry args={[1.68, 0.28, 1.15]} />
+        <meshStandardMaterial {...paint} />
       </mesh>
-      <mesh position={[0, 0.5, -2.4]}>
-        <boxGeometry args={[1.2, 0.09, 0.06]} />
-        <meshStandardMaterial color="#ff3b3b" emissive="#ff2a2a" emissiveIntensity={1.1} />
+      <mesh position={[0, 1.02, -0.15]}>
+        <boxGeometry args={[1.58, 0.48, 1.85]} />
+        <meshStandardMaterial color="#12161c" metalness={0.2} roughness={0.12} />
       </mesh>
+      <mesh position={[0, 1.08, 0.82]} rotation={[-0.45, 0, 0]}>
+        <boxGeometry args={[1.42, 0.36, 0.06]} />
+        <meshStandardMaterial color="#9eb0c4" metalness={0.6} roughness={0.08} />
+      </mesh>
+      {[-0.62, 0.62].map((x) => (
+        <mesh key={`tail-${x}`} position={[x, 0.58, -2.16]}>
+          <boxGeometry args={[0.28, 0.1, 0.06]} />
+          <meshStandardMaterial color="#ff3b3b" emissive="#ff2a2a" emissiveIntensity={1.6} />
+        </mesh>
+      ))}
+      {[-0.58, 0.58].map((x) => (
+        <mesh key={`head-${x}`} position={[x, 0.58, 2.16]}>
+          <boxGeometry args={[0.22, 0.08, 0.05]} />
+          <meshStandardMaterial color="#f4f7ff" emissive="#f4f7ff" emissiveIntensity={1.5} />
+        </mesh>
+      ))}
       {signal === "off" ? null : (
         <group>
-          <mesh position={[lampX, 0.62, 2.46]}>
-            <boxGeometry args={[0.46, 0.16, 0.1]} />
+          <mesh position={[lampX, 0.64, 2.48]}>
+            <boxGeometry args={[0.42, 0.14, 0.08]} />
             <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={6} toneMapped={false} />
           </mesh>
-          <mesh position={[lampX, 0.58, -2.46]}>
-            <boxGeometry args={[0.46, 0.16, 0.1]} />
+          <mesh position={[lampX, 0.6, -2.48]}>
+            <boxGeometry args={[0.42, 0.14, 0.08]} />
             <meshStandardMaterial color={AMBER} emissive={AMBER} emissiveIntensity={5} toneMapped={false} />
           </mesh>
         </group>

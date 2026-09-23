@@ -1,7 +1,18 @@
 import { etaClock, etaSeconds, formatDistance, formatDuration } from "../geo/polyline";
 import { upcomingManeuverIndex } from "../geo/osrm";
 import { useVehicle } from "../state/store";
-import { IconArrive, IconPause, IconPlay, IconSkip, IconStraight, IconTurnLeft, IconTurnRight } from "./Icons";
+import {
+  IconArrive,
+  IconPause,
+  IconPlay,
+  IconRepeat,
+  IconShuffle,
+  IconSkip,
+  IconSkipBack,
+  IconStraight,
+  IconTurnLeft,
+  IconTurnRight,
+} from "./Icons";
 import type { Maneuver } from "../state/types";
 
 function TurnGlyph({ m }: { m: Maneuver }) {
@@ -73,18 +84,43 @@ export function DriveOverlay({ expanded }: { expanded: boolean }) {
             <div className="media-art" />
           </button>
           <div className="drive-media-actions">
+            <button type="button" title="Previous" onClick={() => skipTrack(-1)}>
+              <IconSkipBack width={22} height={22} />
+            </button>
             <button
               type="button"
               title={media.playing ? "Pause" : "Play"}
               onClick={() => patchMedia({ playing: !media.playing })}
             >
-              {media.playing ? <IconPause width={18} height={18} /> : <IconPlay width={18} height={18} />}
+              {media.playing ? <IconPause width={26} height={26} /> : <IconPlay width={26} height={26} />}
             </button>
             <button type="button" title="Next" onClick={() => skipTrack(1)}>
-              <IconSkip width={18} height={18} />
+              <IconSkip width={22} height={22} />
+            </button>
+            <button
+              type="button"
+              className={media.shuffle ? "on" : ""}
+              title="Shuffle"
+              onClick={() => patchMedia({ shuffle: !media.shuffle })}
+            >
+              <IconShuffle width={20} height={20} />
+            </button>
+            <button
+              type="button"
+              className={media.repeat !== "off" ? "on" : ""}
+              title="Repeat"
+              onClick={() =>
+                patchMedia({
+                  repeat: media.repeat === "off" ? "all" : media.repeat === "all" ? "one" : "off",
+                })
+              }
+            >
+              <IconRepeat width={20} height={20} />
             </button>
           </div>
-          <i className="drive-media-progress" style={{ width: `${Math.round(media.progress * 100)}%` }} />
+          <div className="drive-media-progress" aria-hidden="true">
+            <i style={{ width: `${Math.round(media.progress * 100)}%` }} />
+          </div>
         </div>
       )}
     </div>

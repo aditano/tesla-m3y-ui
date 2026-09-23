@@ -5,22 +5,23 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3 } from "three";
+import { ACESFilmicToneMapping, BackSide, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3 } from "three";
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import { useVehicle } from "../state/store";
 import { Model3 } from "./Model3";
 import { powerNorm } from "./driveHud";
-import { EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
+import { CityBlocks, EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
 import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio";
 
 RectAreaLightUniformsLib.init();
 
-/** Flat gray driving world from the published FSD stills. */
-const WORLD = "#8d959e";
-const DRIVE_FOV = 30;
-const CAM_POS = new Vector3(0, 5.05, -9.4);
-const CAM_LOOK = new Vector3(0, 0.32, 18);
+/** Horizon gray. Asphalt is the road; the verge is everything beside it. */
+const WORLD = "#7d868f";
+const VERGE = "#3e4744";
+const DRIVE_FOV = 42;
+const CAM_POS = new Vector3(0, 2.35, -5.35);
+const CAM_LOOK = new Vector3(0, 0.62, 16);
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -63,6 +64,35 @@ function ParkedEnvironment() {
     };
   }, [gl, scene]);
   return null;
+}
+
+function skyMap(): CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 8;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  const tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  if (!ctx) return tex;
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, "#59636c");
+  g.addColorStop(0.42, "#6d7780");
+  g.addColorStop(0.62, "#8e979f");
+  g.addColorStop(1, "#6a736c");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 8, 256);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function SkyDome() {
+  const map = useMemo(() => skyMap(), []);
+  return (
+    <mesh frustumCulled={false} renderOrder={-1}>
+      <sphereGeometry args={[280, 28, 18]} />
+      <meshBasicMaterial map={map} side={BackSide} fog={false} depthWrite={false} />
+    </mesh>
+  );
 }
 
 function lookAtPoint(light: RectAreaLight | null, x: number, y: number, z: number): void {
@@ -193,23 +223,35 @@ function DrivingWorld() {
   return (
     <>
       <color attach="background" args={[WORLD]} />
-      <fog attach="fog" args={[WORLD, 24, 96]} />
+      <fog attach="fog" args={[WORLD, 48, 190]} />
+      <SkyDome />
       <EgoCamera />
-      <hemisphereLight args={["#eef2f6", "#6a737c", 0.72]} />
-      <ambientLight intensity={0.48} />
-      <directionalLight position={[8, 16, 4]} intensity={0.7} castShadow={false} />
+      <hemisphereLight args={["#f7f8fa", "#8a928c", 0.9]} />
+      <ambientLight intensity={0.72} />
+      <directionalLight position={[6, 18, 8]} intensity={1.05} castShadow={false} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 20]} receiveShadow>
         <circleGeometry args={[360, 48]} />
-        <meshStandardMaterial color={WORLD} roughness={1} />
+        <meshStandardMaterial color={VERGE} roughness={0.96} />
       </mesh>
       {route ? (
         <EgoFrame>
           <RouteRoad route={route} />
+          <CityBlocks route={route} />
           {fsd ? <TrafficPack route={route} /> : null}
           <SignalProps route={route} />
         </EgoFrame>
       ) : null}
       <EgoCar />
+      <ContactShadows
+        opacity={0.55}
+        scale={9}
+        blur={2.1}
+        far={2.2}
+        frames={1}
+        resolution={512}
+        color="#0c0e10"
+        position={[0, 0.02, 0.2]}
+      />
     </>
   );
 }
@@ -283,7 +325,7 @@ export function FsdCanvas() {
           preserveDrawingBuffer: frozen,
           failIfMajorPerformanceCaveat: false,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: parked ? 1.06 : 1.14,
+          toneMappingExposure: parked ? 1.08 : 1.28,
           outputColorSpace: SRGBColorSpace,
         }}
         camera={{ fov: DRIVE_FOV, position: [CAM_POS.x, CAM_POS.y, CAM_POS.z], near: 0.1, far: 420 }}

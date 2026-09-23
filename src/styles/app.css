@@ -153,7 +153,7 @@ button {
 .viz-pane {
   position: relative;
   min-width: 220px;
-  background: #8d959e;
+  background: #7d868f;
   overflow: hidden;
 }
 
@@ -1675,8 +1675,8 @@ button {
 
 .hud-cluster {
   position: absolute;
-  left: 22px;
-  top: 26%;
+  left: 18px;
+  top: 12%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1830,13 +1830,13 @@ button {
 
 .drive-overlay {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   z-index: 4;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
   pointer-events: none;
 }
@@ -1848,8 +1848,8 @@ button {
 .drive-nav,
 .drive-media {
   pointer-events: auto;
-  width: min(520px, 100%);
-  background: rgba(12, 14, 18, 0.72);
+  width: 100%;
+  background: rgba(16, 16, 16, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   backdrop-filter: blur(16px);
@@ -1904,25 +1904,27 @@ button {
 
 .drive-media {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  padding: 8px 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 16px 16px 18px;
   overflow: hidden;
+  border-radius: 18px;
 }
 
 .drive-media-main {
   display: grid;
-  grid-template-columns: 1fr 64px;
-  gap: 12px;
+  grid-template-columns: 1fr 132px;
+  gap: 16px;
   align-items: center;
   min-width: 0;
   text-align: left;
 }
 
 .drive-media-main .media-art {
-  width: 64px;
-  height: 64px;
+  width: 132px;
+  height: 132px;
   border-radius: 8px;
 }
 
@@ -1935,14 +1937,16 @@ button {
 }
 
 .drive-media-main strong {
-  font-size: 22px;
+  font-size: 34px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
 .drive-media-main span span {
   color: #c5ccd6;
-  font-size: 12px;
+  font-size: 15px;
+  margin-top: 4px;
 }
 
 .drive-media-actions {
@@ -1952,19 +1956,33 @@ button {
 }
 
 .drive-media-actions button {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   color: #fff;
 }
 
+.drive-media-actions button.on {
+  color: #8eb6ff;
+}
+
 .drive-media-progress {
   position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 4px;
+  left: 18px;
+  right: 18px;
+  bottom: 10px;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+
+.drive-media-progress i {
+  display: block;
+  height: 100%;
   background: #fff;
+  border-radius: 99px;
 }
 
 .map-tools {
