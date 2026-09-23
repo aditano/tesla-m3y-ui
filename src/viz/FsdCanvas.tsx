@@ -28,9 +28,9 @@ RectAreaLightUniformsLib.init();
 /** Flat FSD grade. The road, lanes, and blocks are unlit so they stay in this gray. */
 const WORLD = "#97a0a8";
 const VERGE = "#667068";
-const DRIVE_FOV = 36;
-const CAM_POS = new Vector3(0, 3.55, -7.6);
-const CAM_LOOK = new Vector3(0, 0.28, 24);
+const DRIVE_FOV = 32;
+const CAM_POS = new Vector3(0, 2.15, -5.35);
+const CAM_LOOK = new Vector3(0, 0.85, 16);
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -298,8 +298,6 @@ function VizHud() {
 
   const up = Math.max(0, norm);
   const down = Math.max(0, -norm);
-  const status = phase === "fsd" ? "Self-Driving" : phase === "disengaged" ? "Disengaged" : "mph";
-
   return (
     <div className="hud">
       <div className="hud-cluster">
@@ -310,7 +308,7 @@ function VizHud() {
         </div>
         <div className="hud-speed" aria-label={`${Math.round(pose.speedMph)} miles per hour`}>
           <div className="mph">{Math.round(pose.speedMph)}</div>
-          <div className={phase === "fsd" ? "label" : "label muted"}>{status}</div>
+          <div className="label">mph</div>
         </div>
       </div>
       <div className="road-badges">

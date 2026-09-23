@@ -15,6 +15,15 @@ import {
 } from "./Icons";
 import type { Maneuver } from "../state/types";
 
+const TRACK_SECONDS = 214;
+
+function formatClock(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
 function TurnGlyph({ m }: { m: Maneuver }) {
   if (m.type === "arrive") return <IconArrive width={22} height={22} />;
   const mod = m.modifier ?? "";
@@ -118,8 +127,12 @@ export function DriveOverlay({ expanded }: { expanded: boolean }) {
               <IconRepeat width={20} height={20} />
             </button>
           </div>
-          <div className="drive-media-progress" aria-hidden="true">
-            <i style={{ width: `${Math.round(media.progress * 100)}%` }} />
+          <div className="drive-media-times">
+            <span>{formatClock(media.progress * TRACK_SECONDS)}</span>
+            <div className="drive-media-progress" aria-hidden="true">
+              <i style={{ width: `${Math.round(media.progress * 100)}%` }} />
+            </div>
+            <span>−{formatClock(TRACK_SECONDS - media.progress * TRACK_SECONDS)}</span>
           </div>
         </div>
       )}

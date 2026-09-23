@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useVehicle } from "../state/store";
-import { IconAirbag, IconLock, IconPerson, IconShield, IconUnlock, IconWifi } from "./Icons";
+import { IconAirbag, IconCell, IconLock, IconPerson, IconShield, IconUnlock, IconWifi } from "./Icons";
 
 function useClock(format24: boolean): string {
   const [now, setNow] = useState(() => new Date());
@@ -63,6 +63,13 @@ export function StatusBar() {
           <IconShield />
         </button>
         <button
+          className={`status-icon ${flags.cellular ? "active" : "dim"}`}
+          title="Cellular"
+          onClick={() => patchFlags({ cellular: !flags.cellular })}
+        >
+          <IconCell />
+        </button>
+        <button
           className={`status-icon ${flags.wifi ? "active" : "dim"}`}
           title="Wi-Fi"
           onClick={() => patchFlags({ wifi: !flags.wifi })}
@@ -79,7 +86,7 @@ export function StatusBar() {
       <div className="status-right">
         <span className="status-airbag" title="Passenger airbag on">
           <IconAirbag />
-          <span>Passenger airbag on</span>
+          <span>Passenger airbag</span>
         </span>
       </div>
     </header>
