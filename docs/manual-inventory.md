@@ -38,7 +38,7 @@ Always-on landscape center display. Manual callouts (Model 3/Y Touchscreen):
 | --- | --- | --- | --- | --- | --- |
 | 1 | Status bar | Lock, weather/temp/AQI (premium), clock, driver profile (Park), Sentry shortcut, Wi‑Fi, cellular, passenger airbag, GPS-access, cabin-camera attentiveness while Self-Driving | Gear / lock / Sentry / wifi / cell / clock / range | partial — Park: lock + profile + Sentry + Wi‑Fi left; clock + outdoor temp center; passenger airbag right | chrome |
 | 2 | Navigation / map | Always on except Reverse. North Up / Heading Up, tracking, search, route | MapLibre dark OSM map, compass, search | **ok to keep** OSM stack; chrome/search placement off | maps (keep) |
-| 3 | Car status / visualization | Park: 3D vehicle, open trunks/charge port, Media / tires / Trip cards. Drive: speed, power meter, detected vehicles, proximity rays, blue Autosteer lane, speed-limit badge, set speed. Drag to expand; more detail (markings, lights, objects) when FSD Visualization Preview / FSD Supervised is on. Reverse: backup camera (out of scope). | Split Three.js pane | stub — not Highland full-screen Park; viz cheap; not synced to map | parked viz + FSD sync |
+| 3 | Car status / visualization | Park: 3D vehicle, open trunks/charge port, Media / tires / Trip cards. Drive: speed, power meter, detected vehicles, proximity rays, blue Autosteer lane, speed-limit badge, set speed. Drag to expand; more detail (markings, lights, objects) when FSD Visualization Preview / FSD Supervised is on. Reverse: backup camera (out of scope). | Split Three.js pane | partial — rear three-quarter park view; driving chase is a street (buildings, lane lines, blue lane, amber lamps, speed, hairline power bar, on-viz media player). Not an occupancy mesh | parked viz + FSD sync |
 | 4 | Drive mode strip | P R N D; swipe from driver edge. Highland Auto Shift is compact (room for gear + media). | Left PRND column always visible | partial — always-on full strip, not swipe/Auto Shift compact | chrome |
 | 5 | Controls | Overlay **on the map**. Left categories + Search at top. | Gear opens a sheet | partial — overlay on map; Search Settings; Dynamics/Charging/Trips/Wi‑Fi rail; Quick Controls tiles | chrome |
 | 6 | Climate (driver) | Temp stepper, Split, tap icon → full climate | Dock temps | partial — dock temps open compact popup (seats / defrost / slider / Split) | chrome |
@@ -69,7 +69,7 @@ https://www.tesla.com/ownersmanual/model3/en_us/GUID-01F1A582-99D1-4933-B5FB-B2F
 | Drop pin | Long-press → popup Navigate / Favorite | Click-to-set origin | partial (not long-press favorite) |
 | Search | Address, business, Home, Work, Charging, Recents, Favorites, Hungry, Lucky | Nominatim + Home/Work/Villanova | partial |
 | Turn list | ETA, duration, distance, energy remaining / round-trip, Set Arrival %, Superchargers via Trip Planner | ETA / duration / miles / turns | partial — no energy/traffic bar |
-| Trip progress | Color-coded traffic along remaining route; traveled path turns gray | Missing | missing (v12) |
+| Trip progress | Color-coded traffic along remaining route; traveled path turns gray | partial — gray traveled line on the map once moving; progress track on the turn card. No traffic colors |
 | Better route | Prompt to accept faster Online Routing | Missing | missing |
 | Cancel | Bottom of turn list | Cancel | ok |
 | Stops | Add / reorder / Search Along Route | Missing | missing |
@@ -130,7 +130,7 @@ Overlay appears **over the map**. Search is persistent at the top (2024.14). Lef
 | Navigation | Online routing, avoid tolls/ferries/highways, automatic nav | stub |
 | Safety | Sentry, Park Assist chimes, Joe Mode, Cabin Overheat, passenger airbag | partial |
 | Service | Wiper/jack/camera calibration, factory reset | stub |
-| Software | Version, Additional Vehicle Info, Name Your Vehicle, Release Notes | stub |
+| Software | Version, Additional Vehicle Info, Name Your Vehicle, Release Notes, Automatically Install Updates (2026.14) | partial — version label 2026.14.3 and the auto-install toggle |
 | Wi-Fi / Bluetooth | Status bar + Controls | stub Wi-Fi sheet |
 
 v12 also rearranged status-bar icons while Parked (profile, Wi‑Fi, Sentry closer to the driver).
@@ -147,11 +147,11 @@ Model Y PDF: expand/condense visualization by dragging the car-status area; expa
 | Enable in Park | Controls > Self-Driving > Full Self-Driving (Supervised) | stub |
 | Start | Right scroll **or** Start Self-Driving on screen; optional Brake Confirm from Park; may shift P→D/R and pull out | “Start Full Self-Driving” on route card |
 | Speed profiles | Sloth / Chill / Standard / Hurry / Mad Max | missing |
-| Visualization | Cameras → surrounding model; other vehicles, brake/turn lamps, lane color when Autosteer/FSD active, proximity rays | cheap synthetic traffic |
-| Expand | Drag car-status; mini map top-right in UI v12; media + Navigate stay | divider exists; mini-map only when almost full; media not on viz |
+| Visualization | Cameras → surrounding model; other vehicles, brake/turn lamps, lane color when Autosteer/FSD active, proximity rays | partial — blue lane, car-shaped traffic with amber turn lamps (2026.14). Simulated, not camera perception |
+| Expand | Drag car-status; mini map top-right in UI v12; media + Navigate stay | partial — divider; mini-map above ~74% with Navigate + media centered on the viz |
 | Driver attentiveness | Cabin camera icon on status bar | missing |
 | Cancel | Brake / End Self-Driving | End button |
-| Alignment | Manual: viz is the **detected road**. Recreation must keep Three.js ego on the **same polyline** MapLibre draws from OSRM | **FAIL** per Tone — other lane |
+| Alignment | Manual: viz is the **detected road**. Recreation must keep Three.js ego on the **same polyline** MapLibre draws from OSRM | ok — shared `interpolate()` pose; driven path turns gray on the map |
 
 This project must remain labeled **simulated**. No Autopilot weights, occupancy nets, or firmware.
 

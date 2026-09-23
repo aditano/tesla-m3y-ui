@@ -80,7 +80,7 @@ test.describe("visual QA harness", () => {
   test("captures FSD engaged", async ({ page }) => {
     await capture(page, "fsd-engaged");
     await expect(page.getByRole("button", { name: "End Self-Driving" }).first()).toBeVisible();
-    await expect(page.locator(".hud-speed .label")).toContainText("Self-Driving");
+    await expect(page.locator(".hud-speed .label")).toHaveText("mph");
   });
 
   test("captures Controls open", async ({ page }) => {

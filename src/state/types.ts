@@ -178,6 +178,7 @@ export interface VehicleFlags {
   autosteer: boolean;
   trafficControl: boolean;
   visualizationPreview: boolean;
+  autoInstallUpdates: boolean;
   wiperService: boolean;
   jackMode: boolean;
   cameraCalibrating: boolean;

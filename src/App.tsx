@@ -10,6 +10,7 @@ import { ClimatePanel } from "./chrome/ClimatePanel";
 import { MediaPanel } from "./chrome/MediaPanel";
 import { AppLauncher } from "./chrome/AppLauncher";
 import { markQaReady } from "./qa/applyScene";
+import { DriveOverlay } from "./chrome/DriveOverlay";
 import { NavSearch } from "./chrome/NavSearch";
 import { ParkedMedia } from "./chrome/ParkedMedia";
 import { PortraitHotspots } from "./chrome/PortraitHotspots";
@@ -173,11 +174,12 @@ export default function App() {
               <Suspense fallback={<div className="busy">Loading visualization…</div>}>
                 <FsdCanvas />
               </Suspense>
+              {parked ? null : <DriveOverlay expanded={mini} />}
               {parked ? null : <VizDivider />}
               {mini ? (
                 <div className={`map-pane mini ${parked ? "parked" : ""}`}>
                   <Suspense fallback={<div className="busy">Loading map…</div>}>
-                    <TeslaMap compact={parked} />
+                    <TeslaMap compact={parked} bare={!parked} />
                   </Suspense>
                 </div>
               ) : null}

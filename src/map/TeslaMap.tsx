@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
+import { indexFor, splitAtMeters } from "../geo/polyline";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
 import { RouteCard } from "../chrome/RouteCard";
@@ -31,6 +32,34 @@ function emptyPoint() {
   };
 }
 
+/** OpenFreeMap dark is near-black. Tesla nav is charcoal with a visible street grid. */
+function paintNavChrome(map: maplibregl.Map): void {
+  const set = (id: string, prop: string, value: string | number) => {
+    if (map.getLayer(id)) map.setPaintProperty(id, prop, value);
+  };
+  set("background", "background-color", "#232a33");
+  set("water", "fill-color", "#1a2836");
+  set("waterway", "line-color", "#1a2836");
+  set("landuse_residential", "fill-color", "#2a313b");
+  set("landuse_residential", "fill-opacity", 0.85);
+  set("landuse_park", "fill-color", "#2a3830");
+  set("landcover_wood", "fill-color", "#24312a");
+  set("building", "fill-color", "#343c48");
+  set("building", "fill-outline-color", "#46505c");
+  set("highway_path", "line-color", "#4a5562");
+  set("highway_minor", "line-color", "#7d8796");
+  set("highway_major_casing", "line-color", "#1e2630");
+  set("highway_major_inner", "line-color", "#c5ced8");
+  set("highway_major_subtle", "line-color", "#8b97a6");
+  set("highway_motorway_casing", "line-color", "#1c2838");
+  set("highway_motorway_inner", "line-color", "#e4ebf3");
+  set("highway_motorway_subtle", "line-color", "#9aa6b6");
+  set("highway_name_other", "text-color", "#d5dde6");
+  set("highway_name_other", "text-halo-color", "#232a33");
+  set("highway_name_motorway", "text-color", "#f2f5f8");
+  set("highway_name_motorway", "text-halo-color", "#232a33");
+}
+
 function ensureLayers(map: maplibregl.Map): void {
   if (!map.getSource("route")) {
     map.addSource("route", { type: "geojson", data: EMPTY });
@@ -55,6 +84,19 @@ function ensureLayers(map: maplibregl.Map): void {
       paint: { "line-color": "#5aa7ff", "line-width": 8, "line-opacity": 1 },
       layout: { "line-cap": "round", "line-join": "round" },
     });
+  }
+  if (!map.getSource("route-traveled")) {
+    map.addSource("route-traveled", { type: "geojson", data: EMPTY });
+    map.addLayer(
+      {
+        id: "route-traveled",
+        type: "line",
+        source: "route-traveled",
+        paint: { "line-color": "#9aa3ad", "line-width": 7, "line-opacity": 0.95 },
+        layout: { "line-cap": "round", "line-join": "round" },
+      },
+      map.getLayer("route-glow") ? "route-glow" : undefined,
+    );
   }
   if (!map.getSource("dest")) {
     map.addSource("dest", { type: "geojson", data: emptyPoint() });
@@ -91,16 +133,37 @@ function trackingView(state: CamState, zoom: number) {
   };
 }
 
-function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: number, destLat?: number): void {
+function lineData(coordinates: [number, number][]) {
+  return {
+    type: "Feature" as const,
+    properties: {},
+    geometry: { type: "LineString" as const, coordinates },
+  };
+}
+
+function updateRouteLines(map: maplibregl.Map, route: RoutePlan | null, traveledM: number): void {
   ensureLayers(map);
-  const src = map.getSource("route") as maplibregl.GeoJSONSource;
-  const destSrc = map.getSource("dest") as maplibregl.GeoJSONSource;
+  const src = map.getSource("route") as maplibregl.GeoJSONSource | undefined;
+  const traveledSrc = map.getSource("route-traveled") as maplibregl.GeoJSONSource | undefined;
+  if (!src || !traveledSrc) return;
   if (!route) {
     src.setData(EMPTY);
+    traveledSrc.setData(EMPTY);
+    return;
+  }
+  const parts = splitAtMeters(indexFor(route.coords), traveledM);
+  src.setData(lineData(parts.remaining.length > 1 ? parts.remaining : []));
+  traveledSrc.setData(lineData(parts.traveled.length > 1 ? parts.traveled : []));
+}
+
+function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: number, destLat?: number): void {
+  ensureLayers(map);
+  const destSrc = map.getSource("dest") as maplibregl.GeoJSONSource;
+  updateRouteLines(map, route, useVehicle.getState().pose.traveledM);
+  if (!route) {
     destSrc.setData(emptyPoint());
     return;
   }
-  src.setData({ type: "Feature", properties: {}, geometry: route.geometry });
   if (destLng != null && destLat != null) {
     destSrc.setData({
       type: "Feature",
@@ -115,7 +178,7 @@ function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: numb
   map.fitBounds(b, { padding: { top: 56, left: 80, right: 48, bottom: 88 }, duration, maxZoom: 14.8 });
 }
 
-export function TeslaMap({ compact = false }: { compact?: boolean }) {
+export function TeslaMap({ compact = false, bare = false }: { compact?: boolean; bare?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -155,6 +218,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
       .addTo(map);
     markerRef.current = marker;
     const onReady = () => {
+      if (!compact) paintNavChrome(map);
       const s = useVehicle.getState();
       paintRoute(map, s.route, s.destination?.lng, s.destination?.lat);
       if (s.ui.tracking) {
@@ -208,6 +272,11 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
         state.ui.tracking !== prev.ui.tracking ||
         state.ui.mapOrientation !== prev.ui.mapOrientation ||
         state.phase !== prev.phase;
+      const progressMoved =
+        !prev || Math.abs(state.pose.traveledM - prev.pose.traveledM) > 6 || state.phase !== prev.phase;
+      if (progressMoved && map.isStyleLoaded()) {
+        updateRouteLines(map, state.route, state.pose.traveledM);
+      }
       if (!poseMoved) return;
       marker.setLngLat([state.pose.lng, state.pose.lat]);
       marker.setRotation(state.pose.heading);
@@ -227,13 +296,13 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       <div ref={host} style={{ position: "absolute", inset: 0 }} />
-      {compact ? null : (
+      {compact || bare ? null : (
         <>
           <RouteCard />
           <NavSearch />
         </>
       )}
-      {compact ? null : (
+      {compact || bare ? null : (
         <div className="map-tools">
         <button
           type="button"
@@ -273,7 +342,7 @@ export function TeslaMap({ compact = false }: { compact?: boolean }) {
         </button>
       </div>
       )}
-      {dest || compact ? null : (
+      {dest || compact || bare ? null : (
         <div
           style={{
             position: "absolute",

@@ -5,15 +5,32 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
-import { ACESFilmicToneMapping, CanvasTexture, PMREMGenerator, RectAreaLight, SRGBColorSpace, Vector3 } from "three";
+import {
+  ACESFilmicToneMapping,
+  BackSide,
+  CanvasTexture,
+  NoToneMapping,
+  PMREMGenerator,
+  RectAreaLight,
+  SRGBColorSpace,
+  Vector3,
+} from "three";
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
-
-RectAreaLightUniformsLib.init();
 import { useVehicle } from "../state/store";
 import { Model3 } from "./Model3";
-import { EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
+import { powerNorm } from "./driveHud";
+import { CityBlocks, EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
-import { createCandyStudioEnv, PARKED_STUDIO } from "./parkedStudio";
+import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio";
+
+RectAreaLightUniformsLib.init();
+
+/** Flat FSD grade. The road, lanes, and blocks are unlit so they stay in this gray. */
+const WORLD = "#97a0a8";
+const VERGE = "#667068";
+const DRIVE_FOV = 32;
+const CAM_POS = new Vector3(0, 2.15, -5.35);
+const CAM_LOOK = new Vector3(0, 0.85, 16);
 
 function studioFloorMap(): CanvasTexture {
   const c = document.createElement("canvas");
@@ -56,6 +73,35 @@ function ParkedEnvironment() {
     };
   }, [gl, scene]);
   return null;
+}
+
+function skyMap(): CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 8;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  const tex = new CanvasTexture(c);
+  tex.colorSpace = SRGBColorSpace;
+  if (!ctx) return tex;
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, "#7e8892");
+  g.addColorStop(0.46, "#8d969f");
+  g.addColorStop(0.7, "#a3abb3");
+  g.addColorStop(1, "#8a938c");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 8, 256);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function SkyDome() {
+  const map = useMemo(() => skyMap(), []);
+  return (
+    <mesh frustumCulled={false} renderOrder={-1}>
+      <sphereGeometry args={[280, 28, 18]} />
+      <meshBasicMaterial map={map} side={BackSide} fog={false} depthWrite={false} />
+    </mesh>
+  );
 }
 
 function lookAtPoint(light: RectAreaLight | null, x: number, y: number, z: number): void {
@@ -108,7 +154,7 @@ function ParkedStudio() {
   return (
     <>
       <color attach="background" args={[background]} />
-      <fog attach="fog" args={[background, 22, 48]} />
+      <fog attach="fog" args={[PARKED_FOG.color, PARKED_FOG.near, PARKED_FOG.far]} />
       <PerspectiveCamera
         makeDefault
         fov={camera.fov}
@@ -116,9 +162,10 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.36} />
-      <hemisphereLight args={["#f7f8fa", "#c9ccd2", 0.24]} />
-      <directionalLight position={[3.2, 6.8, -3.4]} intensity={0.28} color="#f6f5f2" />
+      <ambientLight intensity={0.55} />
+      <hemisphereLight args={["#f4f7fb", "#c5ccd4", 0.38]} />
+      <directionalLight position={[1.2, 12, -2.4]} intensity={1.35} color="#f7f8fa" />
+      <directionalLight position={[-3.2, 4.2, 3.4]} intensity={0.28} color="#d5e0ea" />
       <CPillarKeys />
       <ParkedEnvironment />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
@@ -161,8 +208,21 @@ function ParkedStudio() {
   );
 }
 
-const CAM_POS = new Vector3(0, 6.35, -11.2);
-const CAM_LOOK = new Vector3(0, 0.28, 18);
+/** Unlit diorama colors. ACES would crush the gray road back to black. */
+function DrivingGrade() {
+  const gl = useThree((s) => s.gl);
+  useLayoutEffect(() => {
+    const prevMapping = gl.toneMapping;
+    const prevExposure = gl.toneMappingExposure;
+    gl.toneMapping = NoToneMapping;
+    gl.toneMappingExposure = 1;
+    return () => {
+      gl.toneMapping = prevMapping;
+      gl.toneMappingExposure = prevExposure;
+    };
+  }, [gl]);
+  return null;
+}
 
 /** Chase camera for the driving world; snaps immediately when frozen for QA stills. */
 function EgoCamera() {
@@ -187,24 +247,38 @@ function DrivingWorld() {
 
   return (
     <>
-      <color attach="background" args={["#07090f"]} />
-      <fog attach="fog" args={["#07090f", 42, 160]} />
+      <DrivingGrade />
+      <color attach="background" args={[WORLD]} />
+      <fog attach="fog" args={[WORLD, 70, 220]} />
+      <SkyDome />
       <EgoCamera />
-      <hemisphereLight args={["#9eb6d4", "#12141c", 0.55]} />
-      <ambientLight intensity={0.42} />
-      <directionalLight position={[8, 18, 6]} intensity={1.55} castShadow={false} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 40]} receiveShadow>
-        <circleGeometry args={[220, 64]} />
-        <meshStandardMaterial color="#10131a" roughness={0.96} />
+      <hemisphereLight args={["#ffffff", "#c5ccd4", 0.55]} />
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[0, 8, -14]} intensity={1.8} color="#fff5f2" />
+      <directionalLight position={[5, 6, 8]} intensity={0.55} color="#d5e2ee" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 20]}>
+        <circleGeometry args={[360, 48]} />
+        <meshBasicMaterial color={VERGE} />
       </mesh>
       {route ? (
         <EgoFrame>
           <RouteRoad route={route} />
+          <CityBlocks route={route} />
           {fsd ? <TrafficPack route={route} /> : null}
           <SignalProps route={route} />
         </EgoFrame>
       ) : null}
       <EgoCar />
+      <ContactShadows
+        opacity={0.55}
+        scale={9}
+        blur={2.1}
+        far={2.2}
+        frames={1}
+        resolution={512}
+        color="#0c0e10"
+        position={[0, 0.02, 0.2]}
+      />
     </>
   );
 }
@@ -213,31 +287,47 @@ function VizHud() {
   const pose = useVehicle((s) => s.pose);
   const phase = useVehicle((s) => s.phase);
   const follow = useVehicle((s) => s.flags.followingDistance);
-  const disengage = useVehicle((s) => s.disengageFsd);
-  const driving = phase === "fsd" || pose.speedMph > 0.4;
+  const driving = phase === "fsd" || phase === "disengaged" || pose.speedMph > 0.4;
+  const sample = useRef({ speed: pose.speedMph, time: 0, norm: powerNorm(pose.speedMph, pose.speedMph, 0) });
+  const now = performance.now();
+  const dt = sample.current.time === 0 ? 0 : (now - sample.current.time) / 1000;
+  const norm = powerNorm(sample.current.speed, pose.speedMph, dt);
+  sample.current = { speed: pose.speedMph, time: now, norm };
 
-  if (!driving && phase !== "disengaged") return null;
+  if (!driving) return null;
 
+  const up = Math.max(0, norm);
+  const down = Math.max(0, -norm);
   return (
     <div className="hud">
-      <div className="hud-speed">
-        <div className="mph">{Math.round(pose.speedMph)}</div>
-        <div className={phase === "fsd" ? "label" : "label muted"}>
-          {phase === "fsd" ? "Self-Driving" : phase === "disengaged" ? "Disengaged" : "MPH"}
+      <div className="hud-cluster">
+        <div className="power-meter" aria-hidden="true">
+          <i className="power-up" style={{ height: `${up * 50}%` }} />
+          <i className="power-down" style={{ height: `${down * 50}%` }} />
+          <i className="power-zero" />
+        </div>
+        <div className="hud-speed" aria-label={`${Math.round(pose.speedMph)} miles per hour`}>
+          <div className="mph">{Math.round(pose.speedMph)}</div>
+          <div className="label">mph</div>
         </div>
       </div>
-      <div className="speed-limit">{Math.round(pose.speedLimitMph)}</div>
-      {phase === "fsd" ? <div className="set-speed">{Math.round(pose.setSpeedMph)}</div> : null}
-      <div className="follow-pips">
-        {Array.from({ length: 7 }, (_, i) => (
-          <i key={i} className={i < follow ? "on" : ""} />
-        ))}
+      <div className="road-badges">
+        <div className="speed-limit" title="Speed limit">
+          {Math.round(pose.speedLimitMph)}
+        </div>
+        {phase === "fsd" ? (
+          <div className="set-speed-stack">
+            <div className="set-speed" title="Set speed">
+              {Math.round(pose.setSpeedMph)}
+            </div>
+            <div className="follow-pips" title="Following distance">
+              {Array.from({ length: 7 }, (_, i) => (
+                <i key={i} className={i < follow ? "on" : ""} />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
-      {phase === "fsd" ? (
-        <button className="fsd-end" onClick={disengage}>
-          End Self-Driving
-        </button>
-      ) : null}
     </div>
   );
 }
@@ -260,10 +350,10 @@ export function FsdCanvas() {
           preserveDrawingBuffer: frozen,
           failIfMajorPerformanceCaveat: false,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: parked ? 1.02 : 1.08,
+          toneMappingExposure: parked ? 1.08 : 1.28,
           outputColorSpace: SRGBColorSpace,
         }}
-        camera={{ fov: 40, position: [0, 6.35, -11.2], near: 0.1, far: 500 }}
+        camera={{ fov: DRIVE_FOV, position: [CAM_POS.x, CAM_POS.y, CAM_POS.z], near: 0.1, far: 420 }}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (event) => {
             event.preventDefault();

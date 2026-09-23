@@ -56,4 +56,4 @@ export const ARRIVAL_RADIUS_M = 18;
 
 export const VIZ_RATIO_MIN = 0.28;
 export const VIZ_RATIO_MAX = 0.88;
-export const VIZ_RATIO_DEFAULT = 0.42;
+export const VIZ_RATIO_DEFAULT = 0.48;
