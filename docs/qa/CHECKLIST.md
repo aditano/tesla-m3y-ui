@@ -35,6 +35,7 @@ Baseline captured from this harness on 2026-09-16 (`docs/qa/screenshots/*.png`).
 | Status bar order (Park) | `nata-status-bar.jpg` | PARTIAL | Lock, profile+name, Sentry, Wi‑Fi toward the driver; clock + outdoor temp center; passenger airbag right. Cellular/range chips omitted vs some stills. |
 | PRND / Auto Shift | `nata-auto-shift.jpg` | PARTIAL | Parked is PRND header + D / top-down car / R with blue magnets (P lives in the header, not a full-height ladder). Missing nata chevron dots. Driving still uses the taller strip. |
 | Dock: My Apps + climate cluster + volume | `manual-m3-touchscreen-p8.jpg` | PARTIAL | Car + apps left, climate cluster center, volume right. Media moved off the dock onto the viz (parked media overlay). Extra app icons remain. |
+| Phone portrait (~390×844) | Mobile QA, not a Tesla phone UI | PASS | At ≤520px the dock is two rows (climate, then apps + volume). Charge/Frunk/Trunk are in-layout buttons; Navigate is full width; the disclaimer wraps inside the viewport. ≥521px, including phone landscape, keeps the single-row dock and 3D callouts. |
 | Vertical power / regen meter | `nata-regen-speedometer.jpg` | missing | Should sit left of viz while driving. |
 | Larger speed readout | `nata-regen-speedometer.jpg`, driving-status PDF | PARTIAL | HUD exists; type/size/placement off. |
 | Map orientation + tracking chip | Maps PDF p.169 | PARTIAL | Compass toggle exists; no “Tracking Disabled” chip. |
