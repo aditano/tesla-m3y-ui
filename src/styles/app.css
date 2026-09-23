@@ -2661,8 +2661,9 @@ button {
 @media (max-width: 980px) {
   .bezel {
     border-radius: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
   }
   .media-card {
     min-width: 0;
@@ -2683,5 +2684,325 @@ button {
   }
   .climate-top {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Phone portrait (≈390px). Wide landscape / desktop rules above stay intact. */
+.portrait-hotspots {
+  display: none;
+}
+
+.stage-bottom-chrome {
+  display: contents;
+}
+
+@media (max-width: 520px) {
+  .bezel,
+  .bezel.parked {
+    --dock-h: 112px;
+    --status-h: 40px;
+    --hit: 44px;
+  }
+
+  .status-bar,
+  .bottom-dock,
+  .display-main,
+  .stage,
+  .viz-pane,
+  .map-pane {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .status-bar {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    padding-right: 6px;
+  }
+
+  .status-left,
+  .status-right,
+  .status-center {
+    min-width: 0;
+  }
+
+  .status-profile span,
+  .status-airbag span {
+    display: none;
+  }
+
+  .status-profile {
+    padding-right: 4px;
+  }
+
+  .bottom-dock,
+  .bezel.parked .bottom-dock {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 48px 48px;
+    grid-template-areas:
+      "climate climate"
+      "apps volume";
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 0;
+    padding: 4px 8px 8px;
+    min-width: 0;
+  }
+
+  .climate-cluster {
+    grid-area: climate;
+    width: 100%;
+    min-width: 0;
+    justify-content: space-evenly;
+  }
+
+  .dock-left {
+    grid-area: apps;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .dock-right {
+    grid-area: volume;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .my-apps {
+    display: none;
+  }
+
+  .temp-btn {
+    min-width: 44px;
+    font-size: 20px;
+  }
+
+  .seat-btn {
+    width: 40px;
+  }
+
+  .volume-wrap {
+    min-width: 0;
+    width: min(210px, 58vw);
+    gap: 0;
+  }
+
+  .vol-step,
+  .vol-icon {
+    width: 36px;
+    height: 40px;
+    flex: none;
+  }
+
+  .volume-wrap input[type="range"] {
+    width: auto;
+    flex: 1 1 72px;
+    min-width: 64px;
+    height: 28px;
+  }
+
+  .stage {
+    flex-direction: column;
+  }
+
+  .viz-pane {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .map-pane:not(.mini) {
+    width: 100% !important;
+    flex: 0 0 38%;
+    min-height: 168px;
+  }
+
+  .viz-handle {
+    display: none;
+  }
+
+  .map-pane.mini.parked {
+    width: 112px;
+    height: 76px;
+  }
+
+  .stage-bottom-chrome {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 9;
+    max-width: calc(100% - 16px);
+    pointer-events: none;
+  }
+
+  .stage-bottom-chrome > * {
+    pointer-events: auto;
+  }
+
+  .portrait-hotspots {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    position: static;
+    width: auto;
+  }
+
+  .portrait-hotspots button {
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #1c1d20;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 0;
+    padding: 0 8px;
+  }
+
+  .portrait-hotspots button.on {
+    background: #2a2c31;
+    color: #fff;
+    border-color: transparent;
+  }
+
+  .portrait-hotspots svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .portrait-hotspots span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .parked-hotspot-html {
+    display: none !important;
+  }
+
+  .stage-bottom-chrome .parked-media,
+  .stage-bottom-chrome .nav-stack,
+  .stage-bottom-chrome .nav-stack.parked,
+  .stage-bottom-chrome .route-card {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .stage-bottom-chrome .route-card {
+    max-height: 28vh;
+  }
+
+  .stage-bottom-chrome .search-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 8px);
+    max-height: 38vh;
+    z-index: 12;
+  }
+
+  .nav-stack {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+  }
+
+  .map-tools {
+    bottom: 72px;
+  }
+
+  .bezel.parked .auto-shift-prnd {
+    gap: 3px;
+    letter-spacing: 0.06em;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .disclaimer {
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    transform: none;
+    width: auto;
+    max-width: none;
+    /* Below Controls / climate / media sheets so those headers stay tappable. */
+    z-index: 6;
+    align-items: flex-start;
+  }
+
+  .disclaimer > div {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .disclaimer button {
+    flex-shrink: 0;
+  }
+
+  .controls-sheet {
+    left: 4px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
+  .controls-topbar {
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  .controls-search {
+    width: auto;
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+
+  .controls-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 8px 8px;
+    gap: 4px;
+  }
+
+  .controls-nav > button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .apps-tray {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    flex-wrap: wrap;
+    max-width: calc(100% - 16px);
+  }
+
+  .climate-sheet {
+    width: min(520px, calc(100% - 16px));
+  }
+
+  .climate-popup-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .media-sheet {
+    left: 8px;
+    right: 8px;
+    width: auto;
   }
 }

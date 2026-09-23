@@ -13,6 +13,7 @@ import { markQaReady } from "./qa/applyScene";
 import { DriveOverlay } from "./chrome/DriveOverlay";
 import { NavSearch } from "./chrome/NavSearch";
 import { ParkedMedia } from "./chrome/ParkedMedia";
+import { PortraitHotspots } from "./chrome/PortraitHotspots";
 import { RouteCard } from "./chrome/RouteCard";
 import { isParkedFullscreen, useMiniMap } from "./viz/layout";
 
@@ -191,11 +192,12 @@ export default function App() {
               </div>
             )}
             {parked ? (
-              <>
+              <div className="stage-bottom-chrome">
+                <PortraitHotspots />
                 <ParkedMedia />
                 <NavSearch variant="parked" />
                 <RouteCard />
-              </>
+              </div>
             ) : null}
           </div>
           <div className="chrome-layer">
