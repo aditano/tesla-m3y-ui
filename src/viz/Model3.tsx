@@ -101,6 +101,10 @@ export function Model3({
       lit,
       parked,
     });
+    document.documentElement.dataset.carReady = "true";
+    return () => {
+      delete document.documentElement.dataset.carReady;
+    };
   }, [car, lit, parked]);
 
   return (
