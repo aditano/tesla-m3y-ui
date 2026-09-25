@@ -1,4 +1,5 @@
 import { useVehicle } from "../state/store";
+import { useDialogA11y } from "./dialogA11y";
 import { IconBolt, IconCalendar, IconCamera, IconMusic, IconPhone } from "./Icons";
 
 const APPS = [
@@ -12,10 +13,12 @@ const APPS = [
 export function AppLauncher() {
   const open = useVehicle((s) => s.ui.appsOpen);
   const patchUi = useVehicle((s) => s.patchUi);
+  const close = () => patchUi({ appsOpen: false });
+  const dialogRef = useDialogA11y<HTMLDivElement>(open, close);
   if (!open) return null;
 
   return (
-    <div className="apps-tray" role="dialog" aria-label="Apps">
+    <div ref={dialogRef} className="apps-tray" role="dialog" aria-modal="true" aria-label="Apps" tabIndex={-1}>
       {APPS.map((app) => (
         <button
           key={app.id}

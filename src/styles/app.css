@@ -364,6 +364,12 @@ button {
   place-items: center;
 }
 
+.viz-handle:focus-visible {
+  outline: 2px solid #3e6ae1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .viz-handle span {
   width: 4px;
   height: 64px;

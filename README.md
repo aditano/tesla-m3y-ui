@@ -57,6 +57,8 @@ npm run preview
 
 Push to `main`. `.github/workflows/deploy.yml` builds the static site and deploys with `actions/deploy-pages`. Repo Pages source must be **GitHub Actions** (`build_type=workflow`).
 
+Pull requests run `.github/workflows/ci.yml` (`npm run typecheck`, `npm test`, and `npm run build`, plus a curl smoke of the production preview). Deploy stays on pushes to `main`.
+
 No secrets are required for the default demo path.
 
 ## Attribution
