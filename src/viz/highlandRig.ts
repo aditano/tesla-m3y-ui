@@ -34,6 +34,10 @@ export type HighlandRole =
   | "wheel_finish"
   | "tire_rubber"
   | "interior_leather"
+  | "interior_plastic"
+  | "interior_carpet"
+  | "interior_pad"
+  | "interior_headliner"
   | "glass"
   | "lamp_lens"
   | "headlight_led"
@@ -41,33 +45,87 @@ export type HighlandRole =
   | "trim"
   | "other";
 
-/** Role tags from Tesla Studio `src/studio/vehicles/highland.ts`, plus wheel-well paint. */
-export function highlandRole(name: string, x: number, y: number, z: number): HighlandRole | string {
-  let role: HighlandRole | string = name;
-  if (name === "Geohoodsub00021Mtl" || name === "Georimblurlfsub01Mtl") role = "exterior_paint";
-  if (name === "Georimblurlfsub021Mtl") role = "wheel_finish";
-  if (name === "Ln7Mtl") {
-    if (z < -1.75 && y > 0.45 && y < 0.95) role = "headlight_led";
-    else if (z > -0.6) role = "interior_leather";
+type InteriorFinish = "interior_leather" | "interior_plastic" | "interior_carpet" | "interior_pad" | "interior_headliner";
+
+/**
+ * Body color is an allowlist. `Geohoodsub00021` is the painted outer shell
+ * (hood, doors, quarters, decklid). `Georimblurlfsub01` is a fused shell that
+ * also carries the cabin tub, so only the tub is pulled back off the list.
+ */
+const EXTERIOR_PAINT_MATERIALS: ReadonlySet<string> = new Set([
+  "Geohoodsub00021Mtl",
+  "Georimblurlfsub01Mtl",
+]);
+
+/** Cockpit surfaces that ship with a body-red albedo and must never take paint. */
+const INTERIOR_PAD_MATERIALS: ReadonlySet<string> = new Set(["Geocockpithrsub1031Mtl"]);
+
+const INTERIOR_LEATHER_MATERIALS: ReadonlySet<string> = new Set([
+  "Geodoorl2intsub651Mtl",
+  "Geodoorlintsub400251Mtl",
+]);
+
+/** Dark charcoal soft-trim. Dash, door cards, and console plastics. */
+export const INTERIOR_PLASTIC_HEX = "#1a1c1f";
+/** Matte dark grey carpet and footwells. */
+export const INTERIOR_CARPET_HEX = "#2a2c30";
+/** Light grey wireless-charging pads on the Highland console. */
+export const INTERIOR_PAD_HEX = "#b4b7bb";
+/** Light grey headliner, matching the white seat leather rather than body paint. */
+export const INTERIOR_HEADLINER_HEX = "#d4d1cb";
+
+function isInteriorFinish(role: string): role is InteriorFinish {
+  switch (role) {
+    case "interior_leather":
+    case "interior_plastic":
+    case "interior_carpet":
+    case "interior_pad":
+    case "interior_headliner":
+      return true;
+    default:
+      return false;
   }
-  if (name === "Geodoorl2intsub651Mtl" || name === "Geodoorlintsub400251Mtl") role = "interior_leather";
-  if (
-    /Georimblurlfsub01/.test(name) &&
-    Math.abs(x) < 0.63 &&
-    z > -0.55 &&
-    z < 1.07 &&
-    y > 0.32 &&
-    y < 1.03
-  ) {
-    role = "interior_leather";
+}
+
+/**
+ * Cabin tub inside the fused Georim shell, in Studio space (nose on -Z).
+ * Wheel arches and the painted cowl stay on the exterior-paint path.
+ */
+function georimCabinRole(x: number, y: number, z: number): InteriorFinish | null {
+  const nearWheel =
+    y < 0.65 && Math.abs(x) > 0.7 && Math.min(Math.abs(z + 1.49), Math.abs(z - 1.385)) < 0.4;
+  if (nearWheel) return null;
+  const inTub = Math.abs(x) < 0.78 && y > 0.15 && y < 1.26 && z > -1.26 && z < 1.36;
+  if (!inTub) return null;
+  if (z < -1.02 && y > 0.9) return null;
+  if (y < 0.42) return "interior_carpet";
+  if (y > 1.05) return "interior_headliner";
+  return "interior_plastic";
+}
+
+/** Role tags from Tesla Studio `src/studio/vehicles/highland.ts`, plus cabin allowlists. */
+export function highlandRole(name: string, x: number, y: number, z: number): HighlandRole | string {
+  if (INTERIOR_PAD_MATERIALS.has(name)) return "interior_pad";
+  if (INTERIOR_LEATHER_MATERIALS.has(name)) return "interior_leather";
+  if (name === "Ln7Mtl") {
+    if (z < -1.75 && y > 0.45 && y < 0.95) return "headlight_led";
+    if (z > -0.6) return "interior_leather";
+  }
+  if (name === "Georimblurlfsub021Mtl") return "wheel_finish";
+  if (EXTERIOR_PAINT_MATERIALS.has(name)) {
+    if (name === "Georimblurlfsub01Mtl") {
+      const cabin = georimCabinRole(x, y, z);
+      if (cabin) return cabin;
+    }
+    return "exterior_paint";
   }
   if (/window|extwindow|Geodoorl2sub31|Geodoorr2sub31/i.test(name)) {
-    role = z < -1.7 && y > 0.5 && y < 0.82 ? "lamp_lens" : "glass";
+    return z < -1.7 && y > 0.5 && y < 0.82 ? "lamp_lens" : "glass";
   }
-  if (name === "Ln12Mtl") role = "taillight_led";
-  if (/Tire1/.test(name)) role = "tire_rubber";
-  if (name === "Geohoodsub00031Mtl") role = "trim";
-  return role;
+  if (name === "Ln12Mtl") return "taillight_led";
+  if (/Tire1/.test(name)) return "tire_rubber";
+  if (name === "Geohoodsub00031Mtl") return "trim";
+  return name;
 }
 
 /** Studio-space hub id. `wheel_fl` is front-left while the nose still points -Z. */
@@ -106,15 +164,8 @@ function treatHighland(material: MeshPhysicalMaterial, sourceName: string, role:
     material.roughness = 0.9;
     material.envMapIntensity = 0.22;
   }
-  if (role === "interior_leather") {
-    material.metalness = 0;
-    material.roughness = 0.55;
-    material.sheen = 0.42;
-    material.sheenRoughness = 0.4;
-    material.sheenColor.set("#c8c4bc");
-    material.envMapIntensity = 0.6;
-  }
-  if (role === "glass" || role === "lamp_lens" || material.transparent) {
+  if (isInteriorFinish(role)) finishInterior(material, role);
+  if (!isInteriorFinish(role) && (role === "glass" || role === "lamp_lens" || material.transparent)) {
     material.transparent = true;
     material.roughness = role === "lamp_lens" ? 0.16 : 0.07;
     material.metalness = 0.04;
@@ -277,6 +328,54 @@ export function fitHighland(source: Object3D): Group {
   return fit;
 }
 
+function finishInterior(material: MeshPhysicalMaterial, role: InteriorFinish): void {
+  material.metalness = 0;
+  material.emissive.set("#000000");
+  material.emissiveIntensity = 0;
+  material.transparent = false;
+  material.opacity = 1;
+  switch (role) {
+    case "interior_leather":
+      material.roughness = 0.55;
+      material.sheen = 0.42;
+      material.sheenRoughness = 0.4;
+      material.sheenColor.set("#c8c4bc");
+      material.envMapIntensity = 0.6;
+      break;
+    case "interior_plastic":
+      material.color.set(INTERIOR_PLASTIC_HEX);
+      material.roughness = 0.78;
+      material.sheen = 0;
+      material.envMapIntensity = 0.28;
+      break;
+    case "interior_carpet":
+      material.color.set(INTERIOR_CARPET_HEX);
+      material.roughness = 0.96;
+      material.sheen = 0;
+      material.envMapIntensity = 0.12;
+      break;
+    case "interior_pad":
+      material.color.set(INTERIOR_PAD_HEX);
+      material.roughness = 0.58;
+      material.metalness = 0.02;
+      material.sheen = 0.08;
+      material.sheenRoughness = 0.7;
+      material.sheenColor.set("#eceae6");
+      material.envMapIntensity = 0.35;
+      break;
+    case "interior_headliner":
+      material.color.set(INTERIOR_HEADLINER_HEX);
+      material.roughness = 0.9;
+      material.sheen = 0;
+      material.envMapIntensity = 0.2;
+      break;
+    default: {
+      const _exhaustive: never = role;
+      throw new Error(`Unhandled interior finish: ${String(_exhaustive)}`);
+    }
+  }
+}
+
 /** Ultra Red and lamp levels on the Highland rig. Does not rebuild David_Holiday materials. */
 export function applyHighlandLook(
   materials: ReadonlyMap<string, MeshPhysicalMaterial>,
@@ -285,7 +384,9 @@ export function applyHighlandLook(
   const headlightsOn = options.lit && !options.parked;
   for (const material of materials.values()) {
     const role = material.name;
-    if (role === "exterior_paint") {
+    if (isInteriorFinish(role)) {
+      finishInterior(material, role);
+    } else if (role === "exterior_paint") {
       material.color.set(options.paintHex);
       material.metalness = options.parked ? 0.32 : 0.26;
       material.roughness = options.parked ? 0.16 : 0.24;

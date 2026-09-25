@@ -7,12 +7,13 @@ describe("HOTSPOT_PINS", () => {
     expect(hotspotPin("charge").position[0]).toBeLessThan(-0.8);
   });
 
-  it("puts TRUNK on the rear face of the car, not the quarter panel", () => {
-    const [, y, z] = hotspotPin("trunk").position;
-    expect(z).toBeGreaterThan(-2.2);
-    expect(z).toBeLessThan(-1.55);
-    expect(y).toBeGreaterThan(0.0);
-    expect(y).toBeLessThan(1.1);
+  it("puts TRUNK on the rear decklid, not the bumper or the quarter panel", () => {
+    const [x, y, z] = hotspotPin("trunk").position;
+    expect(Math.abs(x)).toBeLessThan(0.15);
+    expect(z).toBeGreaterThan(-2.05);
+    expect(z).toBeLessThan(-1.7);
+    expect(y).toBeGreaterThan(0.9);
+    expect(y).toBeLessThan(1.08);
   });
 
   it("puts FRUNK on the hood rather than the roof", () => {

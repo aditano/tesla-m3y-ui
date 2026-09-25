@@ -11,17 +11,16 @@ export type HotspotPin = {
 };
 
 /**
- * Nata pins: FRUNK on hood center, TRUNK on decklid/liftgate center (not the
- * quarter panel), CHARGE on the driver-side charge-port door.
+ * Nata pins: FRUNK on hood center, TRUNK on the decklid (the dot is the
+ * leader anchor; a short stem keeps the card on the lid), CHARGE on the
+ * driver-side charge-port door.
+ *
+ * App space after `fitHighland`: nose +Z, tail -Z. The Highland decklid
+ * centroid is about y=1.01, z=-1.89.
  */
 export const HOTSPOT_PINS: readonly HotspotPin[] = [
   { id: "frunk", kicker: "FRUNK", position: [0, 0.78, 1.52], hit: [1.48, 0.18, 0.88] },
-  /**
-   * Trunk pin sits low near the rear bumper face.  The 3D projection lands
-   * near the bottom of the bezel in screen space; the tall CSS stem then
-   * carries the card up into empty studio above the roofline.
-   */
-  { id: "trunk", kicker: "TRUNK", position: [0.12, 0.08, -2.0], hit: [1.22, 0.14, 0.52] },
+  { id: "trunk", kicker: "TRUNK", position: [0, 1.0, -1.88], hit: [1.2, 0.2, 0.7] },
   { id: "charge", kicker: "CHARGE", position: [-0.93, 0.7, -1.58], hit: [0.16, 0.26, 0.28] },
 ];
 
