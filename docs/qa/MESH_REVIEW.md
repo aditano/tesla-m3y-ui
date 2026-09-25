@@ -3,7 +3,7 @@
 Compare `docs/qa/screenshots/parked-home.png` to `docs/references/nata-parked-car-vis.jpg`.
 Scores: `FAIL` / `PARTIAL` / `PASS`. One line each. Loop until near PASS or document a ceiling.
 
-Legal: CC-BY-4.0 David_Holiday derivative only. No Tesla firmware meshes.
+Legal: runtime mesh is the Tesla Studio Highland import (CC-BY-4.0, RBLXSupercars). The earlier David_Holiday derivative remains in the tree and is not loaded. No Tesla firmware meshes. No Tesla OEM CAD.
 
 > **Reconcile note (2026-09-16).** PR 2 (parked base) and its four stacked siblings —
 > PR 9 (mesh topology), PR 8 (wheels), PR 6 (paint/glass/studio), PR 7 (hostile critic) —

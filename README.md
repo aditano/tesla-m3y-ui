@@ -25,7 +25,7 @@ Default origin is **downtown Pittsburgh** so the demo is consistent on GitHub Pa
 | Geocoding | [Nominatim](https://nominatim.org/) with debounce + cache; [Photon](https://photon.komoot.io/) fallback. |
 | Routing | Public [OSRM](https://project-osrm.org/) car profile (`router.project-osrm.org`, then `routing.openstreetmap.de`). |
 | Drive sim | Ego pose interpolates the routed polyline at a believable speed (step speed limits / turn slowing). |
-| Visualization | Three.js `GLTFLoader` + React Three Fiber. Licensed Model 3 GLB (PBR studio in Park), lane ribbons, **simulated** nearby traffic and lights. |
+| Visualization | Three.js + React Three Fiber. 2024 Model 3 Highland GLB from Tesla Studio (CC BY 4.0), lane ribbons, **simulated** nearby traffic and lights. |
 
 State machine: **Parked (full-screen vehicle viz) → Navigating (route set) → FSD Engaged → Arrived / Disengaged**.
 
@@ -65,7 +65,7 @@ No secrets are required for the default demo path.
 - Vector tiles: OpenFreeMap.
 - Routing: OSRM / FOSSGIS.
 - Geocoding: Nominatim / Komoot Photon.
-- 3D Model 3: [David_Holiday](https://sketchfab.com/David_Holiday), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) — see [LICENSE-3D.md](LICENSE-3D.md).
+- 3D Model 3: 2024 Highland by [RBLXSupercars](https://sketchfab.com/RBLXSupercars), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), copied from [tesla-studio](https://github.com/aditano/tesla-studio). See [LICENSE-3D.md](LICENSE-3D.md) and [public/models/highland/CREDITS.md](public/models/highland/CREDITS.md).
 - UI type: [Inter](https://rsms.me/inter/) (OFL). Not Tesla’s proprietary font.
 
 Layout is informed by publicly documented Tesla owner-manual behavior — status bar, map always present in Park, visualization expand, Controls overlay with Search, dock climate/media, PRND — and public UI v12 notes (NotATeslaApp parked viz: centered 3D vehicle, map snippet, Navigate To, media strip). Sources used for information architecture only (no copyrighted manual text is reproduced here):
