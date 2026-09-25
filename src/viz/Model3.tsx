@@ -1,79 +1,13 @@
-import { useLoader } from "@react-three/fiber";
-import { useCursor } from "@react-three/drei";
+import { useCursor, useGLTF } from "@react-three/drei";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Box3, BoxGeometry, Group, Mesh, MeshPhysicalMaterial, Object3D, Quaternion, Vector3 } from "three";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { useVehicle } from "../state/store";
-import { applyCarMaterials, PAINT_NATA_RED } from "./carMaterials";
-import { splitGreenhouseGlass } from "./glassPanes";
+import { PAINT_NATA_RED } from "./carMaterials";
+import { applyHighlandLook, fitHighland, highlandMaterials } from "./highlandRig";
 import { HOTSPOT_PINS } from "./hotspots";
 import { ParkedHotspots } from "./ParkedHotspots";
-import { replaceStockWheels } from "./wheelHubs";
 
-export const MODEL3_URL = `${import.meta.env.BASE_URL}models/tesla_model_3.glb`;
-const DRACO_PATH = `${import.meta.env.BASE_URL}draco/`;
-
-function configureGltfLoader(loader: GLTFLoader): void {
-  const draco = new DRACOLoader();
-  draco.setDecoderPath(DRACO_PATH);
-  loader.setDRACOLoader(draco);
-}
-
-/** Model 3 overall length (m) — used to normalize the Sketchfab FBX scale. */
-const MODEL3_LENGTH_M = 4.694;
-
-function extractCar(scene: Object3D): Group {
-  const source = scene.getObjectByName("Sketchfab_model") ?? scene;
-  const car = source.clone(true);
-  const wrapper = new Group();
-  wrapper.name = "model3-fit";
-  wrapper.add(car);
-
-  wrapper.updateMatrixWorld(true);
-  const box = new Box3().setFromObject(wrapper);
-  const size = box.getSize(new Vector3());
-  const center = box.getCenter(new Vector3());
-  car.position.x -= center.x;
-  car.position.z -= center.z;
-  car.position.y -= box.min.y;
-  const length = Math.max(size.x, size.z, 0.001);
-  wrapper.scale.setScalar(MODEL3_LENGTH_M / length);
-  wrapper.updateMatrixWorld(true);
-  const grounded = new Box3().setFromObject(wrapper);
-  wrapper.position.y -= grounded.min.y;
-  wrapper.updateMatrixWorld(true);
-  wrapper.traverse((obj) => {
-    if (/debris|speaker/i.test(obj.name)) obj.visible = false;
-  });
-  replaceStockWheels(wrapper);
-  addCabinBlocker(car);
-  splitGreenhouseGlass(wrapper);
-  return wrapper;
-}
-
-function addCabinBlocker(car: Object3D): void {
-  car.updateWorldMatrix(true, true);
-  const box = new Box3().setFromObject(car);
-  const worldSize = box.getSize(new Vector3());
-  const worldCenter = box.getCenter(new Vector3());
-  const scale = new Vector3();
-  car.getWorldScale(scale);
-  const cabin = new Mesh(
-    new BoxGeometry(
-      (worldSize.x * 0.78) / Math.max(scale.x, 1e-4),
-      (worldSize.y * 0.32) / Math.max(scale.y, 1e-4),
-      (worldSize.z * 0.46) / Math.max(scale.z, 1e-4),
-    ),
-    new MeshPhysicalMaterial({ color: "#070706", roughness: 0.97, metalness: 0 }),
-  );
-  cabin.name = "orig-cabin-blocker";
-  car.worldToLocal(worldCenter);
-  cabin.position.copy(worldCenter);
-  cabin.position.y += 0.02;
-  cabin.position.z -= 0.12;
-  car.add(cabin);
-}
+/** Studio Highland GLB (meshopt + external textures). Not the David_Holiday remesh. */
+export const MODEL3_URL = `${import.meta.env.BASE_URL}models/highland/model.glb`;
 
 function Hit({
   position,
@@ -145,7 +79,7 @@ export function Model3({
   scale?: number;
   showHits?: boolean;
 }): ReactNode {
-  const gltf = useLoader(GLTFLoader, MODEL3_URL, configureGltfLoader);
+  const gltf = useGLTF(MODEL3_URL, false, true);
   const headlights = useVehicle((s) => s.flags.headlights);
   const parked = useVehicle((s) => s.gear === "P");
   const frunk = useVehicle((s) => s.flags.frunkOpen);
@@ -155,23 +89,23 @@ export function Model3({
   const lit = headlights !== "off";
   const [doors, setDoors] = useState({ fl: false, fr: false, rl: false, rr: false });
 
-  const car = useMemo(() => extractCar(gltf.scene), [gltf.scene]);
+  // Highland is a fused shell. Wheels, cabin, and glass are already in the GLB,
+  // so the David_Holiday aero-wheel swap, cabin blocker, and greenhouse split stay off.
+  const car = useMemo(() => fitHighland(gltf.scene), [gltf.scene]);
 
   useEffect(() => {
-    applyCarMaterials(car, lit, parked, parked ? PAINT_NATA_RED : "#e1252e");
-  }, [car, lit, parked]);
-
-  useEffect(() => {
-    const hinge = (name: string, axis: Vector3, openAngle: number, open: boolean) => {
-      const node = car.getObjectByName(name);
-      if (!node) return;
-      if (!node.userData.baseQuat) node.userData.baseQuat = node.quaternion.clone();
-      const extra = new Quaternion().setFromAxisAngle(axis, open ? openAngle : 0);
-      node.quaternion.copy(node.userData.baseQuat as Quaternion).multiply(extra);
+    const materials = highlandMaterials(car);
+    if (!materials) return;
+    applyHighlandLook(materials, {
+      paintHex: parked ? PAINT_NATA_RED : "#e1252e",
+      lit,
+      parked,
+    });
+    document.documentElement.dataset.carReady = "true";
+    return () => {
+      delete document.documentElement.dataset.carReady;
     };
-    hinge("Capot", new Vector3(1, 0, 0), -0.9, frunk);
-    hinge("Capot.008", new Vector3(1, 0, 0), 0.85, trunk);
-  }, [car, frunk, trunk]);
+  }, [car, lit, parked]);
 
   return (
     <group scale={scale}>
@@ -234,4 +168,4 @@ export function Model3({
   );
 }
 
-useLoader.preload(GLTFLoader, MODEL3_URL, configureGltfLoader);
+useGLTF.preload(MODEL3_URL, false, true);

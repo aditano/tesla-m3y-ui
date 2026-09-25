@@ -4,9 +4,41 @@ This repository redistributes **openly licensed** 3D models only. It does **not*
 include Tesla firmware, vehicle dumps, or proprietary meshes.
 
 **Not affiliated with Tesla, Inc.** Tesla, Model 3, and Model Y are trademarks of
-Tesla, Inc. The mesh below is an independent fan-created model.
+Tesla, Inc. The meshes below are independent fan-created models.
 
-## Tesla Model 3
+## Tesla Model 3 (runtime)
+
+Parked and FSD views load the **2024 Model 3 Highland** set copied from
+[aditano/tesla-studio](https://github.com/aditano/tesla-studio) `public/models/highland/`.
+It is not Tesla OEM CAD.
+
+| | |
+| --- | --- |
+| File | `public/models/highland/model.glb` plus `texture-0.png` … `texture-5.png` |
+| Artist | [RBLXSupercars](https://sketchfab.com/RBLXSupercars) |
+| Title | 2024 Tesla Model 3 |
+| License | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| Source embedded in the GLB | https://sketchfab.com/3d-models/2024-tesla-model-3-fd22be415215453693d67e33aa7812d0 |
+| Download-page uploader | [brandonleong28](https://sketchfab.com/3d-models/tesla-model-3-2024-36c52f3f89f6439c90310f14e8ff33f2) |
+| Studio copy | [erictfree/Carbon-Footprint-AI-Visualizer](https://github.com/erictfree/Carbon-Footprint-AI-Visualizer/tree/af4bef33ca371b24c1f043486f09a13571f4919b/models/tesla-model-3-2024) via tesla-studio |
+| Triangles | 179,692 |
+
+Full credit, the source SHA-256, and the texture list live in
+[`public/models/highland/CREDITS.md`](public/models/highland/CREDITS.md) and
+`public/models/highland/manifest.json`. You must retain that attribution if you
+copy the GLB or the textures.
+
+The GLB uses `EXT_meshopt_compression`. The app decodes it with the Meshopt
+decoder bundled by `@react-three/drei` / three.js. Runtime fit (4.72 m length,
+nose toward +Z, wheel groups, Ultra Red) is original presentation code in
+`src/viz/highlandRig.ts`, adapted from Tesla Studio `src/studio/vehicles/highland.ts`.
+Panel splits are not a factory rig.
+
+## Previous Model 3 derivative (not loaded)
+
+`public/models/tesla_model_3.glb` stays in the tree for the earlier review history.
+Parked and FSD views do not load it. The aero-wheel swap, cabin blocker, and
+greenhouse split in `src/viz/` are not applied to the Highland rig.
 
 | | |
 | --- | --- |
@@ -41,10 +73,10 @@ unchanged, but the derivative now carries a few materially new pieces, all
 - The stray `Cylinder012` studio prop from the source archive is removed.
 
 The paint AO bake (`public/models/maps/paint_ao.png`) is retained for reference
-but is **gated off by default** (`M3_BAKE_AO`) and is not bound at runtime — the
-overlapping smart-UV atlas chalked the candy coat. Runtime 5-cover aero wheels
-(`src/viz/AeroWheel.tsx`) are original geometry and replace the stock
-wheel/caliper primitives at load time.
+but is **gated off by default** (`M3_BAKE_AO`) and is not bound at runtime. The
+overlapping smart-UV atlas chalked the candy coat. `src/viz/AeroWheel.tsx` is
+original geometry that used to replace the stock wheel primitives on this
+derivative. It is not parented onto the Highland mesh.
 
 ### Mesh ceiling (2026-09-16 re-eval)
 
@@ -69,9 +101,10 @@ It is not Tesla’s viz-grade Highland mesh. A true `MeshReflectorMaterial` grou
 was tried and dropped: extra render targets blew the parked blit and hung
 Chromium QA.
 
-Runtime: Three.js `GLTFLoader` with the bundled glTF Draco decoder. Hit volumes
-for frunk, trunk, charge port, and doors are original to this project. Draco
-decoder files under `public/draco/` come from Three.js examples (Apache-2.0).
+That archived derivative was loaded with Three.js `GLTFLoader` and the bundled
+glTF Draco decoder. Hit volumes for frunk, trunk, charge port, and doors are
+original to this project and still sit on the Highland fit. Draco decoder files
+under `public/draco/` come from Three.js examples (Apache-2.0).
 
 ## Fonts
 

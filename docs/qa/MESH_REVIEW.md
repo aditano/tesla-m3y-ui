@@ -3,7 +3,7 @@
 Compare `docs/qa/screenshots/parked-home.png` to `docs/references/nata-parked-car-vis.jpg`.
 Scores: `FAIL` / `PARTIAL` / `PASS`. One line each. Loop until near PASS or document a ceiling.
 
-Legal: CC-BY-4.0 David_Holiday derivative only. No Tesla firmware meshes.
+Legal: runtime mesh is the Tesla Studio Highland import (CC-BY-4.0, RBLXSupercars). The earlier David_Holiday derivative remains in the tree and is not loaded. No Tesla firmware meshes. No Tesla OEM CAD.
 
 > **Reconcile note (2026-09-16).** PR 2 (parked base) and its four stacked siblings —
 > PR 9 (mesh topology), PR 8 (wheels), PR 6 (paint/glass/studio), PR 7 (hostile critic) —
@@ -385,3 +385,23 @@ remeshed body, the TRUNK leader can't reach fully-empty studio at this camera,
 and true panel-gap/side-mirror fidelity still needs a higher-poly Highland mesh
 that can't be fetched without a Sketchfab token. QA: `npm test` (30) +
 `npm run typecheck` + `npm run qa:screenshots` (8/8) all green.
+
+# Highland import, 2026-09-25
+
+Still: `docs/qa/screenshots/parked-home.png`, compared with `docs/references/nata-parked-car-vis.jpg`.
+FSD chase: `docs/qa/screenshots/fsd-engaged.png`.
+
+Mesh: `public/models/highland/model.glb` copied from aditano/tesla-studio. 2024 Model 3 Highland, CC-BY-4.0, RBLXSupercars, 179,692 triangles. Textures and credits sit beside the GLB. `src/viz/highlandRig.ts` normalizes length to 4.72 m, splits `wheel_fl` / `wheel_fr` / `wheel_rl` / `wheel_rr`, and yaws the nose to +Z. The shell has no factory hinges, so frunk, trunk, and doors stay hit volumes.
+
+Not applied to this mesh: David_Holiday aero-wheel replacement, cabin blocker, greenhouse split, paint AO, and Capot / trunk node hinges. Those patches were compensating for the old shell.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Ultra Red clearcoat on the Highland shell. Shoulder and C-pillar catch the studio key. Midtones are still a bit flatter than nata's candy photo. |
+| Glass | PARTIAL | Separate greenhouse panes, dark tint, cabin visible through the glass. The faceted one-piece roof is gone. Still more open than nata's black laminate. |
+| Wheels | PARTIAL | Source tires and multi-spoke wheels sit in all four arches. No empty front well and no red caliper brick. Darker than nata's bright 5-cover aero face. |
+| Proportions | PASS | Highland nose, lamps, mirrors, and glasshouse read as a Model 3. The long 27k overhang and melted window corners are gone. |
+| Lighting | PARTIAL | Same white studio and contact shadow as the previous parked pass. |
+| Leaders | PARTIAL | FRUNK and CHARGE sit on the body. TRUNK still rides high and grazes the roofline. |
+
+FSD uses the same fit. The chase camera sits behind a forward nose, and the Highland tail lamps are visible. Remaining gaps are finish (aero-cover brightness, glass darkness, leader layout), not a missing body.
