@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
-import { WORK_PLACE } from "./geo/constants";
+import { VIZ_RATIO_MAX, VIZ_RATIO_MIN, WORK_PLACE } from "./geo/constants";
 import { indexFor, interpolate } from "./geo/polyline";
 import { useVehicle } from "./state/store";
 import { StatusBar } from "./chrome/StatusBar";
@@ -15,7 +15,7 @@ import { NavSearch } from "./chrome/NavSearch";
 import { ParkedMedia } from "./chrome/ParkedMedia";
 import { PortraitHotspots } from "./chrome/PortraitHotspots";
 import { RouteCard } from "./chrome/RouteCard";
-import { isParkedFullscreen, useMiniMap } from "./viz/layout";
+import { isParkedFullscreen, useMiniMap, vizRatioForKey } from "./viz/layout";
 
 const TeslaMap = lazy(() =>
   import("./map/TeslaMap").then((m) => ({ default: m.TeslaMap })),
@@ -42,6 +42,7 @@ function DriveLoop() {
 }
 
 function VizDivider() {
+  const ratio = useVehicle((s) => s.ui.vizRatio);
   const setVizRatio = useVehicle((s) => s.setVizRatio);
   const dragging = useRef(false);
 
@@ -64,15 +65,31 @@ function VizDivider() {
     };
   }, [setVizRatio]);
 
+  const percent = Math.round(ratio * 100);
+
   return (
     <div
       className="viz-handle"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Visualization width"
+      aria-valuemin={Math.round(VIZ_RATIO_MIN * 100)}
+      aria-valuemax={Math.round(VIZ_RATIO_MAX * 100)}
+      aria-valuenow={percent}
+      aria-valuetext={`${percent} percent visualization`}
+      tabIndex={0}
       onPointerDown={() => {
         dragging.current = true;
       }}
+      onKeyDown={(event) => {
+        const next = vizRatioForKey(ratio, event.key, event.shiftKey);
+        if (next == null) return;
+        event.preventDefault();
+        setVizRatio(next);
+      }}
       title="Drag to expand visualization"
     >
-      <span />
+      <span aria-hidden="true" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 import { useVehicle } from "../state/store";
+import { useDialogA11y } from "./dialogA11y";
 import type { ControlsTab, HeadlightMode, WiperMode } from "../state/types";
 import {
   IconBell,
@@ -76,16 +77,24 @@ export function ControlsOverlay() {
   const patchFlags = useVehicle((s) => s.patchFlags);
   const patchUi = useVehicle((s) => s.patchUi);
   const setControlsTab = useVehicle((s) => s.setControlsTab);
+  const close = () => patchUi({ controlsOpen: false, controlsQuery: "" });
+  const dialogRef = useDialogA11y<HTMLElement>(open, close);
 
   if (!open) return null;
 
   const hits = searchSettings(query);
-  const close = () => patchUi({ controlsOpen: false, controlsQuery: "" });
 
   return (
     <>
       <button className="overlay-scrim" aria-label="Close Controls" onClick={close} />
-      <section className="controls-sheet" role="dialog" aria-label="Controls">
+      <section
+        ref={dialogRef}
+        className="controls-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Controls"
+        tabIndex={-1}
+      >
         <header className="controls-topbar">
           <label className="controls-search">
             <IconSearch />

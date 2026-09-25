@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { searchSettings } from "./settingsCatalog";
+import { selectGear } from "./gearSelection";
 import { MEDIA_LIBRARY, useVehicle } from "../state/store";
 
 describe("settings catalog", () => {
@@ -43,5 +44,31 @@ describe("vehicle chrome state", () => {
     useVehicle.getState().setGear("D");
     expect(useVehicle.getState().phase).toBe("routed");
     expect(useVehicle.getState().gear).toBe("D");
+  });
+
+  it("the Drive control does not start FSD when a route is already set", () => {
+    useVehicle.setState({
+      phase: "routed",
+      gear: "P",
+      route: {
+        coords: [
+          [-79.99, 40.44],
+          [-79.94, 40.44],
+        ],
+        distanceM: 500,
+        durationS: 60,
+        maneuvers: [],
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [-79.99, 40.44],
+            [-79.94, 40.44],
+          ],
+        },
+      },
+    });
+    selectGear("D");
+    expect(useVehicle.getState().gear).toBe("D");
+    expect(useVehicle.getState().phase).toBe("routed");
   });
 });

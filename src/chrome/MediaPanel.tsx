@@ -1,4 +1,5 @@
 import { useVehicle } from "../state/store";
+import { useDialogA11y } from "./dialogA11y";
 import type { MediaSourceId } from "../state/types";
 import {
   IconEq,
@@ -32,6 +33,8 @@ export function MediaPanel() {
   const patchMedia = useVehicle((s) => s.patchMedia);
   const patchUi = useVehicle((s) => s.patchUi);
   const skipTrack = useVehicle((s) => s.skipTrack);
+  const close = () => patchUi({ mediaOpen: false });
+  const dialogRef = useDialogA11y<HTMLDivElement>(open, close);
 
   const duration = 214;
   const elapsed = media.progress * duration;
@@ -41,8 +44,8 @@ export function MediaPanel() {
 
   return (
     <>
-      <button className="panel-scrim" aria-label="Close media" onClick={() => patchUi({ mediaOpen: false })} />
-      <div className="media-sheet" role="dialog" aria-label="Media">
+      <button className="panel-scrim" aria-label="Close media" onClick={close} />
+      <div ref={dialogRef} className="media-sheet" role="dialog" aria-modal="true" aria-label="Media" tabIndex={-1}>
         <div className="media-player-head">
           <div>
             <h2>{media.track}</h2>

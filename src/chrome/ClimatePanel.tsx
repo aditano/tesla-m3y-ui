@@ -1,4 +1,5 @@
 import { useVehicle } from "../state/store";
+import { useDialogA11y } from "./dialogA11y";
 import { IconDefrostFront, IconDefrostRear, IconFan, IconSeat } from "./Icons";
 
 function displayTemp(tempF: number, celsius: boolean): string {
@@ -15,6 +16,8 @@ export function ClimatePanel() {
   const patchUi = useVehicle((s) => s.patchUi);
   const cycleSeat = useVehicle((s) => s.cycleSeat);
   const celsius = !flags.temperatureF;
+  const close = () => patchUi({ climateOpen: false });
+  const dialogRef = useDialogA11y<HTMLDivElement>(open, close);
 
   if (!open) return null;
 
@@ -29,8 +32,8 @@ export function ClimatePanel() {
 
   return (
     <>
-      <button className="panel-scrim" aria-label="Close climate" onClick={() => patchUi({ climateOpen: false })} />
-      <div className="climate-sheet" role="dialog" aria-label="Climate">
+      <button className="panel-scrim" aria-label="Close climate" onClick={close} />
+      <div ref={dialogRef} className="climate-sheet" role="dialog" aria-modal="true" aria-label="Climate" tabIndex={-1}>
         <div className="climate-popup-row">
           <button
             type="button"

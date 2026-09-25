@@ -6,7 +6,7 @@ import {
   VIZ_RATIO_MAX,
   VIZ_RATIO_MIN,
 } from "../geo/constants";
-import { fetchRoute, speedLimitAt } from "../geo/osrm";
+import { fetchRoute, isAbortError, speedLimitAt } from "../geo/osrm";
 import { reverseGeocode, searchPlaces } from "../geo/geocode";
 import { indexFor, interpolate, mphToMps } from "../geo/polyline";
 import type {
@@ -176,6 +176,27 @@ export type Store = VehicleStore & Actions;
 
 let searchTimer: number | undefined;
 
+/** Monotonic id so a late OSRM response cannot overwrite a newer route or a cancel. */
+let navRequest = 0;
+let navController: AbortController | null = null;
+
+function beginNavRequest(): { id: number; signal: AbortSignal } {
+  navController?.abort();
+  navRequest += 1;
+  navController = new AbortController();
+  return { id: navRequest, signal: navController.signal };
+}
+
+function invalidateNavRequest(): void {
+  navController?.abort();
+  navController = null;
+  navRequest += 1;
+}
+
+function isNavCurrent(id: number): boolean {
+  return id === navRequest;
+}
+
 function applyTrack(index: number): Partial<MediaState> {
   const i = (index + MEDIA_LIBRARY.length) % MEDIA_LIBRARY.length;
   const t = MEDIA_LIBRARY[i];
@@ -211,11 +232,10 @@ export const useVehicle = create<Store>((set, get) => ({
   recents: [],
 
   setGear: (gear) => {
-    const { phase } = get();
+    if (get().phase === "fsd" && gear !== "D") {
+      get().disengageFsd();
+    }
     if (gear === "P") {
-      if (phase === "fsd") {
-        get().disengageFsd();
-      }
       set({
         gear: "P",
         pose: { ...get().pose, speedMph: 0 },
@@ -226,12 +246,11 @@ export const useVehicle = create<Store>((set, get) => ({
       });
       return;
     }
-    if (gear === "R") {
-      set({ gear: "R", pose: { ...get().pose, speedMph: 0 } });
-      return;
-    }
-    if (gear === "N") {
-      set({ gear: "N" });
+    if (gear === "R" || gear === "N") {
+      set({
+        gear,
+        pose: { ...get().pose, speedMph: 0, setSpeedMph: 0 },
+      });
       return;
     }
     set({ gear: "D" });
@@ -329,11 +348,48 @@ export const useVehicle = create<Store>((set, get) => ({
   },
 
   setOrigin: (place) => {
+    const prev = get();
+    const moved = prev.origin.lng !== place.lng || prev.origin.lat !== place.lat;
+    if (!moved) {
+      set({
+        origin: place,
+        pose: { ...prev.pose, lng: place.lng, lat: place.lat },
+        ui: { ...prev.ui, tracking: true },
+      });
+      return;
+    }
+    const dest = prev.destination;
+    const hadNav =
+      Boolean(prev.route) ||
+      prev.routeBusy ||
+      prev.phase === "fsd" ||
+      prev.phase === "routed" ||
+      prev.phase === "disengaged" ||
+      prev.phase === "arrived";
+    invalidateNavRequest();
     set({
       origin: place,
-      pose: { ...get().pose, lng: place.lng, lat: place.lat, traveledM: 0 },
-      ui: { ...get().ui, tracking: true },
+      route: hadNav ? null : prev.route,
+      routeBusy: false,
+      routeError: null,
+      phase: hadNav ? "idle" : prev.phase,
+      gear: prev.phase === "fsd" ? "P" : prev.gear,
+      pose: {
+        ...prev.pose,
+        lng: place.lng,
+        lat: place.lat,
+        traveledM: hadNav ? 0 : prev.pose.traveledM,
+        remainingM: hadNav ? 0 : prev.pose.remainingM,
+        speedMph: hadNav ? 0 : prev.pose.speedMph,
+        setSpeedMph: hadNav ? 0 : prev.pose.setSpeedMph,
+      },
+      ui: {
+        ...prev.ui,
+        tracking: true,
+        mapOrientation: prev.phase === "fsd" ? "north" : prev.ui.mapOrientation,
+      },
     });
+    if (dest) void get().navigateTo(dest);
   },
 
   setOriginFromMap: async (lng, lat) => {
@@ -345,15 +401,29 @@ export const useVehicle = create<Store>((set, get) => ({
 
   navigateTo: async (place) => {
     const origin = get().origin;
+    const { id, signal } = beginNavRequest();
+    const driving = get().phase === "fsd";
     set({
       destination: place,
+      route: null,
       routeBusy: true,
       routeError: null,
-      ui: { ...get().ui, searchOpen: false, climateOpen: false, mediaOpen: false, appsOpen: false },
+      phase: driving ? "idle" : get().phase,
+      gear: driving ? "P" : get().gear,
+      pose: driving ? { ...get().pose, speedMph: 0, setSpeedMph: 0 } : get().pose,
+      ui: {
+        ...get().ui,
+        searchOpen: false,
+        climateOpen: false,
+        mediaOpen: false,
+        appsOpen: false,
+        ...(driving ? { mapOrientation: "north" as const } : {}),
+      },
       searchQuery: place.name,
     });
     try {
-      const route = await fetchRoute(origin, place);
+      const route = await fetchRoute(origin, place, signal);
+      if (!isNavCurrent(id)) return;
       const recents = [place, ...get().recents.filter((r) => r.label !== place.label)].slice(0, 8);
       set({
         route,
@@ -371,8 +441,10 @@ export const useVehicle = create<Store>((set, get) => ({
         },
         ui: { ...get().ui, tracking: true, mapOrientation: "north", searchOpen: false },
       });
-    } catch {
+    } catch (err) {
+      if (!isNavCurrent(id) || isAbortError(err)) return;
       set({
+        route: null,
         routeBusy: false,
         routeError: "Could not build a road route. Try another place.",
         phase: "idle",
@@ -381,10 +453,13 @@ export const useVehicle = create<Store>((set, get) => ({
   },
 
   cancelNav: () => {
+    invalidateNavRequest();
     set({
       phase: "idle",
       destination: null,
       route: null,
+      routeBusy: false,
+      routeError: null,
       gear: "P",
       pose: {
         ...get().pose,
@@ -400,6 +475,7 @@ export const useVehicle = create<Store>((set, get) => ({
   startFsd: () => {
     const { route, pose, flags: f } = get();
     if (!route || !f.fsdEnabled) return;
+    // FSD is a Drive maneuver. The gear transition and the drive loop both require D.
     const limit = route.maneuvers[0]?.speedLimitMph ?? DEFAULT_SPEED_LIMIT_MPH;
     set({
       phase: "fsd",
@@ -437,7 +513,7 @@ export const useVehicle = create<Store>((set, get) => ({
   tickDrive: (dt) => {
     const state = get();
     if (state.qa.frozen) return;
-    if (state.phase !== "fsd" || !state.route) return;
+    if (state.phase !== "fsd" || state.gear !== "D" || !state.route) return;
     const index = indexFor(state.route.coords);
     const limit = speedLimitAt(state.pose.traveledM, state.route.maneuvers);
     const remaining = Math.max(0, index.totalMeters - state.pose.traveledM);
@@ -485,13 +561,11 @@ export const useVehicle = create<Store>((set, get) => ({
 
   setPoseFromGps: (lng, lat) => {
     if (get().phase === "fsd") return;
-    set({
-      origin: {
-        ...get().origin,
-        lng,
-        lat,
-      },
-      pose: { ...get().pose, lng, lat },
-    });
+    const origin = get().origin;
+    if (origin.lng === lng && origin.lat === lat) {
+      set({ pose: { ...get().pose, lng, lat } });
+      return;
+    }
+    get().setOrigin({ ...origin, lng, lat });
   },
 }));

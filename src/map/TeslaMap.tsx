@@ -3,6 +3,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
 import { indexFor, splitAtMeters } from "../geo/polyline";
+import { traveledPaintDue } from "./routePaint";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
 import { RouteCard } from "../chrome/RouteCard";
@@ -183,6 +184,7 @@ export function TeslaMap({ compact = false, bare = false }: { compact?: boolean;
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const lastCam = useRef(0);
+  const lastTraveledPaint = useRef<number | null>(null);
   const route = useVehicle((s) => s.route);
   const dest = useVehicle((s) => s.destination);
   const origin = useVehicle((s) => s.origin);
@@ -206,7 +208,7 @@ export function TeslaMap({ compact = false, bare = false }: { compact?: boolean;
       attributionControl: { compact: true },
       canvasContextAttributes: {
         antialias: true,
-        preserveDrawingBuffer: true,
+        preserveDrawingBuffer: useVehicle.getState().qa.frozen,
         failIfMajorPerformanceCaveat: false,
       },
     });
@@ -272,10 +274,14 @@ export function TeslaMap({ compact = false, bare = false }: { compact?: boolean;
         state.ui.tracking !== prev.ui.tracking ||
         state.ui.mapOrientation !== prev.ui.mapOrientation ||
         state.phase !== prev.phase;
-      const progressMoved =
-        !prev || Math.abs(state.pose.traveledM - prev.pose.traveledM) > 6 || state.phase !== prev.phase;
-      if (progressMoved && map.isStyleLoaded()) {
+      const progressDue = traveledPaintDue(
+        lastTraveledPaint.current,
+        state.pose.traveledM,
+        !prev || state.route !== prev.route || state.phase !== prev.phase,
+      );
+      if (progressDue && map.isStyleLoaded()) {
         updateRouteLines(map, state.route, state.pose.traveledM);
+        lastTraveledPaint.current = state.route ? state.pose.traveledM : null;
       }
       if (!poseMoved) return;
       marker.setLngLat([state.pose.lng, state.pose.lat]);

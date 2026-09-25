@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Smoke the production bundle
+        run: |
+          npx vite preview --host 127.0.0.1 --port 4173 --strictPort &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          ok=0
+          for _ in $(seq 1 50); do
+            if curl -fsS "http://127.0.0.1:4173/tesla-m3y-ui/" -o /tmp/preview.html; then
+              ok=1
+              break
+            fi
+            sleep 0.2
+          done
+          test "$ok" = 1
+          grep -q "Model 3/Y" /tmp/preview.html
+          grep -q "/tesla-m3y-ui/assets/" /tmp/preview.html

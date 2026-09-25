@@ -86,14 +86,25 @@ function toManeuvers(route: OsrmRoute): Maneuver[] {
   }));
 }
 
-async function fetchOsrm(base: string, from: Place, to: Place): Promise<RoutePlan> {
-  const path = `/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}`;
-  const url = new URL(path, base.endsWith("/") ? base : `${base}/`);
+/** Relative path so a base like `.../routed-car` keeps its prefix. A leading slash would resolve from the origin and drop it. */
+export function buildOsrmRouteUrl(base: string, from: Place, to: Place): string {
+  const root = base.endsWith("/") ? base : `${base}/`;
+  const path = `route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}`;
+  const url = new URL(path, root);
   url.searchParams.set("overview", "full");
   url.searchParams.set("geometries", "geojson");
   url.searchParams.set("steps", "true");
   url.searchParams.set("annotations", "true");
-  const res = await fetch(url);
+  return url.toString();
+}
+
+export function isAbortError(err: unknown): boolean {
+  return err instanceof Error && err.name === "AbortError";
+}
+
+async function fetchOsrm(base: string, from: Place, to: Place, signal?: AbortSignal): Promise<RoutePlan> {
+  const url = buildOsrmRouteUrl(base, from, to);
+  const res = await fetch(url, { signal });
   if (!res.ok) throw new Error(`OSRM ${res.status}`);
   const data = (await res.json()) as OsrmResponse;
   if (data.code !== "Ok" || !data.routes?.[0]) {
@@ -110,12 +121,13 @@ async function fetchOsrm(base: string, from: Place, to: Place): Promise<RoutePla
   };
 }
 
-export async function fetchRoute(from: Place, to: Place): Promise<RoutePlan> {
+export async function fetchRoute(from: Place, to: Place, signal?: AbortSignal): Promise<RoutePlan> {
   let last: unknown;
   for (const base of OSRM_ENDPOINTS) {
     try {
-      return await fetchOsrm(base, from, to);
+      return await fetchOsrm(base, from, to, signal);
     } catch (err) {
+      if (isAbortError(err) || signal?.aborted) throw err;
       last = err;
     }
   }
