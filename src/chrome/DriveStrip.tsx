@@ -1,22 +1,18 @@
 import { useVehicle } from "../state/store";
 import type { Gear } from "../state/types";
 import { isParkedFullscreen } from "../viz/layout";
+import { selectGear } from "./gearSelection";
 import { IconAutoShiftCar } from "./Icons";
 
 const GEARS: Gear[] = ["P", "R", "N", "D"];
 
 export function DriveStrip() {
   const gear = useVehicle((s) => s.gear);
-  const setGear = useVehicle((s) => s.setGear);
   const phase = useVehicle((s) => s.phase);
   const parked = isParkedFullscreen(gear, phase);
 
   const select = (g: Gear) => {
-    if (g === "D" && phase === "routed") {
-      useVehicle.getState().startFsd();
-      return;
-    }
-    setGear(g);
+    selectGear(g);
   };
 
   if (parked) {

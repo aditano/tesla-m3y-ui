@@ -1,7 +1,21 @@
 import { APP_UA, NOMINATIM_URL, PHOTON_URL } from "./constants";
 import type { Place } from "../state/types";
 
+/** Bound every geocoder request so a hung Nominatim or Photon call cannot stall navigation. */
+export const GEOCODE_TIMEOUT_MS = 8_000;
+
 const cache = new Map<string, Place[]>();
+
+export type GeocodeRequest = {
+  signal?: AbortSignal;
+  timeoutMs?: number;
+};
+
+async function fetchGeocode(url: URL, request: GeocodeRequest = {}): Promise<Response> {
+  const timeout = AbortSignal.timeout(request.timeoutMs ?? GEOCODE_TIMEOUT_MS);
+  const signal = request.signal ? AbortSignal.any([request.signal, timeout]) : timeout;
+  return fetch(url, { headers: headers(), signal });
+}
 
 function headers(): HeadersInit {
   return {
@@ -39,13 +53,13 @@ function fromNominatim(hit: NominatimHit): Place {
   };
 }
 
-async function nominatimSearch(query: string): Promise<Place[]> {
+async function nominatimSearch(query: string, request?: GeocodeRequest): Promise<Place[]> {
   const url = new URL(`${NOMINATIM_URL}/search`);
   url.searchParams.set("format", "jsonv2");
   url.searchParams.set("q", query);
   url.searchParams.set("limit", "6");
   url.searchParams.set("addressdetails", "1");
-  const res = await fetch(url, { headers: headers() });
+  const res = await fetchGeocode(url, request);
   if (!res.ok) throw new Error(`Nominatim ${res.status}`);
   const data = (await res.json()) as NominatimHit[];
   return data.map(fromNominatim);
@@ -63,12 +77,12 @@ interface PhotonHit {
   };
 }
 
-async function photonSearch(query: string): Promise<Place[]> {
+async function photonSearch(query: string, request?: GeocodeRequest): Promise<Place[]> {
   const url = new URL(PHOTON_URL);
   url.searchParams.set("q", query);
   url.searchParams.set("limit", "6");
   url.searchParams.set("lang", "en");
-  const res = await fetch(url, { headers: headers() });
+  const res = await fetchGeocode(url, request);
   if (!res.ok) throw new Error(`Photon ${res.status}`);
   const data = (await res.json()) as { features: PhotonHit[] };
   return (data.features ?? []).map((f) => {
@@ -82,30 +96,31 @@ async function photonSearch(query: string): Promise<Place[]> {
   });
 }
 
-export async function searchPlaces(query: string): Promise<Place[]> {
+export async function searchPlaces(query: string, request?: GeocodeRequest): Promise<Place[]> {
   const q = query.trim();
   if (q.length < 3) return [];
   const key = q.toLowerCase();
   const cached = cache.get(key);
   if (cached) return cached;
   try {
-    const hits = await nominatimSearch(q);
+    const hits = await nominatimSearch(q, request);
     cache.set(key, hits);
     return hits;
-  } catch {
-    const hits = await photonSearch(q);
+  } catch (err) {
+    if (request?.signal?.aborted) throw err;
+    const hits = await photonSearch(q, request);
     cache.set(key, hits);
     return hits;
   }
 }
 
-export async function reverseGeocode(lng: number, lat: number): Promise<Place> {
+export async function reverseGeocode(lng: number, lat: number, request?: GeocodeRequest): Promise<Place> {
   const url = new URL(`${NOMINATIM_URL}/reverse`);
   url.searchParams.set("format", "jsonv2");
   url.searchParams.set("lat", String(lat));
   url.searchParams.set("lon", String(lng));
   try {
-    const res = await fetch(url, { headers: headers() });
+    const res = await fetchGeocode(url, request);
     if (!res.ok) throw new Error("reverse failed");
     const hit = (await res.json()) as NominatimHit;
     return fromNominatim(hit);
