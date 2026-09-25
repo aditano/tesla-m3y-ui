@@ -405,3 +405,20 @@ Not applied to this mesh: David_Holiday aero-wheel replacement, cabin blocker, g
 | Leaders | PARTIAL | FRUNK and CHARGE sit on the body. TRUNK still rides high and grazes the roofline. |
 
 FSD uses the same fit. The chase camera sits behind a forward nose, and the Highland tail lamps are visible. Remaining gaps are finish (aero-cover brightness, glass darkness, leader layout), not a missing body.
+
+## Trunk leader and cabin colors — 2026-09-25
+
+Stills: `docs/qa/screenshots/parked-home.png` (callouts) and `docs/qa/screenshots/parked-cabin.png` (glasshouse crop of that capture). Compared with `docs/references/nata-parked-car-vis.jpg`.
+
+Before this pass the TRUNK pin sat on the rear bumper (`[0.12, 0.08, -2.0]`) and `.parked-callout.trunk` used a `min(50vh, 440px)` stem, so the Open card floated above the decklid. `highlandRole` tagged the whole fused `Georimblurlfsub01` shell as `exterior_paint`, and `Geocockpithrsub1031` shipped with a body-red albedo, so the dash, door cards, floors, footwells, and wireless pads rendered Ultra Red. Seats (`Ln7`) were already interior leather.
+
+After: the TRUNK dot is on the decklid (`[0, 0.91, -2.02]`) with a 20px stem, so the card sits on the lid the way FRUNK sits on the hood. FRUNK and CHARGE pins are unchanged. Body paint is an allowlist (`Geohoodsub00021`, plus Georim triangles outside the cabin tub, wheel arches, and the painted cowl). Inside the tub, Georim splits into charcoal soft-trim, dark grey carpet, and a light grey headliner. The named cockpit pad is light grey. Glass and wheel finishes are not retinted.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Ultra Red clearcoat stays on the outer shell. Cabin tub is no longer body color: dark plastics, dark carpet, light grey pads. Midtones are still flatter than nata. |
+| Glass | PARTIAL | Unchanged laminate. The corrected cabin reads through the rear glass and roof. |
+| Wheels | PARTIAL | Unchanged source wheels. Wheel arches stay on the wheel-finish path. |
+| Proportions | PASS | Unchanged Highland silhouette. |
+| Lighting | PARTIAL | Same white studio. |
+| Leaders | PARTIAL | TRUNK card sits on the decklid. FRUNK stays on the hood and CHARGE on the quarter. Not a nata-length stem into empty studio. |
