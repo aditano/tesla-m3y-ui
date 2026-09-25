@@ -2628,7 +2628,7 @@ button {
 }
 
 .parked-callout.trunk {
-  --stem-h: 40px;
+  --stem-h: 20px;
   --pin-x: 64px;
 }
 

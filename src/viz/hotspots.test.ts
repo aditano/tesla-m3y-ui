@@ -10,10 +10,10 @@ describe("HOTSPOT_PINS", () => {
   it("puts TRUNK on the rear decklid, not the bumper or the quarter panel", () => {
     const [x, y, z] = hotspotPin("trunk").position;
     expect(Math.abs(x)).toBeLessThan(0.15);
-    expect(z).toBeGreaterThan(-2.05);
-    expect(z).toBeLessThan(-1.7);
-    expect(y).toBeGreaterThan(0.9);
-    expect(y).toBeLessThan(1.08);
+    expect(z).toBeGreaterThan(-2.15);
+    expect(z).toBeLessThan(-1.85);
+    expect(y).toBeGreaterThan(0.82);
+    expect(y).toBeLessThan(1.02);
   });
 
   it("puts FRUNK on the hood rather than the roof", () => {
