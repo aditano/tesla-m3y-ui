@@ -86,7 +86,12 @@ export function StatusBar() {
       <div className="status-right">
         <span className="status-airbag" title="Passenger airbag on">
           <IconAirbag />
-          <span>Passenger airbag</span>
+          <span className="status-airbag-copy">
+            <span>Passenger</span>
+            <span>
+              Airbag <em>On</em>
+            </span>
+          </span>
         </span>
       </div>
     </header>
