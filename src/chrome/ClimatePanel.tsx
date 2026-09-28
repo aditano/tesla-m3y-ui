@@ -8,7 +8,7 @@ function displayTemp(tempF: number, celsius: boolean): string {
 }
 
 export function ClimatePanel() {
-  const open = useVehicle((s) => s.ui.climateOpen);
+  const open = useVehicle((s) => s.ui.climateOpen && !s.ui.climateFull);
   const climate = useVehicle((s) => s.climate);
   const flags = useVehicle((s) => s.flags);
   const patchClimate = useVehicle((s) => s.patchClimate);

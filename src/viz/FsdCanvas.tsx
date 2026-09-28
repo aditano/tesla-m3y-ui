@@ -18,7 +18,7 @@ import {
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import { useVehicle } from "../state/store";
 import { Model3 } from "./Model3";
-import { powerNorm } from "./driveHud";
+import { METER_SEGMENTS, meterSegments, powerNorm } from "./driveHud";
 import { CityBlocks, EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
 import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio";
@@ -296,15 +296,24 @@ function VizHud() {
 
   if (!driving) return null;
 
-  const up = Math.max(0, norm);
-  const down = Math.max(0, -norm);
+  const lit = meterSegments(norm);
+  const power = Array.from({ length: METER_SEGMENTS }, (_, i) => METER_SEGMENTS - 1 - i);
+  const regen = Array.from({ length: METER_SEGMENTS }, (_, i) => i);
   return (
     <div className="hud">
       <div className="hud-cluster">
-        <div className="power-meter" aria-hidden="true">
-          <i className="power-up" style={{ height: `${up * 50}%` }} />
-          <i className="power-down" style={{ height: `${down * 50}%` }} />
-          <i className="power-zero" />
+        <div className="power-meter" aria-hidden="true" data-up={lit.up} data-down={lit.down}>
+          <div className="power-side up">
+            {power.map((i) => (
+              <i key={i} className={i < lit.up ? "on" : ""} />
+            ))}
+          </div>
+          <b className="power-zero" />
+          <div className="power-side down">
+            {regen.map((i) => (
+              <i key={i} className={i < lit.down ? "on" : ""} />
+            ))}
+          </div>
         </div>
         <div className="hud-speed" aria-label={`${Math.round(pose.speedMph)} miles per hour`}>
           <div className="mph">{Math.round(pose.speedMph)}</div>

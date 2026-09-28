@@ -17,3 +17,14 @@ export function powerNorm(prevMph: number, nextMph: number, dtSec: number): numb
   }
   return Math.max(-1, Math.min(1, accel / 12));
 }
+
+/** Segments above and below the zero tick on the vertical power meter. */
+export const METER_SEGMENTS = 14;
+
+/** How many power segments (up) and regen segments (down) to light for a `-1..1` reading. */
+export function meterSegments(norm: number, perSide: number = METER_SEGMENTS): { up: number; down: number } {
+  const n = Math.max(-1, Math.min(1, Number.isFinite(norm) ? norm : 0));
+  const lit = (v: number) => Math.max(0, Math.min(perSide, Math.ceil(v * perSide - 1e-6)));
+  if (n >= 0) return { up: lit(n), down: 0 };
+  return { up: 0, down: lit(-n) };
+}

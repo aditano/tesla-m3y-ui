@@ -3,6 +3,7 @@ import { upcomingManeuverIndex } from "../geo/osrm";
 import { useVehicle } from "../state/store";
 import { IconArrive, IconStraight, IconTurnLeft, IconTurnRight } from "./Icons";
 import type { Maneuver } from "../state/types";
+import { ArrivalBattery, TripProgress } from "./TripProgress";
 
 function TurnGlyph({ m }: { m: Maneuver }) {
   if (m.type === "arrive") return <IconArrive width={18} height={18} />;
@@ -63,8 +64,6 @@ export function RouteCard() {
   if (!route || !dest) return null;
 
   const remainingS = etaSeconds(route.distanceM, route.durationS, pose.remainingM || route.distanceM, pose.speedMph);
-  const totalM = Math.max(1, pose.traveledM + pose.remainingM);
-  const progress = Math.min(100, (pose.traveledM / totalM) * 100);
   const idx = upcomingManeuverIndex(pose.traveledM, route.maneuvers);
   const etaNow = frozen ? new Date(2026, 8, 16, 16, 20, 0) : new Date();
   const upcoming = route.maneuvers.slice(idx, idx + 4);
@@ -77,10 +76,9 @@ export function RouteCard() {
           <span>{etaClock(remainingS, etaNow)}</span>
           <span>{formatDuration(remainingS)}</span>
           <span>{formatDistance(pose.remainingM || route.distanceM, miles)}</span>
+          <ArrivalBattery route={route} />
         </div>
-        <div className="trip-bar" aria-hidden="true">
-          <i style={{ width: `${progress}%` }} />
-        </div>
+        <TripProgress route={route} />
       </div>
       <div className="turn-list">
         {upcoming.map((m, i) => (

@@ -21,6 +21,7 @@ http://localhost:5173/tesla-m3y-ui/?qa=route-set
 http://localhost:5173/tesla-m3y-ui/?qa=fsd-engaged
 http://localhost:5173/tesla-m3y-ui/?qa=controls
 http://localhost:5173/tesla-m3y-ui/?qa=climate
+http://localhost:5173/tesla-m3y-ui/?qa=climate-full
 http://localhost:5173/tesla-m3y-ui/?qa=media
 http://localhost:5173/tesla-m3y-ui/?qa=viz-expanded
 ```

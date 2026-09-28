@@ -22,6 +22,8 @@ function hotspotIcon(id: HotspotId): ReactNode {
 export function ParkedHotspots(): ReactNode {
   const flags = useVehicle((s) => s.flags);
   const patchFlags = useVehicle((s) => s.patchFlags);
+  // drei <Html> sits above the DOM chrome, so hide the callouts under full-screen sheets.
+  const covered = useVehicle((s) => s.ui.climateOpen && s.ui.climateFull);
   const open = {
     frunk: flags.frunkOpen,
     trunk: flags.trunkOpen,
@@ -32,6 +34,8 @@ export function ParkedHotspots(): ReactNode {
     trunk: () => patchFlags({ trunkOpen: !flags.trunkOpen }),
     charge: () => patchFlags({ chargePortOpen: !flags.chargePortOpen }),
   };
+
+  if (covered) return null;
 
   return (
     <group name="parked-hotspots">

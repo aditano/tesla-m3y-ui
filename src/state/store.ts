@@ -31,6 +31,10 @@ export const MEDIA_LIBRARY: MediaTrack[] = [
 
 const climate: ClimateState = {
   on: true,
+  ac: true,
+  keepMode: "off",
+  airflow: { face: true, feet: true, screen: false },
+  wiperDefrost: false,
   driverTempF: 70,
   passengerTempF: 70,
   split: false,
@@ -122,6 +126,7 @@ const flags: VehicleFlags = {
   jackMode: false,
   cameraCalibrating: false,
   gloveboxOpen: false,
+  batteryPct: 78,
   vehicleName: "Pittsburgh",
 };
 
@@ -130,6 +135,7 @@ const ui: UiState = {
   controlsTab: "quick",
   controlsQuery: "",
   climateOpen: false,
+  climateFull: false,
   mediaOpen: false,
   appsOpen: false,
   searchOpen: false,

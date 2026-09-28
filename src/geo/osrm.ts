@@ -1,5 +1,6 @@
 import { DEFAULT_SPEED_LIMIT_MPH, OSRM_ENDPOINTS } from "./constants";
 import { simplifyPolyline } from "./polyline";
+import { trafficFromSegments, type SegmentSample } from "./traffic";
 import type { LngLat, Maneuver, Place, RoutePlan } from "../state/types";
 
 interface OsrmManeuver {
@@ -20,7 +21,10 @@ interface OsrmRoute {
   distance: number;
   duration: number;
   geometry: { type: "LineString"; coordinates: LngLat[] };
-  legs: { steps: OsrmStep[]; annotation?: { maxspeed?: Array<number | string> } }[];
+  legs: {
+    steps: OsrmStep[];
+    annotation?: { maxspeed?: Array<number | string>; distance?: number[]; duration?: number[] };
+  }[];
 }
 
 interface OsrmResponse {
@@ -86,6 +90,18 @@ function toManeuvers(route: OsrmRoute): Maneuver[] {
   }));
 }
 
+/** Per-segment distance/duration from `annotations=true`, flattened across legs. */
+export function segmentSamples(route: Pick<OsrmRoute, "legs">): SegmentSample[] {
+  const out: SegmentSample[] = [];
+  for (const leg of route.legs) {
+    const d = leg.annotation?.distance ?? [];
+    const t = leg.annotation?.duration ?? [];
+    const n = Math.min(d.length, t.length);
+    for (let i = 0; i < n; i++) out.push({ distanceM: d[i], durationS: t[i] });
+  }
+  return out;
+}
+
 /** Relative path so a base like `.../routed-car` keeps its prefix. A leading slash would resolve from the origin and drop it. */
 export function buildOsrmRouteUrl(base: string, from: Place, to: Place): string {
   const root = base.endsWith("/") ? base : `${base}/`;
@@ -118,6 +134,7 @@ async function fetchOsrm(base: string, from: Place, to: Place, signal?: AbortSig
     durationS: r.duration,
     maneuvers: toManeuvers(r),
     geometry: { type: "LineString", coordinates: coords },
+    traffic: trafficFromSegments(segmentSamples(r)),
   };
 }
 
@@ -167,4 +184,14 @@ export function upcomingManeuverIndex(traveledM: number, maneuvers: Maneuver[]):
     if (traveledM < acc - 4) return i;
   }
   return Math.max(0, maneuvers.length - 1);
+}
+
+/** The next maneuver the driver will make, and how far away it is. */
+export function nextTurn(traveledM: number, maneuvers: Maneuver[]): { maneuver: Maneuver; distanceM: number } | null {
+  if (maneuvers.length === 0) return null;
+  const idx = upcomingManeuverIndex(traveledM, maneuvers);
+  let stepEnd = 0;
+  for (let i = 0; i <= idx; i++) stepEnd += maneuvers[i].distanceM;
+  const next = maneuvers[Math.min(maneuvers.length - 1, idx + 1)];
+  return { maneuver: next, distanceM: Math.max(0, stepEnd - traveledM) };
 }

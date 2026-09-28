@@ -27,6 +27,7 @@ export const QA_SCENE_IDS = [
   "fsd-engaged",
   "controls",
   "climate",
+  "climate-full",
   "media",
   "viz-expanded",
 ] as const;
@@ -57,6 +58,12 @@ export function buildQaRoute(): RoutePlan {
     distanceM: index.totalMeters,
     durationS: Math.round(index.totalMeters / 11.2),
     geometry: { type: "LineString", coordinates: coords },
+    // Canned slow stretches: a heavy block on Forbes ahead of the car and a moderate one near CMU.
+    traffic: [
+      { startM: index.totalMeters * 0.46, endM: index.totalMeters * 0.53, level: "heavy" },
+      { startM: index.totalMeters * 0.53, endM: index.totalMeters * 0.6, level: "moderate" },
+      { startM: index.totalMeters * 0.82, endM: index.totalMeters * 0.87, level: "moderate" },
+    ],
     maneuvers: [
       {
         type: "depart",
@@ -111,6 +118,10 @@ export const QA_DESTINATION: Place = {
 
 const climate: ClimateState = {
   on: true,
+  ac: true,
+  keepMode: "off",
+  airflow: { face: true, feet: true, screen: false },
+  wiperDefrost: false,
   driverTempF: 70,
   passengerTempF: 70,
   split: false,
@@ -202,6 +213,7 @@ const flags: VehicleFlags = {
   jackMode: false,
   cameraCalibrating: false,
   gloveboxOpen: false,
+  batteryPct: 78,
   vehicleName: "Pittsburgh",
 };
 
@@ -211,6 +223,7 @@ function closedUi(overrides: Partial<UiState> = {}): UiState {
     controlsTab: "quick",
     controlsQuery: "",
     climateOpen: false,
+    climateFull: false,
     mediaOpen: false,
     appsOpen: false,
     searchOpen: false,
@@ -336,6 +349,8 @@ export function snapshotForScene(scene: QaSceneId): QaSnapshot {
       return parkedBase(scene, closedUi({ controlsOpen: true, controlsTab: "quick" as ControlsTab }));
     case "climate":
       return parkedBase(scene, closedUi({ climateOpen: true }));
+    case "climate-full":
+      return parkedBase(scene, closedUi({ climateOpen: true, climateFull: true }));
     case "media":
       return parkedBase(scene, closedUi({ mediaOpen: true }));
     case "viz-expanded":

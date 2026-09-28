@@ -7,6 +7,7 @@ import { DriveStrip } from "./chrome/DriveStrip";
 import { BottomDock } from "./chrome/BottomDock";
 import { ControlsOverlay } from "./chrome/ControlsOverlay";
 import { ClimatePanel } from "./chrome/ClimatePanel";
+import { ClimateFull } from "./chrome/ClimateFull";
 import { MediaPanel } from "./chrome/MediaPanel";
 import { AppLauncher } from "./chrome/AppLauncher";
 import { markQaReady } from "./qa/applyScene";
@@ -220,6 +221,7 @@ export default function App() {
           <div className="chrome-layer">
             <ControlsOverlay />
             <ClimatePanel />
+            <ClimateFull />
             <MediaPanel />
             <AppLauncher />
             <Disclaimer />

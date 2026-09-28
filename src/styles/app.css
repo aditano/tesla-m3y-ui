@@ -22,7 +22,8 @@
   --dock-h: 68px;
   --prnd-w: 48px;
   --radius: 16px;
-  --font: Inter, "Segoe UI", system-ui, sans-serif;
+  /* Licensed look-alike (OFL). Tesla's own UI face is not shipped. */
+  --font: "Inter Tight", Inter, "Segoe UI", system-ui, sans-serif;
   --font-ui: var(--font);
   --viz-ratio: 0.42;
   --fs-status: 13px;
@@ -3077,4 +3078,716 @@ button {
     right: 8px;
     width: auto;
   }
+}
+
+/* ---------- 2026-09-28 fidelity pass ---------- */
+
+/* Parked Auto Shift (nata-auto-shift.jpg): dotted rails, D, ^^ magnet, car, vv magnet, R. */
+.bezel.parked .auto-shift-stack {
+  position: relative;
+  gap: 6px;
+  padding: 2px 0 6px;
+}
+
+.auto-shift-stack::before,
+.auto-shift-stack::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: radial-gradient(circle, rgba(60, 66, 76, 0.34) 0.9px, transparent 1.2px) 0 0 / 2px 7px repeat-y;
+  pointer-events: none;
+}
+
+.auto-shift-stack::before {
+  left: -9px;
+}
+
+.auto-shift-stack::after {
+  right: -9px;
+}
+
+.auto-shift-rail {
+  display: block;
+  width: 2px;
+  height: 30px;
+  background: radial-gradient(circle, rgba(60, 66, 76, 0.34) 0.9px, transparent 1.2px) 0 0 / 2px 7px repeat-y;
+}
+
+.bezel.parked .gear.auto.d,
+.bezel.parked .gear.auto.r {
+  color: #9aa0a8;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.bezel.parked .gear.auto.on {
+  color: #111;
+}
+
+.auto-shift-magnet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 30px;
+  height: 42px;
+  color: rgba(52, 104, 196, 0.72);
+}
+
+.auto-shift-magnet::before {
+  content: "";
+  position: absolute;
+  inset: -8px -6px;
+  border-radius: 14px;
+  background: radial-gradient(ellipse at center, rgba(96, 150, 232, 0.5) 0%, rgba(96, 150, 232, 0.16) 52%, transparent 76%);
+  pointer-events: none;
+}
+
+.auto-shift-magnet svg {
+  position: relative;
+}
+
+.bezel.parked .auto-shift-car {
+  width: 26px;
+  height: 44px;
+}
+
+/* Map "Tracking Disabled" (Maps PDF p.169). */
+.tracking-chip {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 8px;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--glass);
+  border: 1px solid #2c2c2c;
+  color: #e6e6e6;
+  font-size: 12.5px;
+  font-weight: 600;
+  backdrop-filter: blur(12px);
+}
+
+.map-tools button.untracked {
+  color: #6e7178;
+  box-shadow: none;
+}
+
+/* Trip progress (nata-trip-progress.jpg): gray driven, blue ahead, traffic, car arrow. */
+.trip-bar {
+  position: relative;
+  height: 4px;
+  overflow: visible;
+  background: transparent;
+}
+
+.trip-bar i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: block;
+  height: auto;
+  border-radius: 0;
+}
+
+.trip-bar .trip-done {
+  left: 0;
+  background: #8a929c;
+}
+
+.trip-bar .trip-ahead {
+  right: 0;
+  background: #3d8bfd;
+}
+
+.trip-bar .trip-traffic.moderate {
+  background: #f59f00;
+}
+
+.trip-bar .trip-traffic.heavy {
+  background: #e8423f;
+}
+
+.trip-car {
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0;
+  margin-left: -4px;
+  transform: translateY(-50%);
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #e8423f;
+  filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff);
+}
+
+.arrival-battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.battery-glyph {
+  width: 20px;
+  height: 10px;
+}
+
+.eta-row {
+  align-items: center;
+}
+
+.route-head .trip-bar {
+  margin-top: 12px;
+}
+
+/* Segmented power / regen meter (nata-regen-speedometer.jpg). */
+.power-meter {
+  width: 6px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  overflow: visible;
+  border-radius: 0;
+}
+
+.power-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 4px;
+}
+
+.power-side i {
+  flex: 1;
+  display: block;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.power-side.up i.on {
+  background: #f2f5f8;
+}
+
+.power-side.down i.on {
+  background: #3dce8a;
+}
+
+.power-meter .power-zero {
+  position: static;
+  display: block;
+  width: 10px;
+  height: 2px;
+  margin: 0;
+  background: #fff;
+  border-radius: 99px;
+}
+
+/* v12 on-viz media card (nata-v12-media-player.jpg). */
+.drive-overlay {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.drive-overlay > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.drive-overlay.expanded > .drive-media {
+  flex: 0 1 560px;
+  margin-left: auto;
+}
+
+.drive-overlay.expanded > .drive-nav {
+  flex: 0 1 360px;
+}
+
+.drive-media {
+  gap: 0;
+  padding: 0;
+  border-radius: 12px;
+  background: rgba(62, 64, 68, 0.62);
+}
+
+.drive-media-top {
+  display: grid;
+  grid-template-columns: 1fr 44px 44px;
+  align-items: center;
+  gap: 4px;
+  padding-right: 10px;
+}
+
+.drive-media-main {
+  grid-template-columns: 76px 1fr;
+  gap: 14px;
+}
+
+.drive-media-main .media-art {
+  width: 76px;
+  height: 76px;
+  border-radius: 12px 0 0 0;
+}
+
+.drive-media-main strong {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.drive-media-main span span {
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.drive-media-top > button:not(.drive-media-main) {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+
+.drive-media-top > button.on {
+  color: #8eb6ff;
+}
+
+.drive-media-progress {
+  position: relative;
+  height: 2px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: visible;
+}
+
+.drive-media-progress i {
+  border-radius: 0;
+}
+
+.drive-media-progress b {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.drive-media-actions {
+  justify-content: space-around;
+  padding: 8px 10px;
+}
+
+/* Expanded viz: turn card top-left, trip card bottom-right (nata-park-assist-fullscreen.jpg). */
+.drive-turn {
+  position: absolute;
+  top: 14px;
+  left: 190px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: center;
+  gap: 12px;
+  min-width: 230px;
+  max-width: 320px;
+  padding: 10px 16px 10px 12px;
+  border-radius: 10px;
+  background: rgba(62, 64, 68, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  color: #fff;
+}
+
+.drive-turn-copy strong,
+.drive-turn-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drive-turn-copy strong {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.drive-turn-copy span {
+  color: #d4d8de;
+  font-size: 14px;
+}
+
+.drive-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px 0;
+  border-radius: 12px;
+  background: rgba(62, 64, 68, 0.62);
+}
+
+.drive-nav-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #e6e9ee;
+}
+
+.drive-nav-row strong {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.drive-nav-dest {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drive-nav .trip-bar {
+  margin: 10px 0 4px;
+}
+
+.drive-nav-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  margin: 0 -14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.drive-end {
+  height: 44px;
+  border-radius: 0;
+  background: none;
+  color: #f2f2f2;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.drive-end.muted {
+  display: grid;
+  place-items: center;
+  color: #aeb4bc;
+}
+
+.drive-more {
+  width: 64px;
+  height: 44px;
+  color: #fff;
+  letter-spacing: 1px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Main climate screen (manual-m3-climate-p158.jpg). Covers the display above the dock. */
+.climate-full {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  display: grid;
+  grid-template-rows: 56px 52px 1fr 76px;
+  background: linear-gradient(180deg, #f3f5f8 0%, #e9edf2 100%);
+  color: #1c1d20;
+  overflow: hidden;
+}
+
+.climate-full.off .clim-cabin {
+  filter: grayscale(0.6) brightness(0.97);
+}
+
+.clim-keep {
+  justify-self: center;
+  align-self: end;
+  display: flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.clim-keep button {
+  min-width: 92px;
+  height: 36px;
+  border-radius: 8px;
+  color: #6a6e76;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.clim-keep button.on {
+  background: #fff;
+  color: #111;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.clim-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #4a4d53;
+}
+
+.clim-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 28px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.clim-top-btn {
+  height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #8a8e96;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.clim-top-btn.on {
+  color: #3e6ae1;
+}
+
+.clim-top-btn.power.on {
+  color: #3e6ae1;
+}
+
+.clim-top-btn.schedule {
+  margin-left: auto;
+  color: #4a4d53;
+}
+
+.clim-air {
+  display: flex;
+  gap: 4px;
+  margin-left: 18px;
+}
+
+.clim-zone {
+  display: flex;
+  gap: 4px;
+  margin-left: 22px;
+}
+
+.clim-zone button {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  color: #8a8e96;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.clim-zone button.on {
+  color: #111;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.clim-cabin {
+  position: relative;
+  overflow: hidden;
+}
+
+.clim-glass {
+  position: absolute;
+  inset: 0 6% 42% 6%;
+  border-radius: 0 0 50% 50% / 0 0 30% 30%;
+  background: linear-gradient(180deg, rgba(200, 208, 218, 0.18), rgba(236, 240, 245, 0.4));
+}
+
+.clim-dash {
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 44%;
+  bottom: -10%;
+  border-radius: 48% 48% 0 0 / 22% 22% 0 0;
+  background: linear-gradient(180deg, #fdfdfe 0%, #e4e8ed 60%, #d7dce2 100%);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.06);
+}
+
+.clim-vent-bar {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: calc(44% + 26px);
+  height: 6px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #c7cdd4, #aab2bb 50%, #c7cdd4);
+}
+
+.clim-wheel {
+  position: absolute;
+  left: 17%;
+  top: 36%;
+  width: 22%;
+  aspect-ratio: 1.15;
+  border: 18px solid #cfd4da;
+  border-bottom-width: 28px;
+  border-radius: 46% 46% 42% 42%;
+  background: radial-gradient(circle at 50% 62%, #e3e7ec 0 22%, transparent 23%);
+}
+
+.clim-screen {
+  position: absolute;
+  left: 44%;
+  top: 31%;
+  width: 16%;
+  aspect-ratio: 1.4;
+  border-radius: 8px;
+  background: linear-gradient(160deg, #eceff3, #d9dde3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.clim-plume {
+  position: absolute;
+  top: calc(44% - 20px);
+  width: 18%;
+  height: 38%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 70%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%);
+  filter: blur(6px);
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+
+.clim-plume.driver {
+  left: 20%;
+}
+
+.clim-plume.passenger {
+  right: 16%;
+}
+
+.clim-plume.screen {
+  left: 30%;
+  width: 40%;
+  top: 8%;
+  height: 26%;
+}
+
+.clim-plume.rear {
+  left: 38%;
+  width: 24%;
+  top: 30%;
+}
+
+.clim-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 28px;
+  background: rgba(255, 255, 255, 0.55);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.clim-foot-gap {
+  flex: 1;
+}
+
+.clim-foot-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #5c5f66;
+}
+
+.clim-foot-btn.on {
+  color: #3e6ae1;
+}
+
+.clim-foot-btn.seat.on {
+  color: #f76707;
+}
+
+.clim-fan {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 14px;
+  color: #4a4d53;
+}
+
+.clim-fan button {
+  width: 34px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #6a6e76;
+}
+
+.clim-fan-level {
+  min-width: 42px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+@media (max-width: 520px) {
+  .climate-full {
+    grid-template-rows: 52px auto 1fr auto;
+  }
+
+  .clim-keep button {
+    min-width: 64px;
+  }
+
+  .clim-top,
+  .clim-foot {
+    flex-wrap: wrap;
+    padding: 6px 10px;
+  }
+
+  .clim-air,
+  .clim-zone {
+    margin-left: 0;
+  }
+
+  .drive-turn {
+    left: 12px;
+  }
+
+  .drive-overlay {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.drive-overlay .drive-nav {
+  align-items: stretch;
+  text-align: left;
+}
+
+.drive-overlay .drive-nav > * {
+  width: 100%;
+}
+
+.drive-overlay .drive-nav .drive-nav-actions {
+  width: calc(100% + 28px);
 }

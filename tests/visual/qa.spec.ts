@@ -96,6 +96,13 @@ test.describe("visual QA harness", () => {
     await expect(page.getByRole("dialog", { name: "Climate" })).toBeVisible();
   });
 
+  test("captures full climate", async ({ page }) => {
+    await capture(page, "climate-full");
+    await expect(page.getByRole("dialog", { name: "Climate" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Dog" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "A/C" })).toBeVisible();
+  });
+
   test("captures media open", async ({ page }) => {
     await capture(page, "media");
     await expect(page.getByRole("dialog", { name: "Media" })).toBeVisible();
@@ -108,6 +115,6 @@ test.describe("visual QA harness", () => {
   });
 
   test("scene catalog matches the checklist", () => {
-    expect([...QA_SCENE_IDS]).toHaveLength(7);
+    expect([...QA_SCENE_IDS]).toHaveLength(8);
   });
 });

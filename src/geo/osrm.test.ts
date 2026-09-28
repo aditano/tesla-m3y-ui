@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OSRM_ENDPOINTS } from "./constants";
-import { buildOsrmRouteUrl, fetchRoute } from "./osrm";
+import { buildOsrmRouteUrl, fetchRoute, nextTurn, segmentSamples } from "./osrm";
 import type { Place } from "../state/types";
 
 const from: Place = { name: "A", label: "A", lng: -79.9959, lat: 40.4406 };
@@ -92,5 +92,40 @@ describe("OSRM route URLs", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]).toContain("/route/v1/driving/");
     expect(calls[0]).not.toContain("/routed-car/");
+  });
+});
+
+describe("next turn", () => {
+  const m = (type: string, distanceM: number, instruction: string) => ({
+    type,
+    modifier: null,
+    instruction,
+    name: "",
+    distanceM,
+    durationS: 10,
+    location: [0, 0] as [number, number],
+    speedLimitMph: 25,
+  });
+  const steps = [m("depart", 100, "Head out"), m("turn", 300, "Turn right"), m("arrive", 0, "You have arrived")];
+
+  it("points at the upcoming maneuver and the distance to it", () => {
+    expect(nextTurn(40, steps)).toEqual({ maneuver: steps[1], distanceM: 60 });
+    expect(nextTurn(150, steps)).toEqual({ maneuver: steps[2], distanceM: 250 });
+    expect(nextTurn(0, [])).toBeNull();
+  });
+});
+
+describe("segment samples", () => {
+  it("flattens per-leg annotation distance and duration", () => {
+    const legs = [
+      { steps: [], annotation: { distance: [10, 20], duration: [1, 4] } },
+      { steps: [], annotation: { distance: [5], duration: [5] } },
+      { steps: [] },
+    ];
+    expect(segmentSamples({ legs })).toEqual([
+      { distanceM: 10, durationS: 1 },
+      { distanceM: 20, durationS: 4 },
+      { distanceM: 5, durationS: 5 },
+    ]);
   });
 });

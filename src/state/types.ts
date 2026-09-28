@@ -62,12 +62,23 @@ export interface RouteLine {
   coordinates: LngLat[];
 }
 
+export type TrafficLevel = "moderate" | "heavy";
+
+/** Slow stretch of the route, in meters along the polyline. */
+export interface TrafficSpan {
+  startM: number;
+  endM: number;
+  level: TrafficLevel;
+}
+
 export interface RoutePlan {
   coords: LngLat[];
   distanceM: number;
   durationS: number;
   maneuvers: Maneuver[];
   geometry: RouteLine;
+  /** Estimated from OSRM segment speeds. Public OSRM has no live traffic feed. */
+  traffic?: TrafficSpan[];
 }
 
 export interface SeatHeat {
@@ -84,8 +95,20 @@ export interface DoorState {
   rr: boolean;
 }
 
+export type KeepMode = "off" | "keep" | "dog" | "camp";
+
+export interface Airflow {
+  face: boolean;
+  feet: boolean;
+  screen: boolean;
+}
+
 export interface ClimateState {
   on: boolean;
+  ac: boolean;
+  keepMode: KeepMode;
+  airflow: Airflow;
+  wiperDefrost: boolean;
   driverTempF: number;
   passengerTempF: number;
   split: boolean;
@@ -183,6 +206,7 @@ export interface VehicleFlags {
   jackMode: boolean;
   cameraCalibrating: boolean;
   gloveboxOpen: boolean;
+  batteryPct: number;
   vehicleName: string;
 }
 
@@ -191,6 +215,8 @@ export interface UiState {
   controlsTab: ControlsTab;
   controlsQuery: string;
   climateOpen: boolean;
+  /** Main climate screen (touch the dock temperature) vs the compact popup. */
+  climateFull: boolean;
   mediaOpen: boolean;
   appsOpen: boolean;
   searchOpen: boolean;

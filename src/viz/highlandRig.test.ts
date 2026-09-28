@@ -8,6 +8,7 @@ import {
   highlandRole,
   highlandWheelPart,
   HIGHLAND_LENGTH_M,
+  HIGHLAND_PARKED_GLASS_HEX,
   INTERIOR_CARPET_HEX,
   INTERIOR_PAD_HEX,
   INTERIOR_PLASTIC_HEX,
@@ -113,6 +114,9 @@ describe("applyHighlandLook interior", () => {
     expect(carpet.color.getHexString()).toBe(INTERIOR_CARPET_HEX.slice(1));
     expect(plastic.color.getHexString()).toBe(INTERIOR_PLASTIC_HEX.slice(1));
     expect(glass.color.getHexString()).not.toBe(PAINT_NATA_RED.slice(1));
+    expect(glass.color.getHexString()).toBe(HIGHLAND_PARKED_GLASS_HEX.slice(1));
+    expect(glass.transparent).toBe(false);
+    expect(glass.depthWrite).toBe(true);
     expect(wheel.color.getHexString()).toBe("2a2e34");
   });
 });

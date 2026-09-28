@@ -96,7 +96,8 @@ test("portrait 390 keeps charge, navigate, volume, and the disclaimer on screen"
   expect(parked.dockOverlap).toBe(false);
   expect(parked.disclaimerFits).toBe(true);
   expect(parked.hotspots).toBe("grid");
-  expect(parked.myApps).toBe("none");
+  // Pinned app icons were removed from the dock (touchscreen PDF p.8: Car + All Apps only).
+  expect(parked.myApps).toBe("absent");
   expect(parked.volumeY - parked.climateY).toBeGreaterThan(30);
 
   const charge = page.getByRole("button", { name: "Open charge port" });
@@ -128,7 +129,7 @@ test("landscape and desktop keep the single-row dock", async ({ page }) => {
   const desktop = await layoutReport(page);
   expect(desktop.scrollW).toBeLessThanOrEqual(desktop.clientW + 1);
   expect(desktop.hotspots).toBe("none");
-  expect(desktop.myApps).not.toBe("none");
+  expect(desktop.myApps).toBe("absent");
   expect(Math.abs(desktop.climateY - desktop.volumeY)).toBeLessThan(12);
 
   await page.setViewportSize({ width: 844, height: 390 });
@@ -136,6 +137,6 @@ test("landscape and desktop keep the single-row dock", async ({ page }) => {
   const landscape = await layoutReport(page);
   expect(landscape.scrollW).toBeLessThanOrEqual(landscape.clientW + 1);
   expect(landscape.hotspots).toBe("none");
-  expect(landscape.myApps).not.toBe("none");
+  expect(landscape.myApps).toBe("absent");
   expect(Math.abs(landscape.climateY - landscape.volumeY)).toBeLessThan(12);
 });

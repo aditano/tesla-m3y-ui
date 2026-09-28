@@ -42,7 +42,8 @@ Live GitHub Pages also accepts the same query: `https://aditano.github.io/tesla-
 | `route-set` | Park with an active turn list, ETA, Cancel + Start Self-Driving. |
 | `fsd-engaged` | Drive, blue Self-Driving readout, speed / limit / set speed, visualization aligned with the map route. |
 | `controls` | Controls overlay on top of the map; Quick Controls first. |
-| `climate` | Climate popup / full climate from the dock temperature. |
+| `climate` | Compact climate popup from the dock fan button. |
+| `climate-full` | Main climate screen from the dock temperature (Keep/Dog/Camp, airflow, fan, seats). |
 | `media` | v12 media player (translucent, shuffle/repeat/search on the card). |
 | `viz-expanded` | Visualization dragged wide; small map top-right; media + Navigate remain. |
 
@@ -63,6 +64,6 @@ Target is the center display in customer cars on software **2026.14** (Highland 
 - Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - Park status-bar order and parked Auto Shift remain **PARTIAL**. All Apps is a folder of four glyphs.
 - FSD viz shares the map pose. The driving frame is a low rear chase down a gray street: building masses, mid-gray asphalt, white lane lines, a blue ego lane, traffic with amber lamps. The speed readout says the number and **mph**, with a hairline power bar on its left. The on-viz player shows title left, art right, and elapsed / remaining time on the scrubber. The nav map is charcoal with the street grid visible. Not an occupancy mesh.
-- Media player puts the title left and art right, with a thick scrubber. Dock climate and Controls are still not pixel matches.
+- Media player puts the title left and art right, with a thick scrubber. The on-viz card follows the v12 layout. The dock temperature opens a full climate screen. Controls is still not a pixel match.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
 import { indexFor, splitAtMeters } from "../geo/polyline";
 import { traveledPaintDue } from "./routePaint";
+import { sliceLine, TRAFFIC_COLORS, trafficAhead } from "../geo/traffic";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
 import { RouteCard } from "../chrome/RouteCard";
@@ -86,6 +87,26 @@ function ensureLayers(map: maplibregl.Map): void {
       layout: { "line-cap": "round", "line-join": "round" },
     });
   }
+  if (!map.getSource("route-traffic")) {
+    map.addSource("route-traffic", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+    map.addLayer({
+      id: "route-traffic",
+      type: "line",
+      source: "route-traffic",
+      paint: {
+        "line-color": [
+          "match",
+          ["get", "level"],
+          "heavy",
+          TRAFFIC_COLORS.heavy,
+          TRAFFIC_COLORS.moderate,
+        ],
+        "line-width": 8,
+        "line-opacity": 1,
+      },
+      layout: { "line-cap": "butt", "line-join": "round" },
+    });
+  }
   if (!map.getSource("route-traveled")) {
     map.addSource("route-traveled", { type: "geojson", data: EMPTY });
     map.addLayer(
@@ -146,13 +167,22 @@ function updateRouteLines(map: maplibregl.Map, route: RoutePlan | null, traveled
   ensureLayers(map);
   const src = map.getSource("route") as maplibregl.GeoJSONSource | undefined;
   const traveledSrc = map.getSource("route-traveled") as maplibregl.GeoJSONSource | undefined;
+  const trafficSrc = map.getSource("route-traffic") as maplibregl.GeoJSONSource | undefined;
   if (!src || !traveledSrc) return;
   if (!route) {
     src.setData(EMPTY);
     traveledSrc.setData(EMPTY);
+    trafficSrc?.setData({ type: "FeatureCollection", features: [] });
     return;
   }
-  const parts = splitAtMeters(indexFor(route.coords), traveledM);
+  const index = indexFor(route.coords);
+  trafficSrc?.setData({
+    type: "FeatureCollection",
+    features: trafficAhead(route.traffic, traveledM)
+      .map((span) => ({ ...lineData(sliceLine(index, span.startM, span.endM)), properties: { level: span.level } }))
+      .filter((f) => f.geometry.coordinates.length > 1),
+  });
+  const parts = splitAtMeters(index, traveledM);
   src.setData(lineData(parts.remaining.length > 1 ? parts.remaining : []));
   traveledSrc.setData(lineData(parts.traveled.length > 1 ? parts.traveled : []));
 }
@@ -179,6 +209,25 @@ function paintRoute(map: maplibregl.Map, route: RoutePlan | null, destLng?: numb
   map.fitBounds(b, { padding: { top: 56, left: 80, right: 48, bottom: 88 }, duration, maxZoom: 14.8 });
 }
 
+/** Manual p.169: "Tracking Disabled" shows briefly beside the orientation icon after a drag. */
+export const TRACKING_CHIP_MS = 3200;
+
+function useTrackingDisabledChip(tracking: boolean): boolean {
+  const frozen = useVehicle((s) => s.qa.frozen);
+  const [visible, setVisible] = useState(!tracking);
+  useEffect(() => {
+    if (tracking) {
+      setVisible(false);
+      return;
+    }
+    setVisible(true);
+    if (frozen) return;
+    const id = window.setTimeout(() => setVisible(false), TRACKING_CHIP_MS);
+    return () => window.clearTimeout(id);
+  }, [tracking, frozen]);
+  return visible;
+}
+
 export function TeslaMap({ compact = false, bare = false }: { compact?: boolean; bare?: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -189,6 +238,8 @@ export function TeslaMap({ compact = false, bare = false }: { compact?: boolean;
   const dest = useVehicle((s) => s.destination);
   const origin = useVehicle((s) => s.origin);
   const orientation = useVehicle((s) => s.ui.mapOrientation);
+  const tracking = useVehicle((s) => s.ui.tracking);
+  const trackingChip = useTrackingDisabledChip(tracking);
   const patchUi = useVehicle((s) => s.patchUi);
   const setOriginFromMap = useVehicle((s) => s.setOriginFromMap);
 
@@ -310,9 +361,14 @@ export function TeslaMap({ compact = false, bare = false }: { compact?: boolean;
       )}
       {compact || bare ? null : (
         <div className="map-tools">
+        {trackingChip ? (
+          <div className="tracking-chip" role="status">
+            Tracking Disabled
+          </div>
+        ) : null}
         <button
           type="button"
-          className={orientation === "heading" ? "on" : ""}
+          className={`${orientation === "heading" ? "on" : ""} ${tracking ? "" : "untracked"}`}
           title="Heading / North up"
           onClick={() =>
             patchUi({

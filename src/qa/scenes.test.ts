@@ -9,13 +9,14 @@ import {
 } from "./scenes";
 
 describe("QA scenes", () => {
-  it("lists the seven required visual states", () => {
+  it("lists the eight required visual states", () => {
     expect([...QA_SCENE_IDS]).toEqual([
       "parked-home",
       "route-set",
       "fsd-engaged",
       "controls",
       "climate",
+      "climate-full",
       "media",
       "viz-expanded",
     ]);
@@ -44,6 +45,8 @@ describe("QA scenes", () => {
   it("opens the matching overlay for chrome scenes", () => {
     expect(snapshotForScene("controls").ui.controlsOpen).toBe(true);
     expect(snapshotForScene("climate").ui.climateOpen).toBe(true);
+    expect(snapshotForScene("climate").ui.climateFull).toBe(false);
+    expect(snapshotForScene("climate-full").ui.climateFull).toBe(true);
     expect(snapshotForScene("media").ui.mediaOpen).toBe(true);
     expect(snapshotForScene("parked-home").phase).toBe("idle");
     expect(snapshotForScene("route-set").phase).toBe("routed");

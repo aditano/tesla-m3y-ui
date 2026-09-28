@@ -2,9 +2,6 @@ import { useEffect } from "react";
 import { useVehicle } from "../state/store";
 import {
   IconApps,
-  IconBolt,
-  IconCalendar,
-  IconCamera,
   IconCar,
   IconChevron,
   IconChevronLeft,
@@ -79,32 +76,6 @@ export function BottomDock() {
         >
           <IconApps />
         </button>
-        <div className="my-apps">
-          <button
-            type="button"
-            className="app-btn"
-            title="Camera"
-            onClick={() => patchUi({ appsOpen: true, climateOpen: false, mediaOpen: false })}
-          >
-            <IconCamera />
-          </button>
-          <button
-            type="button"
-            className="app-btn"
-            title="Calendar"
-            onClick={() => patchUi({ appsOpen: true, climateOpen: false, mediaOpen: false })}
-          >
-            <IconCalendar />
-          </button>
-          <button
-            type="button"
-            className="app-btn"
-            title="Energy"
-            onClick={() => patchUi({ appsOpen: true, climateOpen: false, mediaOpen: false })}
-          >
-            <IconBolt />
-          </button>
-        </div>
       </div>
 
       <div className="climate-cluster">
@@ -129,6 +100,7 @@ export function BottomDock() {
             onClick={() =>
               patchUi({
                 climateOpen: true,
+                climateFull: true,
                 mediaOpen: false,
                 appsOpen: false,
                 tempPopup: null,
@@ -162,7 +134,8 @@ export function BottomDock() {
           title="Climate"
           onClick={() =>
             patchUi({
-              climateOpen: !ui.climateOpen,
+              climateOpen: !(ui.climateOpen && !ui.climateFull),
+              climateFull: false,
               mediaOpen: false,
               appsOpen: false,
               tempPopup: null,
@@ -180,6 +153,7 @@ export function BottomDock() {
               onClick={() =>
                 patchUi({
                   climateOpen: true,
+                  climateFull: true,
                   mediaOpen: false,
                   appsOpen: false,
                   tempPopup: null,
