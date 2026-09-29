@@ -82,10 +82,7 @@ export function Model3({
   const gltf = useGLTF(MODEL3_URL, false, true);
   const headlights = useVehicle((s) => s.flags.headlights);
   const parked = useVehicle((s) => s.gear === "P");
-  const frunk = useVehicle((s) => s.flags.frunkOpen);
-  const trunk = useVehicle((s) => s.flags.trunkOpen);
-  const charge = useVehicle((s) => s.flags.chargePortOpen);
-  const patchFlags = useVehicle((s) => s.patchFlags);
+  const toggleClosure = useVehicle((s) => s.toggleClosure);
   const lit = headlights !== "off";
   const [doors, setDoors] = useState({ fl: false, fr: false, rl: false, rr: false });
 
@@ -119,23 +116,7 @@ export function Model3({
               position={[pin.position[0], pin.position[1], pin.position[2]]}
               args={[pin.hit[0], pin.hit[1], pin.hit[2]]}
               label={pin.kicker}
-              onToggle={() => {
-                switch (pin.id) {
-                  case "frunk":
-                    patchFlags({ frunkOpen: !frunk });
-                    break;
-                  case "trunk":
-                    patchFlags({ trunkOpen: !trunk });
-                    break;
-                  case "charge":
-                    patchFlags({ chargePortOpen: !charge });
-                    break;
-                  default: {
-                    const _exhaustive: never = pin.id;
-                    throw new Error(`Unhandled hotspot: ${String(_exhaustive)}`);
-                  }
-                }
-              }}
+              onToggle={() => toggleClosure(pin.id)}
             />
           ))}
           <DoorCard

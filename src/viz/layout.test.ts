@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { VIZ_RATIO_MAX, VIZ_RATIO_MIN } from "../geo/constants";
-import { isParkedFullscreen, useMiniMap, vizRatioForKey } from "./layout";
+import { isParkedFullscreen, isRearView, showsExpandedTripCards, showsNavigationMap, useMiniMap, vizRatioForKey } from "./layout";
 
 describe("parked layout", () => {
   it("is fullscreen in Park while idle, routed, or arrived", () => {
@@ -13,6 +13,25 @@ describe("parked layout", () => {
     expect(isParkedFullscreen("P", "fsd")).toBe(false);
     expect(isParkedFullscreen("D", "idle")).toBe(false);
     expect(isParkedFullscreen("R", "idle")).toBe(false);
+  });
+
+  it("hides the navigation map in Reverse and restores it in Park", () => {
+    expect(isRearView("R")).toBe(true);
+    expect(showsNavigationMap("R")).toBe(false);
+    expect(isParkedFullscreen("R", "idle")).toBe(false);
+    expect(isRearView("P")).toBe(false);
+    expect(showsNavigationMap("P")).toBe(true);
+    expect(isParkedFullscreen("P", "idle")).toBe(true);
+    expect(showsNavigationMap("D")).toBe(true);
+    expect(showsNavigationMap("N")).toBe(true);
+  });
+
+  it("keeps the next-turn and trip cards when the visualization is expanded", () => {
+    expect(showsExpandedTripCards(true, "fsd", true)).toBe(true);
+    expect(showsExpandedTripCards(true, "disengaged", true)).toBe(true);
+    expect(showsExpandedTripCards(false, "fsd", true)).toBe(false);
+    expect(showsExpandedTripCards(true, "fsd", false)).toBe(false);
+    expect(showsExpandedTripCards(true, "routed", true)).toBe(false);
   });
 
   it("uses the inset map while parked even at the default split ratio", () => {

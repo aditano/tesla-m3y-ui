@@ -3,7 +3,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MAP_STYLE, MAP_STYLE_PARKED } from "../geo/constants";
 import { indexFor, splitAtMeters } from "../geo/polyline";
-import { traveledPaintDue } from "./routePaint";
+import { ROUTE_AHEAD_COLOR, ROUTE_TRAVELED_COLOR, traveledPaintDue } from "./routePaint";
 import { sliceLine, TRAFFIC_COLORS, trafficAhead } from "../geo/traffic";
 import { useVehicle } from "../state/store";
 import { NavSearch } from "../chrome/NavSearch";
@@ -83,7 +83,7 @@ function ensureLayers(map: maplibregl.Map): void {
       id: "route-line",
       type: "line",
       source: "route",
-      paint: { "line-color": "#5aa7ff", "line-width": 8, "line-opacity": 1 },
+      paint: { "line-color": ROUTE_AHEAD_COLOR, "line-width": 8, "line-opacity": 1 },
       layout: { "line-cap": "round", "line-join": "round" },
     });
   }
@@ -114,7 +114,7 @@ function ensureLayers(map: maplibregl.Map): void {
         id: "route-traveled",
         type: "line",
         source: "route-traveled",
-        paint: { "line-color": "#9aa3ad", "line-width": 7, "line-opacity": 0.95 },
+        paint: { "line-color": ROUTE_TRAVELED_COLOR, "line-width": 7, "line-opacity": 0.95 },
         layout: { "line-cap": "round", "line-join": "round" },
       },
       map.getLayer("route-glow") ? "route-glow" : undefined,

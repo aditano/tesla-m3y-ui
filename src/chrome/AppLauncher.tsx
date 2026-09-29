@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from "react";
 import { useVehicle } from "../state/store";
 import { useDialogA11y } from "./dialogA11y";
+import { dismissAppLauncher } from "./shellActions";
 import {
   IconBolt,
   IconCalendar,
@@ -27,11 +28,13 @@ const APPS: { id: string; label: string; tone: string; Icon: Glyph; open: "camer
 export function AppLauncher() {
   const open = useVehicle((s) => s.ui.appsOpen);
   const patchUi = useVehicle((s) => s.patchUi);
-  const close = () => patchUi({ appsOpen: false });
+  const close = () => dismissAppLauncher();
   const dialogRef = useDialogA11y<HTMLDivElement>(open, close);
   if (!open) return null;
 
   return (
+    <>
+    <button className="overlay-scrim" aria-label="Close apps" onClick={close} />
     <div ref={dialogRef} className="apps-tray" role="dialog" aria-modal="true" aria-label="Apps" tabIndex={-1}>
       {APPS.map((app) => (
         <button
@@ -59,5 +62,6 @@ export function AppLauncher() {
         </button>
       ))}
     </div>
+    </>
   );
 }

@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applyQaScene } from "../qa/applyScene";
-import { buildIndex, interpolate } from "../geo/polyline";
+import { buildIndex, interpolate, splitAtMeters } from "../geo/polyline";
 import { fetchRoute } from "../geo/osrm";
-import { useVehicle } from "./store";
+import { routeCardFacts } from "../chrome/routeCardFacts";
+import { ROUTE_AHEAD_COLOR, ROUTE_TRAVELED_COLOR } from "../map/routePaint";
+import { selectGear } from "../chrome/gearSelection";
+import { driveHudReadout, meterSegments, powerNorm } from "../viz/driveHud";
+import { showsExpandedTripCards, useMiniMap } from "../viz/layout";
+import { resetVehicle, useVehicle } from "./store";
 import type { Place, RoutePlan } from "./types";
 
 vi.mock("../geo/osrm", async () => {
@@ -46,6 +51,119 @@ const destB: Place = { name: "B", label: "Place B", lng: -79.9, lat: 40.46 };
 function routeWith(distanceM: number): RoutePlan {
   return { ...line, distanceM };
 }
+
+const searched: RoutePlan = {
+  coords: [
+    [-79.9959, 40.4406],
+    [-79.99, 40.445],
+    [-79.98, 40.45],
+  ],
+  distanceM: 4200,
+  durationS: 540,
+  maneuvers: [
+    {
+      type: "depart",
+      modifier: null,
+      instruction: "Head north on Grant Street",
+      name: "Grant Street",
+      distanceM: 800,
+      durationS: 90,
+      location: [-79.9959, 40.4406],
+      speedLimitMph: 25,
+    },
+    {
+      type: "turn",
+      modifier: "right",
+      instruction: "Turn right onto Forbes Avenue",
+      name: "Forbes Avenue",
+      distanceM: 3400,
+      durationS: 450,
+      location: [-79.99, 40.445],
+      speedLimitMph: 25,
+    },
+  ],
+  geometry: {
+    type: "LineString",
+    coordinates: [
+      [-79.9959, 40.4406],
+      [-79.99, 40.445],
+      [-79.98, 40.45],
+    ],
+  },
+};
+
+describe("search to drive from the parked store", () => {
+  beforeEach(() => {
+    vi.mocked(fetchRoute).mockReset();
+    resetVehicle();
+  });
+
+  it("a search result exposes ETA, duration, distance, turns, and cancel", async () => {
+    vi.mocked(fetchRoute).mockResolvedValue(searched);
+    const place: Place = { name: "Forbes", label: "Forbes Avenue", lng: -79.98, lat: 40.45 };
+    expect(useVehicle.getState().route).toBeNull();
+    await useVehicle.getState().navigateTo(place);
+    const routed = useVehicle.getState();
+    expect(routed.phase).toBe("routed");
+    expect(routed.route).not.toBeNull();
+    const facts = routeCardFacts(
+      routed.route!,
+      routed.pose.traveledM,
+      routed.pose.remainingM,
+      routed.pose.speedMph,
+      routed.flags.unitsMph,
+      new Date(2026, 8, 29, 16, 20, 0),
+    );
+    expect(facts.eta).toMatch(/\d:\d{2}/);
+    expect(facts.duration.length).toBeGreaterThan(0);
+    expect(facts.distance).toMatch(/mi|ft|km|m/);
+    expect(facts.turns).toEqual(["Head north on Grant Street", "Turn right onto Forbes Avenue"]);
+    expect(facts.canCancel).toBe(true);
+
+    selectGear("D");
+    expect(useVehicle.getState().gear).toBe("D");
+    expect(useVehicle.getState().phase).toBe("routed");
+
+    useVehicle.getState().startFsd();
+    expect(useVehicle.getState().phase).toBe("fsd");
+    expect(useVehicle.getState().gear).toBe("D");
+    const before = useVehicle.getState().pose;
+    useVehicle.getState().tickDrive(1);
+    const moved = useVehicle.getState();
+    const index = buildIndex(moved.route!.coords);
+    const viz = interpolate(index, moved.pose.traveledM);
+    const map = interpolate(index, moved.pose.traveledM);
+    expect(moved.pose.lng).toBeCloseTo(viz.position[0], 6);
+    expect(moved.pose.lat).toBeCloseTo(viz.position[1], 6);
+    expect(moved.pose.heading).toBeCloseTo(viz.heading, 4);
+    expect(map.position).toEqual(viz.position);
+    expect(map.heading).toBe(viz.heading);
+    expect(moved.pose.traveledM).toBeGreaterThan(before.traveledM);
+
+    const parts = splitAtMeters(index, moved.pose.traveledM);
+    expect(parts.traveled.length).toBeGreaterThan(0);
+    expect(parts.remaining.length).toBeGreaterThan(1);
+    expect(ROUTE_TRAVELED_COLOR).not.toBe(ROUTE_AHEAD_COLOR);
+
+    const hud = driveHudReadout(moved.pose, moved.phase);
+    expect(hud.unit).toBe("mph");
+    expect(hud.speedMph).toBe(Math.round(moved.pose.speedMph));
+    expect(hud.limitMph).toBeGreaterThan(0);
+    expect(hud.setSpeedMph).toBe(Math.round(moved.pose.setSpeedMph));
+    const lit = meterSegments(powerNorm(before.speedMph, moved.pose.speedMph, 1));
+    expect(lit.up + lit.down).toBeGreaterThan(0);
+
+    useVehicle.getState().setVizRatio(0.88);
+    const ratio = useVehicle.getState().ui.vizRatio;
+    expect(useMiniMap(false, ratio)).toBe(true);
+    expect(showsExpandedTripCards(true, useVehicle.getState().phase, Boolean(useVehicle.getState().route))).toBe(true);
+
+    useVehicle.getState().cancelNav();
+    expect(useVehicle.getState().route).toBeNull();
+    expect(useVehicle.getState().phase).toBe("idle");
+    expect(useVehicle.getState().gear).toBe("P");
+  });
+});
 
 describe("shared ego pose", () => {
   beforeEach(() => {

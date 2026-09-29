@@ -2,6 +2,7 @@ import type { ComponentType, SVGProps } from "react";
 import { useVehicle } from "../state/store";
 import type { MediaSourceId } from "../state/types";
 import { useDialogA11y } from "./dialogA11y";
+import { cycleRepeat, scrubMedia, togglePlayback, toggleShuffle } from "./shellActions";
 import {
   IconBluetooth,
   IconEq,
@@ -71,7 +72,7 @@ export function MediaPanel() {
           <button type="button" onClick={() => skipTrack(-1)} title="Previous">
             <IconSkipBack width={22} height={22} />
           </button>
-          <button type="button" className="play-lg" onClick={() => patchMedia({ playing: !media.playing })}>
+          <button type="button" className="play-lg" onClick={togglePlayback}>
             {media.playing ? <IconPause width={26} height={26} /> : <IconPlay width={26} height={26} />}
           </button>
           <button type="button" onClick={() => skipTrack(1)} title="Next">
@@ -81,7 +82,7 @@ export function MediaPanel() {
             type="button"
             className={media.shuffle ? "on" : ""}
             title="Shuffle"
-            onClick={() => patchMedia({ shuffle: !media.shuffle })}
+            onClick={toggleShuffle}
           >
             <IconShuffle width={20} height={20} />
           </button>
@@ -89,11 +90,7 @@ export function MediaPanel() {
             type="button"
             className={media.repeat !== "off" ? "on" : ""}
             title="Repeat"
-            onClick={() =>
-              patchMedia({
-                repeat: media.repeat === "off" ? "all" : media.repeat === "all" ? "one" : "off",
-              })
-            }
+            onClick={cycleRepeat}
           >
             <IconRepeat width={20} height={20} />
           </button>
@@ -112,7 +109,7 @@ export function MediaPanel() {
             min={0}
             max={1000}
             value={Math.round(media.progress * 1000)}
-            onChange={(e) => patchMedia({ progress: Number(e.target.value) / 1000 })}
+            onChange={(e) => scrubMedia(Number(e.target.value) / 1000)}
             aria-label="Scrub"
             style={{
               background: `linear-gradient(90deg, #fff ${media.progress * 100}%, rgba(255,255,255,0.28) ${media.progress * 100}%)`,

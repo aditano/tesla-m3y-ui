@@ -17,7 +17,7 @@ import { NavSearch } from "./chrome/NavSearch";
 import { ParkedMedia } from "./chrome/ParkedMedia";
 import { PortraitHotspots } from "./chrome/PortraitHotspots";
 import { RouteCard } from "./chrome/RouteCard";
-import { isParkedFullscreen, useMiniMap, vizRatioForKey } from "./viz/layout";
+import { isParkedFullscreen, isRearView, showsNavigationMap, useMiniMap, vizRatioForKey } from "./viz/layout";
 
 const TeslaMap = lazy(() =>
   import("./map/TeslaMap").then((m) => ({ default: m.TeslaMap })),
@@ -174,27 +174,32 @@ export default function App() {
   const flags = useVehicle((s) => s.flags);
   const controlsOpen = useVehicle((s) => s.ui.controlsOpen);
   const parked = isParkedFullscreen(gear, phase);
-  const mini = useMiniMap(parked, vizRatio);
+  const rear = isRearView(gear);
+  const showMap = showsNavigationMap(gear);
+  const mini = showMap && useMiniMap(parked, vizRatio);
   const appearance = flags.appearance === "light" ? "theme-light" : "theme-dark";
 
   return (
     <div
       className={`shell ${appearance} ${flags.textSize === "large" ? "text-lg" : ""} ${flags.screenClean ? "screen-clean" : ""} ${flags.reduceBlueLight ? "warm" : ""} ${controlsOpen ? "controls-open" : ""}`}
       data-qa-scene={scene ?? undefined}
+      data-gear={gear}
+      data-map={showMap ? "on" : "off"}
+      data-rear={rear ? "true" : "false"}
       style={{ ["--viz-ratio" as string]: String(vizRatio) }}
     >
       <QaReady />
-      <div className={`bezel ${parked ? "parked" : "driving"}`} style={{ filter: `brightness(${0.72 + flags.brightness / 280})` }}>
+      <div className={`bezel ${parked ? "parked" : "driving"} ${rear ? "rear" : ""}`} style={{ filter: `brightness(${0.72 + flags.brightness / 280})` }}>
         <StatusBar />
         <div className="display-main">
           <DriveStrip />
           <div className="stage">
-            <div className="viz-pane" style={{ width: mini ? "100%" : `${vizRatio * 100}%` }}>
+            <div className="viz-pane" style={{ width: rear || mini ? "100%" : `${vizRatio * 100}%` }}>
               <Suspense fallback={<div className="busy">Loading visualization…</div>}>
                 <FsdCanvas />
               </Suspense>
-              {parked ? null : <DriveOverlay expanded={mini} />}
-              {parked ? null : <VizDivider />}
+              {parked || rear ? null : <DriveOverlay expanded={mini} />}
+              {parked || rear ? null : <VizDivider />}
               {mini ? (
                 <div className={`map-pane mini ${parked ? "parked" : ""}`}>
                   <Suspense fallback={<div className="busy">Loading map…</div>}>
@@ -203,13 +208,13 @@ export default function App() {
                 </div>
               ) : null}
             </div>
-            {mini ? null : (
+            {showMap && !mini ? (
               <div className="map-pane" style={{ width: `${(1 - vizRatio) * 100}%` }}>
                 <Suspense fallback={<div className="busy">Loading map…</div>}>
                   <TeslaMap />
                 </Suspense>
               </div>
-            )}
+            ) : null}
             {parked ? (
               <div className="stage-bottom-chrome">
                 <PortraitHotspots />

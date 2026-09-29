@@ -31,26 +31,27 @@ import {
   IconWiper,
   IconWrench,
 } from "./Icons";
-import { searchSettings } from "./settingsCatalog";
+import { CONTROLS_RAIL, searchSettings } from "./settingsCatalog";
+import { toggleQuickControl } from "./shellActions";
 import { FollowPips, Segmented, ToggleRow } from "./ToggleRow";
 
 type IconCmp = ComponentType<SVGProps<SVGSVGElement>>;
 
-const TABS: { id: ControlsTab; label: string; Icon: IconCmp }[] = [
-  { id: "quick", label: "Controls", Icon: IconToggles },
-  { id: "dynamics", label: "Dynamics", Icon: IconCar },
-  { id: "charging", label: "Charging", Icon: IconBolt },
-  { id: "autopilot", label: "Autopilot", Icon: IconSteering },
-  { id: "locks", label: "Locks", Icon: IconLock },
-  { id: "lights", label: "Lights", Icon: IconSun },
-  { id: "display", label: "Display", Icon: IconGear },
-  { id: "trips", label: "Trips", Icon: IconTrip },
-  { id: "navigation", label: "Navigation", Icon: IconNav },
-  { id: "safety", label: "Safety", Icon: IconInfo },
-  { id: "service", label: "Service", Icon: IconWrench },
-  { id: "software", label: "Software", Icon: IconDownload },
-  { id: "wifi", label: "Wi-Fi", Icon: IconWifi },
-];
+const TAB_ICONS: Record<ControlsTab, IconCmp> = {
+  quick: IconToggles,
+  dynamics: IconCar,
+  charging: IconBolt,
+  autopilot: IconSteering,
+  locks: IconLock,
+  lights: IconSun,
+  display: IconGear,
+  trips: IconTrip,
+  navigation: IconNav,
+  safety: IconInfo,
+  service: IconWrench,
+  software: IconDownload,
+  wifi: IconWifi,
+};
 
 const LIGHT_MODES: { id: HeadlightMode; label: string }[] = [
   { id: "off", label: "Off" },
@@ -137,17 +138,20 @@ export function ControlsOverlay() {
           </button>
         </header>
         <nav className="controls-nav">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={tab === t.id && !query ? "on" : ""}
-              onClick={() => setControlsTab(t.id)}
-            >
-              <t.Icon width={18} height={18} />
-              {t.label}
-            </button>
-          ))}
+          {CONTROLS_RAIL.map((t) => {
+            const Icon = TAB_ICONS[t.id];
+            return (
+              <button
+                key={t.id}
+                type="button"
+                className={tab === t.id && !query ? "on" : ""}
+                onClick={() => setControlsTab(t.id)}
+              >
+                <Icon width={18} height={18} />
+                {t.label}
+              </button>
+            );
+          })}
         </nav>
         <div className="controls-body">
           {query.trim() ? (
@@ -158,7 +162,7 @@ export function ControlsOverlay() {
                 <button key={hit.id} type="button" className="row" onClick={() => setControlsTab(hit.tab)}>
                   <span className="row-copy">
                     <span>{hit.label}</span>
-                    <small>{TABS.find((t) => t.id === hit.tab)?.label}</small>
+                    <small>{CONTROLS_RAIL.find((t) => t.id === hit.tab)?.label}</small>
                   </span>
                 </button>
               ))}
@@ -196,7 +200,7 @@ export function ControlsOverlay() {
                 type="button"
                 className={`quick-accent ${flags.autoHighBeam ? "on" : ""}`}
                 title="Auto High Beam"
-                onClick={() => patchFlags({ autoHighBeam: !flags.autoHighBeam })}
+                onClick={() => toggleQuickControl("autoHighBeam")}
               >
                 <IconHeadlight />
               </button>
@@ -205,7 +209,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`tile ${flags.mirrorsFolded ? "on" : ""}`}
-                onClick={() => patchFlags({ mirrorsFolded: !flags.mirrorsFolded })}
+                onClick={() => toggleQuickControl("mirrorsFolded")}
               >
                 <IconMirror />
                 <strong>Fold Mirrors</strong>
@@ -213,7 +217,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`tile ${flags.childLock ? "on" : ""}`}
-                onClick={() => patchFlags({ childLock: !flags.childLock })}
+                onClick={() => toggleQuickControl("childLock")}
               >
                 <IconChildLock />
                 <strong>Child Lock</strong>
@@ -222,7 +226,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`tile ${flags.windowLock ? "on" : ""}`}
-                onClick={() => patchFlags({ windowLock: !flags.windowLock })}
+                onClick={() => toggleQuickControl("windowLock")}
               >
                 <IconWindowLock />
                 <strong>Window Lock</strong>
@@ -255,7 +259,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`tile ${flags.carWash ? "on" : ""}`}
-                onClick={() => patchFlags({ carWash: !flags.carWash })}
+                onClick={() => toggleQuickControl("carWash")}
               >
                 <IconCarWash />
                 <strong>Car Wash</strong>
@@ -263,7 +267,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`tile ${flags.steeringHeat ? "on" : ""}`}
-                onClick={() => patchFlags({ steeringHeat: !flags.steeringHeat })}
+                onClick={() => toggleQuickControl("steeringHeat")}
               >
                 <IconSteering />
                 <strong>Steering</strong>
@@ -279,7 +283,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`tile ${flags.gloveboxOpen ? "on" : ""}`}
-                onClick={() => patchFlags({ gloveboxOpen: !flags.gloveboxOpen })}
+                onClick={() => toggleQuickControl("gloveboxOpen")}
               >
                 <IconGlovebox />
                 <strong>Glovebox</strong>
@@ -301,7 +305,7 @@ export function ControlsOverlay() {
               <button
                 type="button"
                 className={`quick-accent text ${flags.autoBrightness ? "on" : ""}`}
-                onClick={() => patchFlags({ autoBrightness: !flags.autoBrightness })}
+                onClick={() => toggleQuickControl("autoBrightness")}
               >
                 Auto
               </button>
@@ -328,7 +332,7 @@ export function ControlsOverlay() {
               <ToggleRow
                 on={flags.autoHighBeam}
                 label="Auto High Beam"
-                onClick={() => patchFlags({ autoHighBeam: !flags.autoHighBeam })}
+                onClick={() => toggleQuickControl("autoHighBeam")}
               />
               <ToggleRow
                 on={flags.headlightsAfterExit}
@@ -381,12 +385,12 @@ export function ControlsOverlay() {
               <ToggleRow
                 on={flags.childLock}
                 label="Child Lock"
-                onClick={() => patchFlags({ childLock: !flags.childLock })}
+                onClick={() => toggleQuickControl("childLock")}
               />
               <ToggleRow
                 on={flags.windowLock}
                 label="Window Lock"
-                onClick={() => patchFlags({ windowLock: !flags.windowLock })}
+                onClick={() => toggleQuickControl("windowLock")}
               />
               <ToggleRow
                 on={flags.autoFoldMirrors}
@@ -440,7 +444,7 @@ export function ControlsOverlay() {
               <ToggleRow
                 on={flags.autoBrightness}
                 label="Auto brightness"
-                onClick={() => patchFlags({ autoBrightness: !flags.autoBrightness })}
+                onClick={() => toggleQuickControl("autoBrightness")}
               />
               <ToggleRow
                 on={flags.reduceBlueLight}

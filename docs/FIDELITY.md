@@ -64,6 +64,9 @@ Target is the center display in customer cars on software **2024.14 / 2025.x** c
 - Type is Montserrat (OFL). Still not Tesla Sans. Score: **PARTIAL**.
 - All Apps is a squircle grid (Camera, Climate, Media, Energy, Phone, Calendar, Nav, Theater). Camera opens a stylized 2×2 feed, not real cameras. Controls tiles use a light sheet and gray selected state.
 - FSD viz shares the map pose. The chase camera looks down a dark gray road: white lane lines, a blue path, rounded white/silver/gray vehicles, a pedestrian, cones, a speed-limit disc, and a signal head. Score: **PARTIAL** vs `nata-ui-v12-hero.jpg`.
-- Media source cards use colored glyphs. The dock temperature opens the full climate screen. Controls is still not a pixel match.
+- Media source cards use colored glyphs. The dock temperature opens the full climate screen. Controls covers the map side and is still not a pixel match.
+- Parked status order is lock, driver profile, Sentry, Wi-Fi, centered clock and outdoor temperature, then the passenger-airbag chip. Cellular stays off that bar.
+- Reverse hides the navigation map and shows the rear of the Highland with ground guidance. That is a visualization state, not a backup camera. Park restores the parked shell.
+- A set route card shows ETA, duration, distance, turns, and Cancel. Self-driving shares one ego pose between the visualization and the map marker. The driven part of the route is gray and the part ahead is blue.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

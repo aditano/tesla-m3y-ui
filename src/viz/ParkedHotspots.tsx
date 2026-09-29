@@ -21,8 +21,8 @@ function hotspotIcon(id: HotspotId): ReactNode {
 
 export function ParkedHotspots(): ReactNode {
   const flags = useVehicle((s) => s.flags);
-  const patchFlags = useVehicle((s) => s.patchFlags);
-  // drei <Html> sits above the DOM chrome, so hide the callouts under full-screen sheets.
+  const toggleClosure = useVehicle((s) => s.toggleClosure);
+  // Full climate covers the car. Callout z-index stays under the dock and Controls.
   const covered = useVehicle((s) => s.ui.climateOpen && s.ui.climateFull);
   const open = {
     frunk: flags.frunkOpen,
@@ -30,9 +30,9 @@ export function ParkedHotspots(): ReactNode {
     charge: flags.chargePortOpen,
   };
   const toggle = {
-    frunk: () => patchFlags({ frunkOpen: !flags.frunkOpen }),
-    trunk: () => patchFlags({ trunkOpen: !flags.trunkOpen }),
-    charge: () => patchFlags({ chargePortOpen: !flags.chargePortOpen }),
+    frunk: () => toggleClosure("frunk"),
+    trunk: () => toggleClosure("trunk"),
+    charge: () => toggleClosure("charge"),
   };
 
   if (covered) return null;
@@ -45,7 +45,7 @@ export function ParkedHotspots(): ReactNode {
           position={[pin.position[0], pin.position[1], pin.position[2]]}
           occlude={false}
           transform={false}
-          zIndexRange={[40, 10]}
+          zIndexRange={[8, 5]}
           style={{ pointerEvents: "none" }}
           wrapperClass="parked-hotspot-html"
         >

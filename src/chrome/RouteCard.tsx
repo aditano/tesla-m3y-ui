@@ -1,6 +1,6 @@
-import { etaClock, etaSeconds, formatDistance, formatDuration } from "../geo/polyline";
-import { upcomingManeuverIndex } from "../geo/osrm";
+import { formatDistance } from "../geo/polyline";
 import { useVehicle } from "../state/store";
+import { routeCardFacts } from "./routeCardFacts";
 import { IconArrive, IconStraight, IconTurnLeft, IconTurnRight } from "./Icons";
 import type { Maneuver } from "../state/types";
 import { ArrivalBattery, TripProgress } from "./TripProgress";
@@ -63,19 +63,18 @@ export function RouteCard() {
 
   if (!route || !dest) return null;
 
-  const remainingS = etaSeconds(route.distanceM, route.durationS, pose.remainingM || route.distanceM, pose.speedMph);
-  const idx = upcomingManeuverIndex(pose.traveledM, route.maneuvers);
   const etaNow = frozen ? new Date(2026, 8, 16, 16, 20, 0) : new Date();
-  const upcoming = route.maneuvers.slice(idx, idx + 4);
+  const facts = routeCardFacts(route, pose.traveledM, pose.remainingM, pose.speedMph, miles, etaNow);
+  const upcoming = route.maneuvers.slice(facts.turnIndex, facts.turnIndex + facts.turns.length);
 
   return (
     <aside className="route-card">
       <div className="route-head">
         <h3>{dest.name}</h3>
         <div className="eta-row">
-          <span>{etaClock(remainingS, etaNow)}</span>
-          <span>{formatDuration(remainingS)}</span>
-          <span>{formatDistance(pose.remainingM || route.distanceM, miles)}</span>
+          <span>{facts.eta}</span>
+          <span>{facts.duration}</span>
+          <span>{facts.distance}</span>
           <ArrivalBattery route={route} />
         </div>
         <TripProgress route={route} />
@@ -89,13 +88,18 @@ export function RouteCard() {
           </div>
         ))}
       </div>
-      {phase === "fsd" ? (
-        <div className="route-actions">
+      <div className="route-actions">
+        {phase === "fsd" ? (
           <button type="button" className="btn danger" onClick={disengageFsd}>
             End Self-Driving
           </button>
-        </div>
-      ) : null}
+        ) : null}
+        {facts.canCancel ? (
+          <button type="button" className="btn ghost" onClick={cancelNav}>
+            Cancel
+          </button>
+        ) : null}
+      </div>
     </aside>
   );
 }

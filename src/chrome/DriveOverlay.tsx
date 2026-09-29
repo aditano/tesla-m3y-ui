@@ -17,6 +17,8 @@ import {
 } from "./Icons";
 import type { Maneuver } from "../state/types";
 import { ArrivalBattery, TripProgress } from "./TripProgress";
+import { cycleRepeat, togglePlayback, toggleShuffle } from "./shellActions";
+import { showsExpandedTripCards } from "../viz/layout";
 
 const TRACK_SECONDS = 214;
 
@@ -51,7 +53,6 @@ function PlusGlyph() {
 function DriveMedia() {
   const media = useVehicle((s) => s.media);
   const patchUi = useVehicle((s) => s.patchUi);
-  const patchMedia = useVehicle((s) => s.patchMedia);
   const skipTrack = useVehicle((s) => s.skipTrack);
   const openFull = () => patchUi({ mediaOpen: true, climateOpen: false, climateFull: false, appsOpen: false, tempPopup: null });
   const pct = Math.round(media.progress * 100);
@@ -70,7 +71,7 @@ function DriveMedia() {
           type="button"
           className={media.shuffle ? "on" : ""}
           title="Shuffle"
-          onClick={() => patchMedia({ shuffle: !media.shuffle })}
+          onClick={toggleShuffle}
         >
           <IconShuffle width={20} height={20} />
         </button>
@@ -78,11 +79,7 @@ function DriveMedia() {
           type="button"
           className={media.repeat !== "off" ? "on" : ""}
           title="Repeat"
-          onClick={() =>
-            patchMedia({
-              repeat: media.repeat === "off" ? "all" : media.repeat === "all" ? "one" : "off",
-            })
-          }
+          onClick={cycleRepeat}
         >
           <IconRepeat width={20} height={20} />
         </button>
@@ -99,7 +96,7 @@ function DriveMedia() {
         <button type="button" title="Previous" onClick={() => skipTrack(-1)}>
           <IconSkipBack width={22} height={22} />
         </button>
-        <button type="button" title={media.playing ? "Pause" : "Play"} onClick={() => patchMedia({ playing: !media.playing })}>
+        <button type="button" title={media.playing ? "Pause" : "Play"} onClick={togglePlayback}>
           {media.playing ? <IconPause width={24} height={24} /> : <IconPlay width={24} height={24} />}
         </button>
         <button type="button" title="Next" onClick={() => skipTrack(1)}>
@@ -133,7 +130,7 @@ export function DriveOverlay({ expanded }: { expanded: boolean }) {
   const frozen = useVehicle((s) => s.qa.frozen);
   const disengage = useVehicle((s) => s.disengageFsd);
 
-  const showNav = expanded && route && dest && (phase === "fsd" || phase === "disengaged");
+  const showNav = route != null && dest != null && showsExpandedTripCards(expanded, phase, true);
   const turn = showNav ? nextTurn(pose.traveledM, route.maneuvers) : null;
   const remainingM = route ? pose.remainingM || route.distanceM : 0;
   const remainingS = route ? etaSeconds(route.distanceM, route.durationS, remainingM, pose.speedMph) : 0;

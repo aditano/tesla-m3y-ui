@@ -6,9 +6,24 @@ export function isParkedFullscreen(gear: Gear, phase: TripPhase): boolean {
   return gear === "P" && phase !== "fsd";
 }
 
+/** Reverse is a viz state: the navigation map is hidden. Not a camera pipeline. */
+export function isRearView(gear: Gear): boolean {
+  return gear === "R";
+}
+
+/** The navigation map stays up in every gear except Reverse. */
+export function showsNavigationMap(gear: Gear): boolean {
+  return !isRearView(gear);
+}
+
 /** Split viz vs map; parked always uses the inset map card. */
 export function useMiniMap(parked: boolean, vizRatio: number): boolean {
   return parked || vizRatio > 0.74;
+}
+
+/** Wide viz keeps the next-turn card and the trip card on the visualization. */
+export function showsExpandedTripCards(expanded: boolean, phase: TripPhase, hasRoute: boolean): boolean {
+  return expanded && hasRoute && (phase === "fsd" || phase === "disengaged");
 }
 
 function clampVizRatio(ratio: number): number {

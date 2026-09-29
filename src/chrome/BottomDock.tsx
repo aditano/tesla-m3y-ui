@@ -9,6 +9,7 @@ import {
   IconSeat,
   IconVolume,
 } from "./Icons";
+import { openCompactClimate, openFullClimate, toggleAppLauncher, toggleControls } from "./shellActions";
 
 function tempTone(tempF: number, on: boolean): "heat" | "cool" | "off" {
   if (!on) return "off";
@@ -48,17 +49,7 @@ export function BottomDock() {
           type="button"
           className={`app-btn ${ui.controlsOpen ? "on" : ""}`}
           title="Controls"
-          onClick={() =>
-            patchUi({
-              controlsOpen: !ui.controlsOpen,
-              controlsTab: "quick",
-              appsOpen: false,
-              cameraOpen: false,
-              climateOpen: false,
-              mediaOpen: false,
-              tempPopup: null,
-            })
-          }
+          onClick={toggleControls}
         >
           <IconCar />
         </button>
@@ -66,15 +57,7 @@ export function BottomDock() {
           type="button"
           className={`app-btn launcher ${ui.appsOpen ? "on" : ""}`}
           title="App launcher"
-          onClick={() =>
-            patchUi({
-              appsOpen: !ui.appsOpen,
-              cameraOpen: false,
-              climateOpen: false,
-              mediaOpen: false,
-              tempPopup: null,
-            })
-          }
+          onClick={toggleAppLauncher}
         >
           <IconApps />
         </button>
@@ -99,15 +82,7 @@ export function BottomDock() {
             type="button"
             className={`temp-btn ${tempTone(climate.driverTempF, climate.on)}`}
             title="Driver temperature"
-            onClick={() =>
-              patchUi({
-                climateOpen: true,
-                climateFull: true,
-                mediaOpen: false,
-                appsOpen: false,
-                tempPopup: null,
-              })
-            }
+            onClick={openFullClimate}
           >
             {driverTemp}
           </button>
@@ -134,15 +109,7 @@ export function BottomDock() {
           type="button"
           className={`fan-btn ${ui.climateOpen ? "on" : ""} ${climate.on ? "live" : ""}`}
           title="Climate"
-          onClick={() =>
-            patchUi({
-              climateOpen: !(ui.climateOpen && !ui.climateFull),
-              climateFull: false,
-              mediaOpen: false,
-              appsOpen: false,
-              tempPopup: null,
-            })
-          }
+          onClick={openCompactClimate}
         >
           <IconFan />
         </button>
@@ -152,15 +119,7 @@ export function BottomDock() {
               type="button"
               className={`temp-btn ${tempTone(climate.passengerTempF, climate.on)}`}
               title="Passenger temperature"
-              onClick={() =>
-                patchUi({
-                  climateOpen: true,
-                  climateFull: true,
-                  mediaOpen: false,
-                  appsOpen: false,
-                  tempPopup: null,
-                })
-              }
+              onClick={openFullClimate}
             >
               {passengerTemp}
             </button>

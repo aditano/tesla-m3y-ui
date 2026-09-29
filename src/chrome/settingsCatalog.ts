@@ -1,5 +1,22 @@
 import type { ControlsTab } from "../state/types";
 
+/** Left rail of Controls, in the on-screen order. */
+export const CONTROLS_RAIL: { id: ControlsTab; label: string }[] = [
+  { id: "quick", label: "Controls" },
+  { id: "dynamics", label: "Dynamics" },
+  { id: "charging", label: "Charging" },
+  { id: "autopilot", label: "Autopilot" },
+  { id: "locks", label: "Locks" },
+  { id: "lights", label: "Lights" },
+  { id: "display", label: "Display" },
+  { id: "trips", label: "Trips" },
+  { id: "navigation", label: "Navigation" },
+  { id: "safety", label: "Safety" },
+  { id: "service", label: "Service" },
+  { id: "software", label: "Software" },
+  { id: "wifi", label: "Wi-Fi" },
+];
+
 export interface SettingHit {
   id: string;
   label: string;

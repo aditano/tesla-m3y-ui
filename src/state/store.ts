@@ -177,6 +177,7 @@ interface Actions {
   nudgeTemp: (zone: "driver" | "passenger", delta: number) => void;
   skipTrack: (dir: 1 | -1) => void;
   closeSheets: () => void;
+  toggleClosure: (id: "frunk" | "trunk" | "charge") => void;
 }
 
 export type Store = VehicleStore & Actions;
@@ -294,6 +295,13 @@ export const useVehicle = create<Store>((set, get) => ({
         tempPopup: null,
       },
     }),
+
+  toggleClosure: (id) => {
+    const current = get().flags;
+    if (id === "frunk") set({ flags: { ...current, frunkOpen: !current.frunkOpen } });
+    else if (id === "trunk") set({ flags: { ...current, trunkOpen: !current.trunkOpen } });
+    else set({ flags: { ...current, chargePortOpen: !current.chargePortOpen } });
+  },
 
   setVizRatio: (ratio) =>
     set({
@@ -579,3 +587,37 @@ export const useVehicle = create<Store>((set, get) => ({
     get().setOrigin({ ...origin, lng, lat });
   },
 }));
+
+/** Restore the parked idle store the module was created with. */
+export function resetVehicle(): void {
+  invalidateNavRequest();
+  if (typeof window !== "undefined") window.clearTimeout(searchTimer);
+  useVehicle.setState({
+    gear: "P",
+    phase: "idle",
+    flags: structuredClone(flags),
+    climate: structuredClone(climate),
+    media: structuredClone(media),
+    ui: structuredClone(ui),
+    qa: { frozen: false, clock: null, scene: null },
+    origin: { ...DEFAULT_ORIGIN },
+    destination: null,
+    route: null,
+    pose: {
+      lng: DEFAULT_ORIGIN.lng,
+      lat: DEFAULT_ORIGIN.lat,
+      heading: 12,
+      speedMph: 0,
+      setSpeedMph: 0,
+      speedLimitMph: DEFAULT_SPEED_LIMIT_MPH,
+      traveledM: 0,
+      remainingM: 0,
+    },
+    searchQuery: "",
+    searchResults: [],
+    searchBusy: false,
+    routeBusy: false,
+    routeError: null,
+    recents: [],
+  });
+}

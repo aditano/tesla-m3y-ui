@@ -10,7 +10,7 @@ export function PortraitHotspots() {
   const gear = useVehicle((s) => s.gear);
   const phase = useVehicle((s) => s.phase);
   const flags = useVehicle((s) => s.flags);
-  const patchFlags = useVehicle((s) => s.patchFlags);
+  const toggleClosure = useVehicle((s) => s.toggleClosure);
   if (!isParkedFullscreen(gear, phase)) return null;
 
   return (
@@ -18,7 +18,7 @@ export function PortraitHotspots() {
       <button
         type="button"
         className={flags.frunkOpen ? "on" : ""}
-        onClick={() => patchFlags({ frunkOpen: !flags.frunkOpen })}
+        onClick={() => toggleClosure("frunk")}
       >
         <IconFrunk />
         <span>Frunk</span>
@@ -26,7 +26,7 @@ export function PortraitHotspots() {
       <button
         type="button"
         className={flags.trunkOpen ? "on" : ""}
-        onClick={() => patchFlags({ trunkOpen: !flags.trunkOpen })}
+        onClick={() => toggleClosure("trunk")}
       >
         <IconTrunk />
         <span>Trunk</span>
@@ -35,7 +35,7 @@ export function PortraitHotspots() {
         type="button"
         className={flags.chargePortOpen ? "on" : ""}
         aria-label={flags.chargePortOpen ? "Close charge port" : "Open charge port"}
-        onClick={() => patchFlags({ chargePortOpen: !flags.chargePortOpen })}
+        onClick={() => toggleClosure("charge")}
       >
         <IconChargePort />
         <span>Charge</span>

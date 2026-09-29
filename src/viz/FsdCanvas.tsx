@@ -6,6 +6,7 @@ import {
   BackSide,
   CanvasTexture,
   PMREMGenerator,
+  PerspectiveCamera as ThreePerspectiveCamera,
   RectAreaLight,
   SRGBColorSpace,
   Vector3,
@@ -14,10 +15,10 @@ import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLigh
 import { useVehicle } from "../state/store";
 import { Model3 } from "./Model3";
 import { DRIVE_CHASE, DRIVE_FOG, DRIVE_WORLD } from "./driveScene";
-import { METER_SEGMENTS, meterSegments, powerNorm } from "./driveHud";
+import { METER_SEGMENTS, driveHudReadout, meterSegments, powerNorm } from "./driveHud";
 import { RoadsidePack } from "./occupancy";
 import { CityBlocks, EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
-import { isParkedFullscreen } from "./layout";
+import { isParkedFullscreen, isRearView } from "./layout";
 import { createDriveEnv, createStudioEnv, studioFor, type StudioTheme } from "./parkedStudio";
 import { SoftShadow } from "./SoftShadow";
 
@@ -142,7 +143,6 @@ function StudioKeys({ theme }: { theme: StudioTheme }) {
 }
 
 function ParkedStudio() {
-  const gear = useVehicle((s) => s.gear);
   const appearance = useVehicle((s) => s.flags.appearance);
   const theme: StudioTheme = appearance === "dark" ? "dark" : "light";
   const floorMap = useMemo(() => studioFloorMap(theme), [theme]);
@@ -177,10 +177,7 @@ function ParkedStudio() {
           clearcoatRoughness={floor.clearcoatRoughness}
         />
       </mesh>
-      <group
-        rotation={gear === "R" ? [0, Math.PI, 0] : [0, car.rotationY, 0]}
-        position={[...car.position]}
-      >
+      <group rotation={[0, car.rotationY, 0]} position={[...car.position]}>
         <Model3 scale={car.scale} />
         <SoftShadow width={shadow.scale[0]} length={shadow.scale[1]} opacity={shadow.opacity} color={shadow.color} />
       </group>
@@ -266,6 +263,57 @@ function DrivingWorld() {
   );
 }
 
+/** Rear of the Highland, with guidance marks on the ground behind the bumper. */
+function RearGuides() {
+  const guides = [
+    { x: -0.55, z: -4.15, len: 3.1, color: "#f2c14b" },
+    { x: 0.55, z: -4.15, len: 3.1, color: "#f2c14b" },
+    { x: 0, z: -3.15, len: 1.35, color: "#e03131" },
+  ];
+  return (
+    <group>
+      {guides.map((g) => (
+        <mesh key={`${g.x}-${g.z}`} position={[g.x, 0.025, g.z]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.07, g.len]} />
+          <meshBasicMaterial color={g.color} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function RearCamera() {
+  const camera = useThree((s) => s.camera);
+  useLayoutEffect(() => {
+    camera.position.set(0.04, 1.32, -6.2);
+    camera.lookAt(0, 0.74, -0.3);
+    if (camera instanceof ThreePerspectiveCamera) {
+      camera.fov = 40;
+      camera.updateProjectionMatrix();
+    }
+  }, [camera]);
+  return null;
+}
+
+function RearView() {
+  return (
+    <>
+      <color attach="background" args={["#14181e"]} />
+      <fog attach="fog" args={["#14181e", 9, 26]} />
+      <RearCamera />
+      <hemisphereLight args={["#b7c0cc", "#12151a", 0.42]} />
+      <ambientLight intensity={0.22} />
+      <directionalLight position={[1.2, 5.5, -7]} intensity={1.35} color="#f7f8fb" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -3.2]}>
+        <planeGeometry args={[28, 22]} />
+        <meshStandardMaterial color="#232830" roughness={1} />
+      </mesh>
+      <RearGuides />
+      <Model3 scale={0.96} showHits={false} />
+    </>
+  );
+}
+
 function VizHud() {
   const pose = useVehicle((s) => s.pose);
   const phase = useVehicle((s) => s.phase);
@@ -280,6 +328,7 @@ function VizHud() {
   if (!driving) return null;
 
   const lit = meterSegments(norm);
+  const hud = driveHudReadout(pose, phase);
   const power = Array.from({ length: METER_SEGMENTS }, (_, i) => METER_SEGMENTS - 1 - i);
   const regen = Array.from({ length: METER_SEGMENTS }, (_, i) => i);
   return (
@@ -298,19 +347,19 @@ function VizHud() {
             ))}
           </div>
         </div>
-        <div className="hud-speed" aria-label={`${Math.round(pose.speedMph)} miles per hour`}>
-          <div className="mph">{Math.round(pose.speedMph)}</div>
-          <div className="label">mph</div>
+        <div className="hud-speed" aria-label={`${hud.speedMph} miles per hour`}>
+          <div className="mph">{hud.speedMph}</div>
+          <div className="label">{hud.unit}</div>
         </div>
       </div>
       <div className="road-badges">
         <div className="speed-limit" title="Speed limit">
-          {Math.round(pose.speedLimitMph)}
+          {hud.limitMph}
         </div>
-        {phase === "fsd" ? (
+        {hud.setSpeedMph != null ? (
           <div className="set-speed-stack">
             <div className="set-speed" title="Set speed">
-              {Math.round(pose.setSpeedMph)}
+              {hud.setSpeedMph}
             </div>
             <div className="follow-pips" title="Following distance">
               {Array.from({ length: 7 }, (_, i) => (
@@ -330,7 +379,8 @@ export function FsdCanvas() {
   const route = useVehicle((s) => s.route);
   const frozen = useVehicle((s) => s.qa.frozen);
   const parked = isParkedFullscreen(gear, phase);
-  const driving = !parked && (phase === "fsd" || gear === "D" || gear === "N" || (phase === "disengaged" && Boolean(route)));
+  const rear = isRearView(gear);
+  const driving = !parked && !rear && (phase === "fsd" || gear === "D" || gear === "N" || (phase === "disengaged" && Boolean(route)));
 
   return (
     <>
@@ -351,9 +401,10 @@ export function FsdCanvas() {
           });
         }}
       >
-        {driving ? <DrivingWorld /> : <ParkedStudio />}
+        {rear ? <RearView /> : driving ? <DrivingWorld /> : <ParkedStudio />}
       </Canvas>
-      {parked ? null : <VizHud />}
+      {rear ? <div className="rear-chip">Rear</div> : null}
+      {parked || rear ? null : <VizHud />}
     </>
   );
 }
