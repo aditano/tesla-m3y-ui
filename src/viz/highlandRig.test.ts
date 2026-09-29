@@ -36,6 +36,12 @@ describe("highlandRole", () => {
     expect(highlandRole("Ln12Mtl", 0, 0.8, 2)).toBe("taillight_led");
     expect(highlandRole("Ln7Mtl", 0, 0.7, -1.9)).toBe("headlight_led");
     expect(highlandRole("Ln7Mtl", 0, 0.8, 0.4)).toBe("interior_leather");
+    expect(highlandRole("Ln7Mtl", 0.72, 0.98, 0.4)).toBe("interior_plastic");
+    expect(highlandRole("Geodoorl2intsub651Mtl", 0.68, 0.92, 0.2)).toBe("interior_plastic");
+    expect(highlandRole("Geodoorl2intsub651Mtl", 0.2, 0.92, 0.2)).toBe("interior_leather");
+    expect(highlandRole("Geodoorr2sub31Mtl", 0.75, 1.02, 0.3)).toBe("side_glass");
+    expect(highlandRole("Geodoorl2sub11Mtl", 0.75, 0.98, 0.2)).toBe("side_glass");
+    expect(highlandRole("Geoextwindow0021Mtl", 0, 1.2, -0.2)).toBe("glass");
     expect(highlandRole("Geohoodsub00031Mtl", 0, 0.9, 1)).toBe("trim");
   });
 
@@ -46,6 +52,7 @@ describe("highlandRole", () => {
     expect(highlandRole("Georimblurlfsub01Mtl", 0.15, 0.28, 0.2)).toBe("interior_carpet");
     expect(highlandRole("Georimblurlfsub01Mtl", 0.1, 0.72, -0.8)).toBe("interior_plastic");
     expect(highlandRole("Georimblurlfsub01Mtl", 0.05, 1.14, 0.2)).toBe("interior_headliner");
+    expect(highlandRole("Georimblurlfsub01Mtl", 0.67, 1.08, 1.29)).toBe("side_glass");
     expect(highlandRole("Geocockpithrsub1031Mtl", 0, 0.48, 0.4)).toBe("interior_pad");
     expect(highlandRole("Geoextwindow0021Mtl", 0, 1.1, 0.2)).toBe("glass");
   });
@@ -117,6 +124,6 @@ describe("applyHighlandLook interior", () => {
     expect(glass.color.getHexString()).toBe(HIGHLAND_PARKED_GLASS_HEX.slice(1));
     expect(glass.transparent).toBe(false);
     expect(glass.depthWrite).toBe(true);
-    expect(wheel.color.getHexString()).toBe("2a2e34");
+    expect(wheel.color.getHexString()).toBe("3a414a");
   });
 });

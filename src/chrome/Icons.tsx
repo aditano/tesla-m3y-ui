@@ -419,18 +419,20 @@ export function IconSteering(props: IconProps) {
   );
 }
 
+/** Side profile, closer to the dock car glyph than a front 3/4. */
 export function IconCar(props: IconProps) {
   return (
     <I {...props}>
       <path
-        d="M7 15.5 8.2 9.8A2.4 2.4 0 0 1 10.5 8h3a2.4 2.4 0 0 1 2.3 1.8L17 15.5"
+        d="M3.4 15.4h17.2M4.6 15.3c.35-1.15 1.05-2 2.05-2.45L8.1 10.4c.4-.75 1.15-1.2 2-1.2h4.6c.75 0 1.45.35 1.9.95l1.35 2.05c.85.28 1.5.9 1.85 1.7"
         stroke="currentColor"
-        strokeWidth="1.7"
+        strokeWidth="1.6"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
-      <path d="M5.5 15.5h13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="8.2" cy="16.6" r="1.35" fill="currentColor" />
-      <circle cx="15.8" cy="16.6" r="1.35" fill="currentColor" />
+      <path d="M9.2 9.4h4.6" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" />
+      <circle cx="7.6" cy="15.45" r="1.5" fill="currentColor" />
+      <circle cx="16.5" cy="15.45" r="1.5" fill="currentColor" />
     </I>
   );
 }
@@ -666,6 +668,37 @@ export function IconEq(props: IconProps) {
   return (
     <I {...props}>
       <path d="M7 18V9M12 18V6M17 18v-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </I>
+  );
+}
+
+export function IconRadio(props: IconProps) {
+  return (
+    <I {...props}>
+      <path d="M6 15.5 15.2 6.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="16.2" cy="7.2" r="1.5" fill="currentColor" />
+      <path d="M5 18.2h8.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M8.2 12.2a4 4 0 0 1 4.2 1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </I>
+  );
+}
+
+export function IconUsb(props: IconProps) {
+  return (
+    <I {...props}>
+      <rect x="9" y="3.5" width="6" height="5" rx="1" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 8.5v7.2M9.2 13.2h5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M8 18.5h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </I>
+  );
+}
+
+export function IconStream(props: IconProps) {
+  return (
+    <I {...props}>
+      <path d="M7 16.5V8.2L17 5.8v8.2" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="6.2" cy="16.6" r="2" fill="currentColor" />
+      <circle cx="16.2" cy="14.2" r="2" fill="currentColor" />
     </I>
   );
 }

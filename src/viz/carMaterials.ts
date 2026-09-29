@@ -30,7 +30,8 @@ export type CarMaterialKind =
   | "other";
 
 /** Ultra Red–like albedo. CC-BY allows material tint; mesh is still David_Holiday. */
-export const PAINT_NATA_RED = "#9c1620";
+/** Candy Ultra Red. ACES darkens it toward the parked reference. */
+export const PAINT_NATA_RED = "#d0182c";
 
 export const GLASS_OPTICS = {
   windshield: { ior: 1.51, transmission: 0.01, opacity: 0.982, thickness: 0.55 },

@@ -18,6 +18,11 @@ export function applyQaFromLocation(search = window.location.search): QaSceneId 
   const raw = params.get("qa");
   if (!raw || !isQaSceneId(raw)) return null;
   applyQaScene(raw);
+  const theme = params.get("theme");
+  if (theme === "light" || theme === "dark") {
+    const current = useVehicle.getState().flags;
+    useVehicle.setState({ flags: { ...current, appearance: theme } });
+  }
   return raw;
 }
 

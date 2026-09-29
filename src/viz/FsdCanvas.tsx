@@ -1,15 +1,10 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import {
-  ContactShadows,
-  OrbitControls,
-  PerspectiveCamera,
-} from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import {
   ACESFilmicToneMapping,
   BackSide,
   CanvasTexture,
-  NoToneMapping,
   PMREMGenerator,
   RectAreaLight,
   SRGBColorSpace,
@@ -18,60 +13,58 @@ import {
 import { RectAreaLightUniformsLib } from "three/examples/jsm/lights/RectAreaLightUniformsLib.js";
 import { useVehicle } from "../state/store";
 import { Model3 } from "./Model3";
+import { DRIVE_CHASE, DRIVE_FOG, DRIVE_WORLD } from "./driveScene";
 import { METER_SEGMENTS, meterSegments, powerNorm } from "./driveHud";
+import { RoadsidePack } from "./occupancy";
 import { CityBlocks, EgoCar, EgoFrame, RouteRoad, SignalProps, TrafficPack } from "./RoadKit";
 import { isParkedFullscreen } from "./layout";
-import { createCandyStudioEnv, PARKED_FOG, PARKED_STUDIO } from "./parkedStudio";
+import { createDriveEnv, createStudioEnv, studioFor, type StudioTheme } from "./parkedStudio";
+import { SoftShadow } from "./SoftShadow";
 
 RectAreaLightUniformsLib.init();
 
-/** Flat FSD grade. The road, lanes, and blocks are unlit so they stay in this gray. */
-const WORLD = "#97a0a8";
-const VERGE = "#667068";
-const DRIVE_FOV = 32;
-const CAM_POS = new Vector3(0, 2.15, -5.35);
-const CAM_LOOK = new Vector3(0, 0.85, 16);
+const CAM_POS = new Vector3(...DRIVE_CHASE.position);
+const CAM_LOOK = new Vector3(...DRIVE_CHASE.look);
 
-function studioFloorMap(): CanvasTexture {
+function studioFloorMap(theme: StudioTheme): CanvasTexture {
   const c = document.createElement("canvas");
   c.width = 512;
   c.height = 512;
   const ctx = c.getContext("2d");
-  if (!ctx) {
-    const tex = new CanvasTexture(c);
-    tex.colorSpace = SRGBColorSpace;
-    return tex;
-  }
-  const g = ctx.createRadialGradient(256, 256, 22, 256, 256, 248);
-  g.addColorStop(0, "#c4c7cd");
-  g.addColorStop(0.2, "#e2e4e8");
-  g.addColorStop(0.52, "#eef0f3");
-  g.addColorStop(1, "#f3f4f6");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 512, 512);
   const tex = new CanvasTexture(c);
   tex.colorSpace = SRGBColorSpace;
+  if (!ctx) return tex;
+  const g = ctx.createRadialGradient(256, 256, 40, 256, 256, 250);
+  if (theme === "dark") {
+    g.addColorStop(0, "#16191e");
+    g.addColorStop(1, "#121418");
+  } else {
+    g.addColorStop(0, "#e4e7ec");
+    g.addColorStop(1, "#e7eaee");
+  }
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 512, 512);
   tex.needsUpdate = true;
   return tex;
 }
 
-function ParkedEnvironment() {
+function Ibl({ theme }: { theme: StudioTheme | "drive" }) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
   useLayoutEffect(() => {
-    const source = createCandyStudioEnv();
+    const source = theme === "drive" ? createDriveEnv() : createStudioEnv(theme);
     const pmrem = new PMREMGenerator(gl);
     pmrem.compileEquirectangularShader();
     const rt = pmrem.fromEquirectangular(source);
     scene.environment = rt.texture;
-    scene.environmentIntensity = PARKED_STUDIO.envIntensity;
+    scene.environmentIntensity = theme === "drive" ? 0.65 : studioFor(theme).envIntensity;
     source.dispose();
     return () => {
       if (scene.environment === rt.texture) scene.environment = null;
       rt.dispose();
       pmrem.dispose();
     };
-  }, [gl, scene]);
+  }, [gl, scene, theme]);
   return null;
 }
 
@@ -84,10 +77,10 @@ function skyMap(): CanvasTexture {
   tex.colorSpace = SRGBColorSpace;
   if (!ctx) return tex;
   const g = ctx.createLinearGradient(0, 0, 0, 256);
-  g.addColorStop(0, "#7e8892");
-  g.addColorStop(0.46, "#8d969f");
-  g.addColorStop(0.7, "#a3abb3");
-  g.addColorStop(1, "#8a938c");
+  g.addColorStop(0, "#2a313c");
+  g.addColorStop(0.42, "#232830");
+  g.addColorStop(0.7, DRIVE_WORLD);
+  g.addColorStop(1, "#161a20");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 8, 256);
   tex.needsUpdate = true;
@@ -108,40 +101,41 @@ function lookAtPoint(light: RectAreaLight | null, x: number, y: number, z: numbe
   if (light) light.lookAt(x, y, z);
 }
 
-function CPillarKeys() {
-  const pillar = useRef<RectAreaLight>(null);
-  const shoulder = useRef<RectAreaLight>(null);
-  const bounce = useRef<RectAreaLight>(null);
+function StudioKeys({ theme }: { theme: StudioTheme }) {
+  const key = useRef<RectAreaLight>(null);
+  const rim = useRef<RectAreaLight>(null);
+  const fill = useRef<RectAreaLight>(null);
+  const dark = theme === "dark";
   useLayoutEffect(() => {
-    lookAtPoint(pillar.current, 0.48, 0.94, -1.1);
-    lookAtPoint(shoulder.current, 0.1, 0.82, -0.2);
-    lookAtPoint(bounce.current, 0, 0.4, 0);
-  }, []);
+    lookAtPoint(key.current, 0.2, 0.8, 0.1);
+    lookAtPoint(rim.current, 0, 0.9, -0.4);
+    lookAtPoint(fill.current, 0, 0.4, 0);
+  }, [theme]);
   return (
     <>
       <rectAreaLight
-        ref={pillar}
-        width={0.045}
-        height={2.85}
-        intensity={78}
-        color="#ffffff"
-        position={[2.05, 1.58, -0.55]}
+        ref={key}
+        width={5.2}
+        height={2.6}
+        intensity={dark ? 4.5 : 7}
+        color={dark ? "#f2f5f8" : "#ffffff"}
+        position={[2.6, 4.4, -2.8]}
       />
       <rectAreaLight
-        ref={shoulder}
-        width={3.6}
-        height={0.07}
-        intensity={16}
-        color="#f7f8fa"
-        position={[0.15, 3.35, -0.35]}
+        ref={rim}
+        width={3.4}
+        height={1.8}
+        intensity={dark ? 8 : 3.2}
+        color={dark ? "#c5d4ea" : "#f7f8fb"}
+        position={[-3.1, 2.6, 3.4]}
       />
       <rectAreaLight
-        ref={bounce}
+        ref={fill}
         width={6}
-        height={4}
-        intensity={2.1}
-        color="#e8edf2"
-        position={[-2.8, 1.8, 2.2]}
+        height={3}
+        intensity={dark ? 1.1 : 1.6}
+        color={dark ? "#1c2430" : "#e7ecf2"}
+        position={[-1.2, 1.4, 3.2]}
       />
     </>
   );
@@ -149,12 +143,16 @@ function CPillarKeys() {
 
 function ParkedStudio() {
   const gear = useVehicle((s) => s.gear);
-  const floorMap = useMemo(() => studioFloorMap(), []);
-  const { camera, car, shadow, floor, background } = PARKED_STUDIO;
+  const appearance = useVehicle((s) => s.flags.appearance);
+  const theme: StudioTheme = appearance === "dark" ? "dark" : "light";
+  const floorMap = useMemo(() => studioFloorMap(theme), [theme]);
+  const { camera, car, shadow, floor, background, fog } = studioFor(theme);
+  const dark = theme === "dark";
   return (
     <>
+      <Grade exposure={dark ? 1.12 : 1.02} />
       <color attach="background" args={[background]} />
-      <fog attach="fog" args={[PARKED_FOG.color, PARKED_FOG.near, PARKED_FOG.far]} />
+      <fog attach="fog" args={[fog.color, fog.near, fog.far]} />
       <PerspectiveCamera
         makeDefault
         fov={camera.fov}
@@ -162,17 +160,16 @@ function ParkedStudio() {
         near={camera.near}
         far={camera.far}
       />
-      <ambientLight intensity={0.55} />
-      <hemisphereLight args={["#f4f7fb", "#c5ccd4", 0.38]} />
-      <directionalLight position={[1.2, 12, -2.4]} intensity={1.35} color="#f7f8fa" />
-      <directionalLight position={[-3.2, 4.2, 3.4]} intensity={0.28} color="#d5e0ea" />
-      <CPillarKeys />
-      <ParkedEnvironment />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <planeGeometry args={[40, 40]} />
+      <ambientLight intensity={dark ? 0.08 : 0.2} />
+      <hemisphereLight args={[dark ? "#243040" : "#f7f8fa", dark ? "#0c0e12" : "#c5ccd4", dark ? 0.28 : 0.42]} />
+      <directionalLight position={[3.2, 8.5, -2.2]} intensity={dark ? 0.35 : 0.48} color="#f4f7fb" />
+      <StudioKeys theme={theme} />
+      <Ibl theme={theme} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[240, 240]} />
         <meshPhysicalMaterial
           map={floorMap}
-          color="#eef0f3"
+          color={floor.color}
           roughness={floor.roughness}
           metalness={floor.metalness}
           envMapIntensity={floor.envMapIntensity}
@@ -185,16 +182,8 @@ function ParkedStudio() {
         position={[...car.position]}
       >
         <Model3 scale={car.scale} />
+        <SoftShadow width={shadow.scale[0]} length={shadow.scale[1]} opacity={shadow.opacity} color={shadow.color} />
       </group>
-      <ContactShadows
-        opacity={shadow.opacity}
-        scale={[...shadow.scale]}
-        blur={shadow.blur}
-        far={shadow.far}
-        resolution={shadow.resolution}
-        color={shadow.color}
-        frames={shadow.frames}
-      />
       <OrbitControls
         enablePan={false}
         minDistance={camera.minDistance}
@@ -208,19 +197,20 @@ function ParkedStudio() {
   );
 }
 
-/** Unlit diorama colors. ACES would crush the gray road back to black. */
-function DrivingGrade() {
+/** ACES for the car. Road ribbons opt out with toneMapped={false} so the gray stays put. */
+function Grade({ exposure }: { exposure: number }) {
   const gl = useThree((s) => s.gl);
   useLayoutEffect(() => {
     const prevMapping = gl.toneMapping;
     const prevExposure = gl.toneMappingExposure;
-    gl.toneMapping = NoToneMapping;
-    gl.toneMappingExposure = 1;
+    gl.toneMapping = ACESFilmicToneMapping;
+    gl.toneMappingExposure = exposure;
+    gl.shadowMap.enabled = false;
     return () => {
       gl.toneMapping = prevMapping;
       gl.toneMappingExposure = prevExposure;
     };
-  }, [gl]);
+  }, [gl, exposure]);
   return null;
 }
 
@@ -247,38 +237,31 @@ function DrivingWorld() {
 
   return (
     <>
-      <DrivingGrade />
-      <color attach="background" args={[WORLD]} />
-      <fog attach="fog" args={[WORLD, 70, 220]} />
+      <Grade exposure={1.08} />
+      <color attach="background" args={[DRIVE_WORLD]} />
+      <fog attach="fog" args={[DRIVE_FOG.color, DRIVE_FOG.near, DRIVE_FOG.far]} />
       <SkyDome />
       <EgoCamera />
-      <hemisphereLight args={["#ffffff", "#c5ccd4", 0.55]} />
-      <ambientLight intensity={0.9} />
-      <directionalLight position={[0, 8, -14]} intensity={1.8} color="#fff5f2" />
-      <directionalLight position={[5, 6, 8]} intensity={0.55} color="#d5e2ee" />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 20]}>
+      <Ibl theme="drive" />
+      <hemisphereLight args={["#9aa8b8", "#1a1e24", 0.35]} />
+      <ambientLight intensity={0.18} />
+      <directionalLight position={[2, 10, 6]} intensity={1.15} color="#f4f7fb" />
+      <directionalLight position={[-6, 4, -4]} intensity={0.35} color="#9eb0c8" />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 20]}>
         <circleGeometry args={[360, 48]} />
-        <meshBasicMaterial color={VERGE} />
+        <meshBasicMaterial color="#161a20" toneMapped={false} />
       </mesh>
       {route ? (
         <EgoFrame>
           <RouteRoad route={route} />
           <CityBlocks route={route} />
           {fsd ? <TrafficPack route={route} /> : null}
+          {fsd ? <RoadsidePack route={route} /> : null}
           <SignalProps route={route} />
         </EgoFrame>
       ) : null}
       <EgoCar />
-      <ContactShadows
-        opacity={0.55}
-        scale={9}
-        blur={2.1}
-        far={2.2}
-        frames={1}
-        resolution={512}
-        color="#0c0e10"
-        position={[0, 0.02, 0.2]}
-      />
+      <SoftShadow width={2.8} length={5.2} opacity={0.62} color="#050607" y={0.03} />
     </>
   );
 }
@@ -352,17 +335,16 @@ export function FsdCanvas() {
   return (
     <>
       <Canvas
-        shadows
         dpr={[1, 1.6]}
         gl={{
           antialias: true,
           preserveDrawingBuffer: frozen,
           failIfMajorPerformanceCaveat: false,
           toneMapping: ACESFilmicToneMapping,
-          toneMappingExposure: parked ? 1.08 : 1.28,
+          toneMappingExposure: 1.05,
           outputColorSpace: SRGBColorSpace,
         }}
-        camera={{ fov: DRIVE_FOV, position: [CAM_POS.x, CAM_POS.y, CAM_POS.z], near: 0.1, far: 420 }}
+        camera={{ fov: DRIVE_CHASE.fov, position: [CAM_POS.x, CAM_POS.y, CAM_POS.z], near: 0.1, far: 420 }}
         onCreated={({ gl }) => {
           gl.domElement.addEventListener("webglcontextlost", (event) => {
             event.preventDefault();

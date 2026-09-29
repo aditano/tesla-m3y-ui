@@ -12,6 +12,6 @@ The embedded Sketchfab URL was reported unavailable by that repository. Both the
 
 Copied from [aditano/tesla-studio](https://github.com/aditano/tesla-studio) `public/models/highland/` rather than re-downloaded from Sketchfab. Studio changes on that copy: lossless meshopt compression and the original textures externalized beside the GLB. `manifest.json` records the source SHA-256. The images are the original embedded textures, not re-encoded.
 
-This app normalizes the mesh to 4.72 m and turns the nose to +Z at runtime in `src/viz/highlandRig.ts`. That rig keeps the source triangles (179,692). Wheel groups are a presentation split, not a factory hinge rig. Paint, glass, and lamp treatments are illustrative.
+This app normalizes the mesh to 4.72 m and turns the nose to +Z at runtime in `src/viz/highlandRig.ts`. That rig keeps the source triangles (179,692). Wheel groups are a presentation split, not a factory hinge rig. Paint, glass, wheel graphite, and the studio IBL are an original treatment of this mesh. The contact shadow is a painted oval, not a shadow map.
 
 You must retain this attribution if you copy the GLB or the textures.

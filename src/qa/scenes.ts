@@ -226,6 +226,7 @@ function closedUi(overrides: Partial<UiState> = {}): UiState {
     climateFull: false,
     mediaOpen: false,
     appsOpen: false,
+    cameraOpen: false,
     searchOpen: false,
     tempPopup: null,
     vizRatio: VIZ_RATIO_DEFAULT,
@@ -267,11 +268,16 @@ export interface QaSnapshot {
   recents: Place[];
 }
 
+function flagsFor(scene: QaSceneId): VehicleFlags {
+  const driving = scene === "fsd-engaged" || scene === "viz-expanded";
+  return { ...flags, appearance: driving ? "dark" : "light", locked: !driving };
+}
+
 function parkedBase(scene: QaSceneId, ui: UiState): QaSnapshot {
   return {
     gear: "P",
     phase: "idle",
-    flags,
+    flags: flagsFor(scene),
     climate,
     media,
     ui,
@@ -306,7 +312,7 @@ function routedBase(scene: QaSceneId, ui: UiState, phase: TripPhase): QaSnapshot
   return {
     gear: phase === "fsd" ? "D" : "P",
     phase,
-    flags: { ...flags, locked: phase !== "fsd" },
+    flags: flagsFor(scene),
     climate,
     media,
     ui,

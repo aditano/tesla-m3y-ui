@@ -10,6 +10,7 @@ import { ClimatePanel } from "./chrome/ClimatePanel";
 import { ClimateFull } from "./chrome/ClimateFull";
 import { MediaPanel } from "./chrome/MediaPanel";
 import { AppLauncher } from "./chrome/AppLauncher";
+import { CameraPanel } from "./chrome/CameraPanel";
 import { markQaReady } from "./qa/applyScene";
 import { DriveOverlay } from "./chrome/DriveOverlay";
 import { NavSearch } from "./chrome/NavSearch";
@@ -223,6 +224,7 @@ export default function App() {
             <ClimatePanel />
             <ClimateFull />
             <MediaPanel />
+            <CameraPanel />
             <AppLauncher />
             <Disclaimer />
           </div>

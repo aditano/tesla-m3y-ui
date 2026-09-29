@@ -2,7 +2,6 @@ import {
   Box3,
   BufferGeometry,
   DoubleSide,
-  FrontSide,
   Group,
   Matrix4,
   Mesh,
@@ -40,6 +39,7 @@ export type HighlandRole =
   | "interior_pad"
   | "interior_headliner"
   | "glass"
+  | "side_glass"
   | "lamp_lens"
   | "headlight_led"
   | "taillight_led"
@@ -107,21 +107,35 @@ function georimCabinRole(x: number, y: number, z: number): InteriorFinish | null
 /** Role tags from Tesla Studio `src/studio/vehicles/highland.ts`, plus cabin allowlists. */
 export function highlandRole(name: string, x: number, y: number, z: number): HighlandRole | string {
   if (INTERIOR_PAD_MATERIALS.has(name)) return "interior_pad";
-  if (INTERIOR_LEATHER_MATERIALS.has(name)) return "interior_leather";
+  if (INTERIOR_LEATHER_MATERIALS.has(name)) {
+    // Door-card scraps sit in the side-glass plane. Their stock albedo is near-white.
+    if (Math.abs(x) > 0.55 && y > 0.7) return "interior_plastic";
+    return "interior_leather";
+  }
   if (name === "Ln7Mtl") {
     if (z < -1.75 && y > 0.45 && y < 0.95) return "headlight_led";
+    // Same white albedo, welded into the quarter-window opening. Darken it so cracks stay glass-colored.
+    if (Math.abs(x) > 0.55 && y > 0.7 && y < 1.28) return "interior_plastic";
     if (z > -0.6) return "interior_leather";
   }
   if (name === "Georimblurlfsub021Mtl") return "wheel_finish";
   if (EXTERIOR_PAINT_MATERIALS.has(name)) {
     if (name === "Georimblurlfsub01Mtl") {
+      // Light headliner scraps are welded into the quarter-window opening and read as a white sawtooth.
+      if (Math.abs(x) > 0.58 && y > 0.72 && y < 1.28 && z > -1.5 && z < 1.55) return "side_glass";
       const cabin = georimCabinRole(x, y, z);
       if (cabin) return cabin;
     }
     return "exterior_paint";
   }
+  if (name === "Geodoorl2sub11Mtl" && Math.abs(x) > 0.62 && y > 0.75 && y < 1.25 && z > -1.55 && z < 1.2) {
+    return "side_glass";
+  }
   if (/window|extwindow|Geodoorl2sub31|Geodoorr2sub31/i.test(name)) {
-    return z < -1.7 && y > 0.5 && y < 0.82 ? "lamp_lens" : "glass";
+    if (z < -1.7 && y > 0.5 && y < 0.82) return "lamp_lens";
+    // Quarter-window facets. A sharp clearcoat turns this low-poly glass into a white sawtooth.
+    if (Math.abs(x) > 0.5 && y < 1.24) return "side_glass";
+    return "glass";
   }
   if (name === "Ln12Mtl") return "taillight_led";
   if (/Tire1/.test(name)) return "tire_rubber";
@@ -148,18 +162,18 @@ export function highlandWheelPart(name: string, x: number, y: number, z: number)
 function treatHighland(material: MeshPhysicalMaterial, sourceName: string, role: string): void {
   material.side = DoubleSide;
   if (role === "exterior_paint") {
-    material.metalness = 0.28;
-    material.roughness = 0.22;
+    material.metalness = 0.45;
+    material.roughness = 0.18;
     material.clearcoat = 1;
-    material.clearcoatRoughness = 0.06;
+    material.clearcoatRoughness = 0.05;
     material.envMapIntensity = 1.15;
   }
   if (role === "wheel_finish") {
-    // Dark aero wheels, as on the reference car.
-    material.metalness = 0.7;
-    material.roughness = 0.36;
-    material.envMapIntensity = 0.7;
-    material.color.set("#2a2e34");
+    // Dark graphite aero face. The GLB has no wheel albedo, so the color is the finish.
+    material.metalness = 0.78;
+    material.roughness = 0.3;
+    material.envMapIntensity = 0.85;
+    material.color.set("#3a414a");
   }
   if (role === "tire_rubber") {
     material.metalness = 0;
@@ -167,21 +181,23 @@ function treatHighland(material: MeshPhysicalMaterial, sourceName: string, role:
     material.envMapIntensity = 0.22;
   }
   if (isInteriorFinish(role)) finishInterior(material, role);
-  if (!isInteriorFinish(role) && (role === "glass" || role === "lamp_lens" || material.transparent)) {
+  if (!isInteriorFinish(role) && (role === "glass" || role === "side_glass" || role === "lamp_lens" || material.transparent)) {
+    material.map = null;
+    material.emissiveMap = null;
     material.transparent = true;
-    material.roughness = role === "lamp_lens" ? 0.16 : 0.07;
+    material.roughness = role === "lamp_lens" ? 0.16 : role === "side_glass" ? 0.72 : 0.07;
     material.metalness = 0.04;
     material.opacity = role === "lamp_lens" ? 0.72 : 0.55;
     material.transmission = 0;
     material.thickness = 0;
-    material.clearcoat = 1;
-    material.clearcoatRoughness = role === "lamp_lens" ? 0.12 : 0.04;
+    material.clearcoat = role === "side_glass" ? 0.12 : 1;
+    material.clearcoatRoughness = role === "lamp_lens" ? 0.12 : role === "side_glass" ? 0.8 : 0.04;
     material.depthWrite = false;
-    material.envMapIntensity = role === "lamp_lens" ? 0.85 : 1.15;
+    material.envMapIntensity = role === "lamp_lens" ? 0.85 : role === "side_glass" ? 0.06 : 1.15;
     material.emissive.set("#000000");
     material.emissiveIntensity = 0;
     if (role === "lamp_lens") material.color.set("#1a2228");
-    if (role === "glass") material.color.set("#121820");
+    if (role === "glass" || role === "side_glass") material.color.set("#121820");
   }
   if (role === "trim" || sourceName === "Geohoodsub00031Mtl") {
     material.metalness = 0.92;
@@ -378,10 +394,11 @@ function finishInterior(material: MeshPhysicalMaterial, role: InteriorFinish): v
   }
 }
 
-/** Parked glasshouse: opaque tinted black (depth-written) so the cabin never shows through. */
-export const HIGHLAND_PARKED_GLASS_HEX = "#07090c";
+/** Parked glasshouse: opaque dark tint with a soft clearcoat, not a mirror ring. */
+export const HIGHLAND_PARKED_GLASS_HEX = "#121820";
 export const HIGHLAND_PARKED_GLASS_OPACITY = 1;
-export const HIGHLAND_PARKED_GLASS_ENV = 0.32;
+export const HIGHLAND_PARKED_GLASS_ENV = 0.42;
+export const HIGHLAND_WHEEL_HEX = "#3a414a";
 
 /** Ultra Red and lamp levels on the Highland rig. Does not rebuild David_Holiday materials. */
 export function applyHighlandLook(
@@ -395,31 +412,39 @@ export function applyHighlandLook(
       finishInterior(material, role);
     } else if (role === "exterior_paint") {
       material.color.set(options.paintHex);
-      // Deeper, less pink Ultra Red: less white env wash and sheen on the parked studio.
-      material.metalness = options.parked ? 0.22 : 0.26;
-      material.roughness = options.parked ? 0.2 : 0.24;
+      material.metalness = options.parked ? 0.42 : 0.38;
+      material.roughness = options.parked ? 0.17 : 0.22;
       material.clearcoat = 1;
-      material.clearcoatRoughness = options.parked ? 0.03 : 0.08;
-      material.envMapIntensity = options.parked ? 0.95 : 0.9;
-      material.sheen = options.parked ? 0.04 : 0.04;
-      material.sheenColor.set("#4a0c12");
-      material.sheenRoughness = 0.5;
+      material.clearcoatRoughness = options.parked ? 0.045 : 0.07;
+      material.envMapIntensity = options.parked ? 1.2 : 0.95;
+      material.sheen = options.parked ? 0.08 : 0.04;
+      material.sheenColor.set("#ffb4ae");
+      material.sheenRoughness = 0.4;
       material.emissive.set("#000000");
       material.emissiveIntensity = 0;
-    } else if (role === "glass") {
-      // nata-parked-car-vis: the parked glasshouse reads as solid black, not a window into the cabin.
-      material.color.set(options.parked ? HIGHLAND_PARKED_GLASS_HEX : "#10161c");
-      material.opacity = options.parked ? HIGHLAND_PARKED_GLASS_OPACITY : 0.42;
-      // Some panes are wound inward; single-sided glass vanishes from the high parked camera.
-      material.side = options.parked ? DoubleSide : FrontSide;
+    } else if (role === "wheel_finish") {
+      material.color.set(HIGHLAND_WHEEL_HEX);
+      material.metalness = 0.78;
+      material.roughness = 0.3;
+      material.envMapIntensity = 0.85;
+    } else if (role === "glass" || role === "side_glass") {
+      // Roof glass keeps a soft clearcoat. Side glass stays matte so low-poly facets do not flash white.
+      const side = role === "side_glass";
+      material.map = null;
+      material.emissiveMap = null;
+      material.color.set(options.parked ? HIGHLAND_PARKED_GLASS_HEX : "#0e141c");
+      material.opacity = options.parked ? HIGHLAND_PARKED_GLASS_OPACITY : 0.94;
+      material.side = DoubleSide;
       material.transparent = !options.parked;
       material.transmission = 0;
-      material.depthWrite = options.parked;
-      material.roughness = options.parked ? 0.06 : 0.08;
-      // Bright studio env washed the black glass to gray; keep only a soft sheen.
-      material.envMapIntensity = options.parked ? HIGHLAND_PARKED_GLASS_ENV : 0.75;
-      material.clearcoatRoughness = options.parked ? 0.12 : 0.04;
-      material.clearcoat = options.parked ? 0.4 : 1;
+      material.depthWrite = true;
+      material.roughness = side ? 0.72 : options.parked ? 0.2 : 0.12;
+      material.metalness = side ? 0 : 0.04;
+      material.envMapIntensity = side ? 0.06 : options.parked ? HIGHLAND_PARKED_GLASS_ENV : 0.55;
+      material.clearcoatRoughness = side ? 0.8 : options.parked ? 0.28 : 0.1;
+      material.clearcoat = side ? 0.12 : 1;
+      material.emissive.set("#000000");
+      material.emissiveIntensity = 0;
     } else if (role === "headlight_led") {
       material.color.set(headlightsOn ? "#f4f8ff" : "#b7c0c8");
       material.emissive.set(headlightsOn ? "#e7f1ff" : "#12161a");

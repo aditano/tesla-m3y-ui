@@ -53,6 +53,7 @@ export function BottomDock() {
               controlsOpen: !ui.controlsOpen,
               controlsTab: "quick",
               appsOpen: false,
+              cameraOpen: false,
               climateOpen: false,
               mediaOpen: false,
               tempPopup: null,
@@ -68,6 +69,7 @@ export function BottomDock() {
           onClick={() =>
             patchUi({
               appsOpen: !ui.appsOpen,
+              cameraOpen: false,
               climateOpen: false,
               mediaOpen: false,
               tempPopup: null,

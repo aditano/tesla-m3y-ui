@@ -1,24 +1,36 @@
+import type { ComponentType, SVGProps } from "react";
 import { useVehicle } from "../state/store";
-import { useDialogA11y } from "./dialogA11y";
 import type { MediaSourceId } from "../state/types";
+import { useDialogA11y } from "./dialogA11y";
 import {
+  IconBluetooth,
   IconEq,
+  IconMic,
   IconPause,
   IconPlay,
+  IconRadio,
   IconRepeat,
   IconSearch,
   IconShuffle,
   IconSkip,
   IconSkipBack,
+  IconStream,
+  IconUsb,
 } from "./Icons";
 
-const LIVE_SOURCES: { id: MediaSourceId; label: string }[] = [
-  { id: "radio", label: "Radio" },
-  { id: "bluetooth", label: "Bluetooth" },
-  { id: "streaming", label: "Streaming" },
+type Glyph = ComponentType<SVGProps<SVGSVGElement>>;
+
+const LIVE_SOURCES: { id: MediaSourceId; label: string; tone: string; Icon: Glyph }[] = [
+  { id: "radio", label: "Radio", tone: "radio", Icon: IconRadio },
+  { id: "bluetooth", label: "Bluetooth", tone: "bluetooth", Icon: IconBluetooth },
+  { id: "streaming", label: "Streaming", tone: "streaming", Icon: IconStream },
 ];
 
-const STUB_SOURCES = ["USB", "TuneIn", "Caraoke"] as const;
+const STUB_SOURCES: { label: string; tone: string; Icon: Glyph }[] = [
+  { label: "USB", tone: "usb", Icon: IconUsb },
+  { label: "TuneIn", tone: "tunein", Icon: IconRadio },
+  { label: "Caraoke", tone: "caraoke", Icon: IconMic },
+];
 
 function formatClock(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));
@@ -116,15 +128,21 @@ export function MediaPanel() {
             <button
               key={s.id}
               type="button"
-              className={media.source === s.id ? "on" : ""}
+              className={`source-card ${media.source === s.id ? "on" : ""}`}
               onClick={() => patchMedia({ source: s.id })}
             >
-              {s.label}
+              <span className={`source-mark ${s.tone}`}>
+                <s.Icon />
+              </span>
+              <span>{s.label}</span>
             </button>
           ))}
-          {STUB_SOURCES.map((label) => (
-            <button key={label} type="button" className="stub" disabled>
-              {label}
+          {STUB_SOURCES.map((s) => (
+            <button key={s.label} type="button" className="source-card stub" disabled>
+              <span className={`source-mark ${s.tone}`}>
+                <s.Icon />
+              </span>
+              <span>{s.label}</span>
             </button>
           ))}
         </div>

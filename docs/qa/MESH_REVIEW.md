@@ -422,3 +422,18 @@ After: the TRUNK dot is on the decklid (`[0, 0.91, -2.02]`) with a 20px stem, so
 | Proportions | PASS | Unchanged Highland silhouette. |
 | Lighting | PARTIAL | Same white studio. |
 | Leaders | PARTIAL | TRUNK card sits on the decklid. FRUNK stays on the hood and CHARGE on the quarter. Not a nata-length stem into empty studio. |
+
+## Studio, glass, and shadow — 2026-09-29
+
+Still: `docs/qa/screenshots/parked-home.png` and `docs/qa/screenshots/parked-dark.png`, compared with `docs/references/nata-parked-car-vis.jpg`. Side-by-side: `docs/qa/screenshots/compare-parked.png`.
+
+The runtime mesh is unchanged (CC-BY Highland, 179,692 triangles). Presentation changed: light and dark IBL studios, ACES, a canvas oval instead of a shadow map, and matte side glass. `Georimblurlfsub01` triangles in the side-glass plane were tagged `interior_headliner` (near-white) and drew the quarter-window sawtooth. They are `side_glass` now. Roof glass keeps a soft clearcoat. No shadow-map acne, peter-panning, or cascade seam, because the renderer shadow map stays off.
+
+| Axis | Score | Notes |
+| --- | --- | --- |
+| Paint | PARTIAL | Ultra Red clearcoat on the Highland shell. Cleaner than the flat pass; still not nata's photo candy. |
+| Glass | PARTIAL | Roof gradient plus matte dark side glass. The white sawtooth is gone. Not a photo laminate. |
+| Wheels | PARTIAL | Source multi-spoke wheels, dark graphite face. Not nata's bright aero covers. |
+| Proportions | PASS | Unchanged Highland silhouette, whole car in frame. |
+| Lighting | PARTIAL | Light studio default, dark studio via `?theme=dark`, painted oval contact shadow. Floor is still a plane. |
+| Leaders | PARTIAL | TRUNK on the decklid. FRUNK and CHARGE on the body. |
