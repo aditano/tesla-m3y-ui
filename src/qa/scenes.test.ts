@@ -52,6 +52,9 @@ describe("QA scenes", () => {
     expect(snapshotForScene("route-set").phase).toBe("routed");
     expect(snapshotForScene("fsd-engaged").phase).toBe("fsd");
     expect(snapshotForScene("viz-expanded").ui.vizRatio).toBeGreaterThan(0.8);
+    expect(snapshotForScene("parked-home").flags.appearance).toBe("light");
+    expect(snapshotForScene("fsd-engaged").flags.appearance).toBe("dark");
+    expect(snapshotForScene("parked-home").ui.cameraOpen).toBe(false);
   });
 
   it("type-guards scene ids", () => {

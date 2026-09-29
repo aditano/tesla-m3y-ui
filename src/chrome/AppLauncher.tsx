@@ -1,14 +1,28 @@
+import type { ComponentType, SVGProps } from "react";
 import { useVehicle } from "../state/store";
 import { useDialogA11y } from "./dialogA11y";
-import { IconBolt, IconCalendar, IconCamera, IconMusic, IconPhone } from "./Icons";
+import {
+  IconBolt,
+  IconCalendar,
+  IconCamera,
+  IconFan,
+  IconMusic,
+  IconNav,
+  IconPhone,
+} from "./Icons";
 
-const APPS = [
-  { id: "camera", label: "Camera", Icon: IconCamera },
-  { id: "calendar", label: "Calendar", Icon: IconCalendar },
-  { id: "energy", label: "Energy", Icon: IconBolt },
-  { id: "phone", label: "Phone", Icon: IconPhone },
-  { id: "theater", label: "Theater", Icon: IconMusic },
-] as const;
+type Glyph = ComponentType<SVGProps<SVGSVGElement>>;
+
+const APPS: { id: string; label: string; tone: string; Icon: Glyph; open: "camera" | "climate" | "media" | "nav" | "none" }[] = [
+  { id: "camera", label: "Camera", tone: "camera", Icon: IconCamera, open: "camera" },
+  { id: "climate", label: "Climate", tone: "climate", Icon: IconFan, open: "climate" },
+  { id: "media", label: "Media", tone: "media", Icon: IconMusic, open: "media" },
+  { id: "energy", label: "Energy", tone: "energy", Icon: IconBolt, open: "none" },
+  { id: "phone", label: "Phone", tone: "phone", Icon: IconPhone, open: "none" },
+  { id: "calendar", label: "Calendar", tone: "calendar", Icon: IconCalendar, open: "none" },
+  { id: "nav", label: "Nav", tone: "nav", Icon: IconNav, open: "nav" },
+  { id: "theater", label: "Theater", tone: "theater", Icon: IconMusic, open: "media" },
+];
 
 export function AppLauncher() {
   const open = useVehicle((s) => s.ui.appsOpen);
@@ -28,11 +42,17 @@ export function AppLauncher() {
           onClick={() =>
             patchUi({
               appsOpen: false,
-              mediaOpen: app.id === "theater",
+              cameraOpen: app.open === "camera",
+              climateOpen: app.open === "climate",
+              climateFull: app.open === "climate",
+              mediaOpen: app.open === "media",
+              searchOpen: app.open === "nav",
+              controlsOpen: false,
+              tempPopup: null,
             })
           }
         >
-          <span className="app-btn">
+          <span className={`app-glyph ${app.tone}`}>
             <app.Icon />
           </span>
           <span>{app.label}</span>

@@ -53,17 +53,17 @@ Scenes are **canned**. They do not call live OSRM. Pose, clock (`4:20 PM`), and 
 
 - Research **only** from public web: Tesla owner manuals, Tesla software-release notes republished by press, NotATeslaApp articles.
 - Do **not** paste large copyrighted manual text into the repo. Inventory files summarize **function lists** and cite URLs.
-- Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Inter OFL — PARTIAL vs Tesla’s UI type; still not Tesla Sans).
+- Do **not** add firmware dumps, leaked Figma kits, or fonts ripped from the car. Use a licensed look-alike (currently Montserrat OFL — PARTIAL vs Tesla’s UI type; still not Tesla Sans).
 - Reference images are fair-use stills for offline comparison, attributed in [`REFERENCES.md`](references/REFERENCES.md). They are **not** to be bundled into the shipped UI.
 
-## Current verdict (2026.14 pass)
+## Current verdict (2026-09-29 visual pass)
 
-Target is the center display in customer cars on software **2026.14** (Highland Model 3 / Juniper Model Y, AI4): studio park scene, the same car model while driving, amber turn lamps in the viz, and the folder-style All Apps glyph. Layout stills in `docs/references/` remain the 2024.14 / UI v12 chrome set. Tesla’s Unreal mesh is not used.
+Target is the center display in customer cars on software **2024.14 / 2025.x** chrome with a Highland park scene. Layout stills in `docs/references/` stay the comparison set. Tesla’s Unreal mesh is not used. GitHub Pages base path is `/tesla-m3y-ui/`.
 
-- Parked home is a **rear three-quarter** of the Model 3 on a light floor, whole car in frame, CC-BY mesh (~94k faces), candy Ultra Red, light dock, TRUNK card. Score: **PARTIAL** vs `nata-parked-car-vis.jpg`. Front well cutout and side-glass openings remain. See `docs/qa/MESH_REVIEW.md`.
-- Type is Inter (OFL). Still not Tesla Sans. Score: **PARTIAL**.
-- Park status-bar order and parked Auto Shift remain **PARTIAL**. All Apps is a folder of four glyphs.
-- FSD viz shares the map pose. The driving frame is a low rear chase down a gray street: building masses, mid-gray asphalt, white lane lines, a blue ego lane, traffic with amber lamps. The speed readout says the number and **mph**, with a hairline power bar on its left. The on-viz player shows title left, art right, and elapsed / remaining time on the scrubber. The nav map is charcoal with the street grid visible. Not an occupancy mesh.
-- Media player puts the title left and art right, with a thick scrubber. The on-viz card follows the v12 layout. The dock temperature opens a full climate screen. Controls is still not a pixel match.
+- Parked home is a **rear three-quarter** of the CC-BY 2024 Highland GLB (179,692 triangles, RBLXSupercars). Light studio is the default; `?theme=dark` is the night studio. Lighting is an IBL plus soft key/rim, ACES tone mapping, and a painted oval under the car (shadow maps stay off). Side glass is matte dark; the white quarter-window sawtooth is recolored mesh, not a new model. Score: **PARTIAL** vs `nata-parked-car-vis.jpg`. See `docs/qa/MESH_REVIEW.md`.
+- Type is Montserrat (OFL). Still not Tesla Sans. Score: **PARTIAL**.
+- All Apps is a squircle grid (Camera, Climate, Media, Energy, Phone, Calendar, Nav, Theater). Camera opens a stylized 2×2 feed, not real cameras. Controls tiles use a light sheet and gray selected state.
+- FSD viz shares the map pose. The chase camera looks down a dark gray road: white lane lines, a blue path, rounded white/silver/gray vehicles, a pedestrian, cones, a speed-limit disc, and a signal head. Score: **PARTIAL** vs `nata-ui-v12-hero.jpg`.
+- Media source cards use colored glyphs. The dock temperature opens the full climate screen. Controls is still not a pixel match.
 
 The harness exists so those gaps are **measurable**. Update [`qa/CHECKLIST.md`](qa/CHECKLIST.md) on every visual PR.

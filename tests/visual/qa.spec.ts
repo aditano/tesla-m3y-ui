@@ -4,13 +4,20 @@ import { QA_SCENE_IDS, type QaSceneId } from "../../src/qa/scenes";
 
 const OUT = path.join("docs", "qa", "screenshots");
 
-async function capture(page: import("@playwright/test").Page, scene: QaSceneId): Promise<void> {
-  await page.goto(`/tesla-m3y-ui/?qa=${scene}`, { waitUntil: "domcontentloaded" });
+async function capture(
+  page: import("@playwright/test").Page,
+  scene: QaSceneId,
+  file = scene,
+  search = "",
+  prepare?: (page: import("@playwright/test").Page) => Promise<void>,
+): Promise<void> {
+  await page.goto(`/tesla-m3y-ui/?qa=${scene}${search}`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector('html[data-qa-ready="true"]', { timeout: 120_000 });
   await page.waitForSelector('html[data-car-ready="true"]', { timeout: 120_000 });
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
+  if (prepare) await prepare(page);
   await page.waitForTimeout(900);
   const bezel = page.locator(".bezel");
   await expect(bezel).toBeVisible();
@@ -52,7 +59,7 @@ async function capture(page: import("@playwright/test").Page, scene: QaSceneId):
     await Promise.all(pending);
   });
   await page.screenshot({
-    path: path.join(OUT, `${scene}.png`),
+    path: path.join(OUT, `${file}.png`),
     animations: "allow",
     timeout: 15_000,
     clip: {
@@ -116,5 +123,19 @@ test.describe("visual QA harness", () => {
 
   test("scene catalog matches the checklist", () => {
     expect([...QA_SCENE_IDS]).toHaveLength(8);
+  });
+
+  test("captures dark parked studio, apps, and camera", async ({ page }) => {
+    await capture(page, "parked-home", "parked-dark", "&theme=dark");
+    await expect(page.locator(".shell")).toHaveClass(/theme-dark/);
+    await capture(page, "parked-home", "apps", "", async (shot) => {
+      await shot.getByTitle("App launcher").click();
+      await expect(shot.getByRole("dialog", { name: "Apps" })).toBeVisible();
+    });
+    await capture(page, "parked-home", "camera", "", async (shot) => {
+      await shot.getByTitle("App launcher").click();
+      await shot.getByRole("button", { name: "Camera", exact: true }).click();
+      await expect(shot.getByRole("dialog", { name: "Camera" })).toBeVisible();
+    });
   });
 });

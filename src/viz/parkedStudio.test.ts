@@ -6,6 +6,7 @@ import {
   PARKED_STUDIO,
   parkedStudioIsBlitSafe,
   studioEnvStreakStrength,
+  studioFor,
 } from "./parkedStudio";
 
 describe("PARKED_STUDIO", () => {
@@ -22,10 +23,18 @@ describe("PARKED_STUDIO", () => {
     expect(PARKED_FOG.far).toBeLessThan(60);
   });
 
-  it("paints a thin bright streak into a static equirect env", () => {
+  it("paints a broad softbox into a static equirect env", () => {
     const tex = createCandyStudioEnv();
     expect(tex.mapping).toBe(EquirectangularReflectionMapping);
-    expect(studioEnvStreakStrength()).toBeGreaterThan(60);
+    const strength = studioEnvStreakStrength();
+    expect(strength).toBeGreaterThan(40);
+    expect(strength).toBeLessThan(160);
     tex.dispose();
+  });
+
+  it("keeps a separate dark studio for the appearance toggle", () => {
+    expect(studioFor("dark").background).not.toBe(studioFor("light").background);
+    expect(studioFor("light").shadow.kind).toBe("blob");
+    expect(studioFor("dark").shadow.kind).toBe("blob");
   });
 });

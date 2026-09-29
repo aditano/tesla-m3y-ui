@@ -14,6 +14,7 @@
     "qa:screenshots": "playwright test --config playwright.qa.config.ts"
   },
   "dependencies": {
+    "@fontsource/montserrat": "^5.2.5",
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
     "maplibre-gl": "^5.6.0",

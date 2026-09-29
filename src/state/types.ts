@@ -219,6 +219,7 @@ export interface UiState {
   climateFull: boolean;
   mediaOpen: boolean;
   appsOpen: boolean;
+  cameraOpen: boolean;
   searchOpen: boolean;
   tempPopup: TempPopup;
   vizRatio: number;
