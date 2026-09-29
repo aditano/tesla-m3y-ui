@@ -85,25 +85,42 @@ async function layoutReport(page: Page): Promise<LayoutReport> {
   });
 }
 
-test("portrait 390 keeps charge, navigate, volume, and the disclaimer on screen", async ({ page }) => {
+async function expectCenterAspect(page: Page) {
+  const box = await page.locator(".bezel").evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { width: r.width, height: r.height, x: r.x, y: r.y, vw: window.innerWidth, vh: window.innerHeight };
+  });
+  expect(box.height).toBeGreaterThan(40);
+  expect(box.width / box.height).toBeCloseTo(1920 / 1200, 2);
+  expect(box.x).toBeGreaterThanOrEqual(-1);
+  expect(box.y).toBeGreaterThanOrEqual(-1);
+  expect(box.x + box.width).toBeLessThanOrEqual(box.vw + 1);
+  expect(box.y + box.height).toBeLessThanOrEqual(box.vh + 1);
+  const fillsWidth = Math.abs(box.width - box.vw) <= 2;
+  const fillsHeight = Math.abs(box.height - box.vh) <= 2;
+  expect(fillsWidth || fillsHeight).toBe(true);
+}
+
+test("portrait 390 keeps the 1920×1200 display, charge, navigate, volume, and the disclaimer on screen", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/tesla-m3y-ui/", { waitUntil: "domcontentloaded" });
   await page.locator(".bottom-dock").waitFor();
+  await expectCenterAspect(page);
 
   const parked = await layoutReport(page);
   expect(parked.scrollW).toBeLessThanOrEqual(parked.clientW + 1);
   expect(parked.outside).toEqual([]);
   expect(parked.dockOverlap).toBe(false);
   expect(parked.disclaimerFits).toBe(true);
-  expect(parked.hotspots).toBe("grid");
+  expect(parked.hotspots).toBe("none");
   // Pinned app icons were removed from the dock (touchscreen PDF p.8: Car + All Apps only).
   expect(parked.myApps).toBe("absent");
-  expect(parked.volumeY - parked.climateY).toBeGreaterThan(30);
+  expect(Math.abs(parked.climateY - parked.volumeY)).toBeLessThan(12);
 
-  const charge = page.getByRole("button", { name: "Open charge port" });
+  const charge = page.locator('[data-hotspot="charge"] button');
   await expect(charge).toBeVisible();
   await charge.dispatchEvent("click");
-  await expect(page.getByRole("button", { name: "Close charge port" })).toBeVisible();
+  await expect(charge).toHaveText(/Close/);
   await expect(page.getByPlaceholder("Navigate")).toBeVisible();
   await expect(page.getByRole("slider", { name: "Volume" })).toBeVisible();
   await expect(page.getByRole("button", { name: "OK" })).toBeVisible();
@@ -126,6 +143,7 @@ test("landscape and desktop keep the single-row dock", async ({ page }) => {
   await page.goto("/tesla-m3y-ui/", { waitUntil: "domcontentloaded" });
   await page.locator(".bottom-dock").waitFor();
 
+  await expectCenterAspect(page);
   const desktop = await layoutReport(page);
   expect(desktop.scrollW).toBeLessThanOrEqual(desktop.clientW + 1);
   expect(desktop.hotspots).toBe("none");
@@ -134,9 +152,21 @@ test("landscape and desktop keep the single-row dock", async ({ page }) => {
 
   await page.setViewportSize({ width: 844, height: 390 });
   await page.waitForTimeout(50);
+  await expectCenterAspect(page);
   const landscape = await layoutReport(page);
   expect(landscape.scrollW).toBeLessThanOrEqual(landscape.clientW + 1);
   expect(landscape.hotspots).toBe("none");
   expect(landscape.myApps).toBe("absent");
   expect(Math.abs(landscape.climateY - landscape.volumeY)).toBeLessThan(12);
+
+  await page.setViewportSize({ width: 1920, height: 1200 });
+  await page.waitForTimeout(50);
+  await expectCenterAspect(page);
+  const exact = await page.locator(".bezel").boundingBox();
+  expect(exact?.width).toBeGreaterThan(1910);
+  expect(exact?.height).toBeGreaterThan(1190);
+
+  await page.setViewportSize({ width: 2560, height: 1080 });
+  await page.waitForTimeout(50);
+  await expectCenterAspect(page);
 });

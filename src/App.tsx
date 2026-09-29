@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
+import { CENTER_DISPLAY_HEIGHT, CENTER_DISPLAY_WIDTH, useCenterDisplayFrame } from "./chrome/displayFrame";
 import { VIZ_RATIO_MAX, VIZ_RATIO_MIN, WORK_PLACE } from "./geo/constants";
 import { indexFor, interpolate } from "./geo/polyline";
 import { useVehicle } from "./state/store";
@@ -178,6 +179,7 @@ export default function App() {
   const showMap = showsNavigationMap(gear);
   const mini = showMap && useMiniMap(parked, vizRatio);
   const appearance = flags.appearance === "light" ? "theme-light" : "theme-dark";
+  const frame = useCenterDisplayFrame();
 
   return (
     <div
@@ -189,7 +191,17 @@ export default function App() {
       style={{ ["--viz-ratio" as string]: String(vizRatio) }}
     >
       <QaReady />
-      <div className={`bezel ${parked ? "parked" : "driving"} ${rear ? "rear" : ""}`} style={{ filter: `brightness(${0.72 + flags.brightness / 280})` }}>
+      <div className="display-frame" style={{ width: frame.width, height: frame.height, left: frame.left, top: frame.top }}>
+      <div
+        className={`bezel ${parked ? "parked" : "driving"} ${rear ? "rear" : ""}`}
+        style={{
+          width: CENTER_DISPLAY_WIDTH,
+          height: CENTER_DISPLAY_HEIGHT,
+          transform: `scale(${frame.scale})`,
+          transformOrigin: "top left",
+          filter: `brightness(${0.72 + flags.brightness / 280})`,
+        }}
+      >
         <StatusBar />
         <div className="display-main">
           <DriveStrip />
@@ -237,6 +249,7 @@ export default function App() {
         <BottomDock />
         <DriveLoop />
         <DemoBoot />
+      </div>
       </div>
     </div>
   );
