@@ -3604,6 +3604,17 @@ button {
   border-radius: 0;
   background: rgba(255, 255, 255, 0.24);
   overflow: visible;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.drive-media-progress::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -12px;
+  bottom: -12px;
 }
 
 .drive-media-progress i {

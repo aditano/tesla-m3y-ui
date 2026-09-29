@@ -1,3 +1,4 @@
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { etaClock, etaSeconds, formatDistance, formatDuration } from "../geo/polyline";
 import { nextTurn } from "../geo/osrm";
 import { useVehicle } from "../state/store";
@@ -17,7 +18,7 @@ import {
 } from "./Icons";
 import type { Maneuver } from "../state/types";
 import { ArrivalBattery, TripProgress } from "./TripProgress";
-import { cycleRepeat, togglePlayback, toggleShuffle } from "./shellActions";
+import { cycleRepeat, scrubFromClientX, togglePlayback, toggleShuffle } from "./shellActions";
 import { showsExpandedTripCards } from "../viz/layout";
 
 const TRACK_SECONDS = 214;
@@ -56,6 +57,14 @@ function DriveMedia() {
   const skipTrack = useVehicle((s) => s.skipTrack);
   const openFull = () => patchUi({ mediaOpen: true, climateOpen: false, climateFull: false, appsOpen: false, tempPopup: null });
   const pct = Math.round(media.progress * 100);
+  const onScrubPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.type === "pointermove" && event.buttons === 0) return;
+    if (event.type === "pointerdown") {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
+    const rect = event.currentTarget.getBoundingClientRect();
+    scrubFromClientX(event.clientX, rect.left, rect.width);
+  };
 
   return (
     <div className="drive-media">
@@ -86,8 +95,15 @@ function DriveMedia() {
       </div>
       <div
         className="drive-media-progress"
-        role="img"
-        aria-label={`${formatClock(media.progress * TRACK_SECONDS)} of ${formatClock(TRACK_SECONDS)}`}
+        role="slider"
+        tabIndex={0}
+        aria-label="Playback position"
+        aria-valuemin={0}
+        aria-valuemax={TRACK_SECONDS}
+        aria-valuenow={Math.round(media.progress * TRACK_SECONDS)}
+        aria-valuetext={`${formatClock(media.progress * TRACK_SECONDS)} of ${formatClock(TRACK_SECONDS)}`}
+        onPointerDown={onScrubPointer}
+        onPointerMove={onScrubPointer}
       >
         <i style={{ width: `${pct}%` }} />
         <b style={{ left: `${pct}%` }} />

@@ -5,6 +5,7 @@ export function ParkedMedia() {
   const media = useVehicle((s) => s.media);
   const patchMedia = useVehicle((s) => s.patchMedia);
   const patchUi = useVehicle((s) => s.patchUi);
+  const skipTrack = useVehicle((s) => s.skipTrack);
 
   return (
     <div className="parked-media">
@@ -22,12 +23,13 @@ export function ParkedMedia() {
       </button>
       <div className="parked-media-transport">
         <button
+          type="button"
           title={media.playing ? "Pause" : "Play"}
           onClick={() => patchMedia({ playing: !media.playing })}
         >
           {media.playing ? <IconPause /> : <IconPlay />}
         </button>
-        <button title="Next">
+        <button type="button" title="Next" onClick={() => skipTrack(1)}>
           <IconSkip />
         </button>
       </div>

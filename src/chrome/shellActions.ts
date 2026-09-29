@@ -79,6 +79,12 @@ export function scrubMedia(progress: number): void {
   useVehicle.getState().patchMedia({ progress: Math.min(1, Math.max(0, progress)) });
 }
 
+/** Map a pointer's clientX onto the scrubber and store that playback position. */
+export function scrubFromClientX(clientX: number, left: number, width: number): void {
+  if (!(width > 0)) return;
+  scrubMedia((clientX - left) / width);
+}
+
 export function toggleQuickControl(key: QuickFlag): void {
   const flags: VehicleFlags = useVehicle.getState().flags;
   useVehicle.getState().patchFlags({ [key]: !flags[key] });
