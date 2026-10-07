@@ -93,4 +93,8 @@ Frozen scenes: `/?qa=parked-home` · `route-set` · `fsd-engaged` · `controls` 
 
 ## License
 
-MIT. Original UI art in this repository. Do not add ripped Tesla assets.
+Copyright 2026 Anthony DiTano. Original work in this repository is licensed under the GNU General Public License, version 3 or any later version ([GPL-3.0-or-later](LICENSE)).
+
+Third-party assets keep their own terms. The Model 3 meshes are CC BY 4.0 ([LICENSE-3D.md](LICENSE-3D.md)). Montserrat is under the SIL Open Font License. Map data, tiles, routing, and geocoding keep the terms named in Attribution. Draco decoder files under `public/draco/` are Apache-2.0.
+
+Tesla, Model 3, Model Y, Autopilot, and Full Self-Driving are trademarks of Tesla, Inc. They are not licensed by this GPL grant. This project is not affiliated with Tesla, Inc. Do not add ripped Tesla assets.

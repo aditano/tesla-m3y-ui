@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Fan recreation of the Tesla Model 3/Y center display. Not affiliated with Tesla, Inc.",
+  "license": "GPL-3.0-or-later",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
