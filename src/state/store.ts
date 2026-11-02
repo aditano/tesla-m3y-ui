@@ -417,19 +417,32 @@ export const useVehicle = create<Store>((set, get) => ({
   },
 
   navigateTo: async (place) => {
-    const origin = get().origin;
+    const prev = get();
+    // Route from where the car is now — never snap back to a previous trip's origin.
+    const start = {
+      name: prev.origin.name,
+      label: prev.origin.label,
+      lng: prev.pose.lng,
+      lat: prev.pose.lat,
+    };
     const { id, signal } = beginNavRequest();
-    const driving = get().phase === "fsd";
+    const driving = prev.phase === "fsd";
     set({
       destination: place,
+      origin: start,
       route: null,
       routeBusy: true,
       routeError: null,
-      phase: driving ? "idle" : get().phase,
-      gear: driving ? "P" : get().gear,
-      pose: driving ? { ...get().pose, speedMph: 0, setSpeedMph: 0 } : get().pose,
+      phase: driving ? "idle" : prev.phase,
+      gear: driving ? "P" : prev.gear,
+      pose: {
+        ...prev.pose,
+        lng: start.lng,
+        lat: start.lat,
+        ...(driving ? { speedMph: 0, setSpeedMph: 0 } : {}),
+      },
       ui: {
-        ...get().ui,
+        ...prev.ui,
         searchOpen: false,
         climateOpen: false,
         mediaOpen: false,
@@ -439,7 +452,7 @@ export const useVehicle = create<Store>((set, get) => ({
       searchQuery: place.name,
     });
     try {
-      const route = await fetchRoute(origin, place, signal);
+      const route = await fetchRoute(start, place, signal);
       if (!isNavCurrent(id)) return;
       const recents = [place, ...get().recents.filter((r) => r.label !== place.label)].slice(0, 8);
       set({
@@ -449,8 +462,8 @@ export const useVehicle = create<Store>((set, get) => ({
         recents,
         pose: {
           ...get().pose,
-          lng: origin.lng,
-          lat: origin.lat,
+          lng: start.lng,
+          lat: start.lat,
           traveledM: 0,
           remainingM: route.distanceM,
           speedMph: 0,
