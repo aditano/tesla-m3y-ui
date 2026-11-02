@@ -67,7 +67,7 @@ export function RouteRoad({ route }: { route: RoutePlan }) {
     const index = indexFor(route.coords);
     const lo = traveledBucket - 90;
     const hi = traveledBucket + 260;
-    const samples = densifyRoute(index).filter((s) => s.traveledM >= lo && s.traveledM <= hi);
+    const samples = densifyRoute(index, undefined, lo, hi);
     const pts: XZ[] = samples.map((s) => {
       const p = lngLatToLocal(s.position, origin);
       return { x: p.x, z: p.z };
@@ -137,12 +137,10 @@ export function CityBlocks({ route }: { route: RoutePlan }) {
   const blocks = useMemo(() => {
     const origin: [number, number] = route.coords[0];
     const index = indexFor(route.coords);
-    const pts = densifyRoute(index)
-      .filter((s) => s.traveledM >= traveledBucket - 30 && s.traveledM <= traveledBucket + 240)
-      .map((s) => {
-        const p = lngLatToLocal(s.position, origin);
-        return { x: p.x, z: p.z };
-      });
+    const pts = densifyRoute(index, undefined, traveledBucket - 30, traveledBucket + 240).map((s) => {
+      const p = lngLatToLocal(s.position, origin);
+      return { x: p.x, z: p.z };
+    });
     return cityBlocksAlong(pts);
   }, [route, traveledBucket]);
 
