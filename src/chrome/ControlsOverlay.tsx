@@ -504,14 +504,12 @@ export function ControlsOverlay() {
               <div className="row stack">
                 <span>Acceleration</span>
                 <Segmented
-                  value={flags.steeringMode === "sport" ? "sport" : "chill"}
+                  value={flags.accelerationMode}
                   options={[
                     { id: "chill", label: "Chill" },
-                    { id: "sport", label: "Standard" },
+                    { id: "standard", label: "Standard" },
                   ]}
-                  onChange={(mode) =>
-                    patchFlags({ steeringMode: mode === "sport" ? "sport" : "comfort" })
-                  }
+                  onChange={(accelerationMode) => patchFlags({ accelerationMode })}
                 />
               </div>
               <div className="row stack">

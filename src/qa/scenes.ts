@@ -193,6 +193,7 @@ const flags: VehicleFlags = {
   chargeLimitPct: 80,
   regenerativeBraking: "standard",
   stoppingMode: "hold",
+  accelerationMode: "standard",
   steeringMode: "standard",
   slipStart: false,
   onlineRouting: true,

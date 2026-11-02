@@ -16,6 +16,8 @@ export type StoppingMode = "hold" | "roll" | "creep";
 
 export type SteeringMode = "comfort" | "standard" | "sport";
 
+export type AccelerationMode = "chill" | "standard";
+
 export type AppearanceMode = "dark" | "light" | "auto";
 
 export type RepeatMode = "off" | "one" | "all";
@@ -186,6 +188,7 @@ export interface VehicleFlags {
   chargeLimitPct: number;
   regenerativeBraking: RegenerativeBraking;
   stoppingMode: StoppingMode;
+  accelerationMode: AccelerationMode;
   steeringMode: SteeringMode;
   slipStart: boolean;
   onlineRouting: boolean;

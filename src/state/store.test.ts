@@ -434,6 +434,43 @@ describe("shared ego pose", () => {
     expect(useVehicle.getState().pose.lat).toBeGreaterThan(40.4406);
   });
 
+  it("Acceleration is independent of Steering mode and changes drive accel", () => {
+    useVehicle.setState({
+      phase: "fsd",
+      gear: "D",
+      route: line,
+      flags: { ...useVehicle.getState().flags, steeringMode: "standard", accelerationMode: "standard" },
+      pose: {
+        ...useVehicle.getState().pose,
+        speedMph: 10,
+        setSpeedMph: 45,
+        traveledM: 10,
+        remainingM: line.distanceM - 10,
+      },
+    });
+    useVehicle.getState().patchFlags({ accelerationMode: "chill" });
+    expect(useVehicle.getState().flags.accelerationMode).toBe("chill");
+    expect(useVehicle.getState().flags.steeringMode).toBe("standard");
+
+    useVehicle.getState().tickDrive(1);
+    const chillSpeed = useVehicle.getState().pose.speedMph;
+
+    useVehicle.setState({
+      flags: { ...useVehicle.getState().flags, accelerationMode: "standard", steeringMode: "sport" },
+      pose: {
+        ...useVehicle.getState().pose,
+        speedMph: 10,
+        setSpeedMph: 45,
+        traveledM: 10,
+        remainingM: line.distanceM - 10,
+      },
+    });
+    useVehicle.getState().tickDrive(1);
+    const standardSpeed = useVehicle.getState().pose.speedMph;
+    expect(chillSpeed).toBeLessThan(standardSpeed);
+    expect(useVehicle.getState().flags.steeringMode).toBe("sport");
+  });
+
   it("a new route starts from the current pose instead of teleporting to the old origin", async () => {
     const rebuilt = deferred<RoutePlan>();
     vi.mocked(fetchRoute).mockImplementation((from) => {

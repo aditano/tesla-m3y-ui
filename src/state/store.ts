@@ -106,6 +106,7 @@ const flags: VehicleFlags = {
   chargeLimitPct: 80,
   regenerativeBraking: "standard",
   stoppingMode: "hold",
+  accelerationMode: "standard",
   steeringMode: "standard",
   slipStart: false,
   onlineRouting: true,
@@ -551,7 +552,10 @@ export const useVehicle = create<Store>((set, get) => ({
     let target = Math.min(state.pose.setSpeedMph || limit, limit);
     if (remaining < 80) target = Math.min(target, 18);
     if (remaining < 25) target = Math.min(target, 8);
-    const accel = target >= state.pose.speedMph ? 7.5 : 10;
+    const chill = state.flags.accelerationMode === "chill";
+    const accelUp = chill ? 4 : 7.5;
+    const accelDown = chill ? 8 : 10;
+    const accel = target >= state.pose.speedMph ? accelUp : accelDown;
     let speed = state.pose.speedMph;
     if (speed < target) speed = Math.min(target, speed + accel * dt);
     else speed = Math.max(target, speed - accel * dt);
