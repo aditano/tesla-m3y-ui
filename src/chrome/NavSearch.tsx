@@ -53,6 +53,7 @@ export function NavSearch({ variant = "map" }: { variant?: "map" | "parked" }) {
             <input
               value={query}
               placeholder="Navigate"
+              aria-label="Navigate"
               onFocus={() => patchUi({ searchOpen: true, climateOpen: false, mediaOpen: false, appsOpen: false })}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

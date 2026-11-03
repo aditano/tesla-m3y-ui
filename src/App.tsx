@@ -107,7 +107,9 @@ function Disclaimer() {
         Fan / educational recreation. <b>Not affiliated with Tesla, Inc.</b> Visualization is simulated
         along public map data — not real Autopilot or FSD.
       </div>
-      <button onClick={() => patchUi({ disclaimerDismissed: true })}>OK</button>
+      <button type="button" aria-label="Dismiss disclaimer" onClick={() => patchUi({ disclaimerDismissed: true })}>
+        OK
+      </button>
     </div>
   );
 }

@@ -433,4 +433,94 @@ describe("shared ego pose", () => {
     expect(useVehicle.getState().pose.traveledM).toBeGreaterThan(0);
     expect(useVehicle.getState().pose.lat).toBeGreaterThan(40.4406);
   });
+
+  it("Acceleration is independent of Steering mode and changes drive accel", () => {
+    useVehicle.setState({
+      phase: "fsd",
+      gear: "D",
+      route: line,
+      flags: { ...useVehicle.getState().flags, steeringMode: "standard", accelerationMode: "standard" },
+      pose: {
+        ...useVehicle.getState().pose,
+        speedMph: 10,
+        setSpeedMph: 45,
+        traveledM: 10,
+        remainingM: line.distanceM - 10,
+      },
+    });
+    useVehicle.getState().patchFlags({ accelerationMode: "chill" });
+    expect(useVehicle.getState().flags.accelerationMode).toBe("chill");
+    expect(useVehicle.getState().flags.steeringMode).toBe("standard");
+
+    useVehicle.getState().tickDrive(1);
+    const chillSpeed = useVehicle.getState().pose.speedMph;
+
+    useVehicle.setState({
+      flags: { ...useVehicle.getState().flags, accelerationMode: "standard", steeringMode: "sport" },
+      pose: {
+        ...useVehicle.getState().pose,
+        speedMph: 10,
+        setSpeedMph: 45,
+        traveledM: 10,
+        remainingM: line.distanceM - 10,
+      },
+    });
+    useVehicle.getState().tickDrive(1);
+    const standardSpeed = useVehicle.getState().pose.speedMph;
+    expect(chillSpeed).toBeLessThan(standardSpeed);
+    expect(useVehicle.getState().flags.steeringMode).toBe("sport");
+  });
+
+  it("a new route starts from the current pose instead of teleporting to the old origin", async () => {
+    const rebuilt = deferred<RoutePlan>();
+    vi.mocked(fetchRoute).mockImplementation((from) => {
+      rebuilt.resolve({
+        ...routeWith(900),
+        coords: [
+          [from.lng, from.lat],
+          [from.lng + 0.01, from.lat + 0.01],
+        ],
+        geometry: {
+          type: "LineString",
+          coordinates: [
+            [from.lng, from.lat],
+            [from.lng + 0.01, from.lat + 0.01],
+          ],
+        },
+      });
+      return rebuilt.promise;
+    });
+    const midLng = -79.97;
+    const midLat = 40.448;
+    const oldOrigin = useVehicle.getState().origin;
+    useVehicle.setState({
+      phase: "arrived",
+      gear: "P",
+      route: line,
+      destination: destA,
+      pose: {
+        ...useVehicle.getState().pose,
+        lng: midLng,
+        lat: midLat,
+        speedMph: 0,
+        setSpeedMph: 0,
+        traveledM: line.distanceM,
+        remainingM: 0,
+      },
+    });
+    await useVehicle.getState().navigateTo(destB);
+    const state = useVehicle.getState();
+    expect(state.pose.lng).toBeCloseTo(midLng, 5);
+    expect(state.pose.lat).toBeCloseTo(midLat, 5);
+    expect(state.pose.lng).not.toBeCloseTo(oldOrigin.lng, 3);
+    expect(state.pose.lat).not.toBeCloseTo(oldOrigin.lat, 3);
+    expect(state.origin.lng).toBeCloseTo(midLng, 5);
+    expect(state.origin.lat).toBeCloseTo(midLat, 5);
+    expect(state.pose.traveledM).toBe(0);
+    expect(vi.mocked(fetchRoute)).toHaveBeenCalledWith(
+      expect.objectContaining({ lng: midLng, lat: midLat }),
+      expect.objectContaining({ name: destB.name }),
+      expect.any(AbortSignal),
+    );
+  });
 });

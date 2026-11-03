@@ -36,6 +36,7 @@ export const SETTINGS_CATALOG: SettingHit[] = [
   { id: "appearance", label: "Appearance", tab: "display", keywords: "dark light auto brightness" },
   { id: "regen", label: "Regenerative braking", tab: "dynamics", keywords: "regen braking pedals steering" },
   { id: "stopping", label: "Stopping Mode", tab: "dynamics", keywords: "hold roll creep" },
+  { id: "acceleration", label: "Acceleration", tab: "dynamics", keywords: "chill standard acceleration pedal" },
   { id: "steering", label: "Steering mode", tab: "dynamics", keywords: "comfort sport steering" },
   { id: "slip", label: "Slip Start", tab: "dynamics", keywords: "traction snow" },
   { id: "charge", label: "Charge limit", tab: "charging", keywords: "charge port scheduled limit" },

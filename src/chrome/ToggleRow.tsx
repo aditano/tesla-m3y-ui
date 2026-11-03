@@ -10,7 +10,7 @@ export function ToggleRow({
   onClick: () => void;
 }) {
   return (
-    <button className="row" type="button" onClick={onClick}>
+    <button className="row" type="button" aria-pressed={on} onClick={onClick}>
       <span className="row-copy">
         <span>{label}</span>
         {hint ? <small>{hint}</small> : null}

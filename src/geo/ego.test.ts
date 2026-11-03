@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  densifyRoute,
   egoWorldShift,
   enuToEgo,
   interpolateInEgoFrame,
@@ -101,5 +102,21 @@ describe("ego heading frame", () => {
       { d: Infinity, p: window[0] },
     );
     expect(nearest.d).toBeLessThan(1.5);
+  });
+
+  it("densifies only a traveled window so long trips stay bounded", () => {
+    const coords: [number, number][] = [];
+    for (let i = 0; i < 2000; i++) coords.push([-80, 40 + i * 0.00225]);
+    const index = buildIndex(coords);
+    expect(index.totalMeters).toBeGreaterThan(400_000);
+    const mid = index.totalMeters * 0.5;
+    const t0 = performance.now();
+    const window = densifyRoute(index, 1.25, mid - 90, mid + 260);
+    const ms = performance.now() - t0;
+    expect(window.length).toBeLessThan(400);
+    expect(window.length).toBeGreaterThan(50);
+    expect(window[0].traveledM).toBeGreaterThanOrEqual(mid - 91);
+    expect(window[window.length - 1].traveledM).toBeLessThanOrEqual(mid + 261);
+    expect(ms).toBeLessThan(40);
   });
 });

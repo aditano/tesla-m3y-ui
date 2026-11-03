@@ -43,23 +43,37 @@ export function lngLatToEgo(p: LngLat, ego: LngLat, headingDeg: number): { x: nu
   return enuToEgo(enu.x, enu.z, headingDeg);
 }
 
-export function densifyRoute(index: PolylineIndex, stepM = VIZ_STEP_M): SampledPose[] {
-  const cached = denseCache.get(index);
-  if (cached) return cached;
+/**
+ * Densify a polyline for the FSD viz. Prefer a traveled-meter window so long
+ * trips stay O(window) instead of O(route length) — full densify of a multi-
+ * hundred-km polyline freezes the main thread.
+ */
+export function densifyRoute(
+  index: PolylineIndex,
+  stepM = VIZ_STEP_M,
+  fromM = 0,
+  toM = Number.POSITIVE_INFINITY,
+): SampledPose[] {
   if (index.coords.length === 0 || index.totalMeters <= 0) {
-    denseCache.set(index, []);
     return [];
   }
-  const out: SampledPose[] = [];
   const step = Math.max(0.5, stepM);
-  for (let m = 0; m < index.totalMeters; m += step) {
+  const lo = Math.max(0, Math.min(index.totalMeters, fromM));
+  const hi = Math.max(lo, Math.min(index.totalMeters, toM));
+  const coversAll = lo <= 0 && hi >= index.totalMeters - 1e-6;
+  if (coversAll) {
+    const cached = denseCache.get(index);
+    if (cached) return cached;
+  }
+  const out: SampledPose[] = [];
+  for (let m = lo; m < hi; m += step) {
     out.push(interpolate(index, m));
   }
-  const last = interpolate(index, index.totalMeters);
+  const last = interpolate(index, hi);
   if (out.length === 0 || last.traveledM - out[out.length - 1].traveledM > 0.2) {
     out.push(last);
   }
-  denseCache.set(index, out);
+  if (coversAll) denseCache.set(index, out);
   return out;
 }
 
@@ -81,10 +95,9 @@ export function routeWindowInEgoFrame(
   aheadM = VIZ_AHEAD_M,
 ): EgoFramePoint[] {
   const index = indexFor(coords);
-  const dense = densifyRoute(index);
   const lo = pose.traveledM - behindM;
   const hi = pose.traveledM + aheadM;
-  const slice = dense.filter((s) => s.traveledM >= lo && s.traveledM <= hi);
+  const slice = densifyRoute(index, VIZ_STEP_M, lo, hi);
   if (slice.length < 2) {
     const fallback = [
       interpolate(index, Math.max(0, lo)),
